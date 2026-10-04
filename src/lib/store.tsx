@@ -24,7 +24,12 @@ export type AppState = {
   fees: Fees;
   overrides: Record<string, number>;
   serverUrl: string;
+  deviceId: string; // identificador anônimo, usado só para os limites do assistente
 };
+
+function newDeviceId(): string {
+  return Array.from({ length: 24 }, () => Math.floor(Math.random() * 36).toString(36)).join('');
+}
 
 const KEY = 'ponte:v1';
 const RATES_KEY = 'ponte:rates';
@@ -46,6 +51,7 @@ export const initialState: AppState = {
   fees: DEFAULT_FEES,
   overrides: {},
   serverUrl: defaultServer,
+  deviceId: '',
 };
 
 type Rates = { values: Record<string, number>; updated: number | null; live: boolean };
@@ -79,7 +85,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             ...saved,
             profile: { ...initialState.profile, ...(saved.profile ?? {}) },
             fees: { ...DEFAULT_FEES, ...(saved.fees ?? {}) },
+            deviceId: saved.deviceId || newDeviceId(),
           });
+        } else {
+          setState({ ...initialState, deviceId: newDeviceId() });
         }
         const r = await AsyncStorage.getItem(RATES_KEY);
         if (r) setRates({ ...(JSON.parse(r) as Rates), live: false });
@@ -125,7 +134,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     setProfile: (p) => setState((s) => ({ ...s, profile: { ...s.profile, ...p } })),
     update: (p) => setState((s) => ({ ...s, ...p })),
     toggle: (id) => setState((s) => ({ ...s, done: { ...s.done, [id]: !s.done[id] } })),
-    reset: () => setState(initialState),
+    reset: () => setState((s) => ({ ...initialState, deviceId: s.deviceId })),
   }), [ready, state, rates, refreshRates]);
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;

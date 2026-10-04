@@ -24,21 +24,35 @@ Feito com Expo (React Native) e Expo Router. Os dados ficam só no aparelho.
 
 ## Assistente com IA
 
-O assistente precisa de um pequeno servidor, para que a chave da API não fique dentro do app.
+O assistente precisa de um pequeno servidor (pasta `server/`), para que a chave da API não fique dentro do app.
 
-1. Crie uma chave em https://platform.claude.com e defina a variável `ANTHROPIC_API_KEY`.
-2. Instale e rode o servidor:
+### Configurar
+
+1. Crie uma chave em https://platform.claude.com (começa com `sk-ant-`) e defina um limite de gasto mensal na conta.
+2. Copie `server/.env.example` para `server/.env` e preencha:
+   - `ANTHROPIC_API_KEY`: a chave.
+   - `PONTE_APP_TOKEN`: uma senha longa e aleatória, compartilhada com o app.
+3. Copie `.env.example` (na raiz) para `.env` e coloque a mesma senha em `EXPO_PUBLIC_PONTE_TOKEN`.
+4. Rode:
 
    ```bash
-   cd server
-   npm install
-   cd ..
+   npm --prefix server install
    npm run server
    ```
 
-3. No app, abra **Ajustes → Servidor do assistente** e coloque o endereço do computador na rede, por exemplo `http://192.168.0.10:8787` (no Windows, veja o IP com `ipconfig`).
+5. No app, abra **Ajustes → Servidor do assistente** e coloque o endereço do servidor. No celular, use o IP do computador na rede (ex.: `http://192.168.0.10:8787`; no Windows, veja com `ipconfig`).
 
-Para publicar de verdade, hospede a pasta `server/` num serviço de nuvem e coloque esse endereço no app.
+Os arquivos `.env` nunca vão para o GitHub.
+
+### Proteções
+
+- **Senha do app** (`PONTE_APP_TOKEN`): o servidor só responde a quem envia a senha. Ela fica dentro do app, então é uma barreira contra uso casual, não um cofre.
+- **Limites por aparelho:** 20 perguntas por hora e 50 por dia (`LIMIT_HOUR`, `LIMIT_DAY`). Por IP, o limite é 5 vezes maior, porque várias pessoas podem dividir o mesmo Wi-Fi.
+- **Limite total por dia:** 500 perguntas (`LIMIT_GLOBAL_DAY`), para o custo nunca disparar.
+- **Tamanho máximo:** 1.000 caracteres por pergunta, 12 mensagens de histórico e 4.000 tokens por resposta.
+- `GET /health` mostra quantas perguntas foram feitas hoje, sem dados pessoais.
+
+Para colocar na internet, hospede a pasta `server/` num serviço que rode Node.js 20 ou mais novo, com o comando `npm start` e as mesmas variáveis do `.env`.
 
 ## Publicar nas lojas
 

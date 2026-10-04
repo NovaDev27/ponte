@@ -37,7 +37,11 @@ export default function Assistente() {
     try {
       const res = await fetch(`${state.serverUrl.replace(/\/$/, '')}/chat`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ponte-Token': process.env.EXPO_PUBLIC_PONTE_TOKEN ?? '',
+          'X-Ponte-Device': state.deviceId,
+        },
         body: JSON.stringify({
           messages: next.slice(-20),
           context: {

@@ -43,3 +43,4 @@ yarn-error.*
 # chaves e segredos
 .env
 .env.*
+!.env.example
