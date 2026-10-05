@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { Platform } from 'react-native';
 import { CURRENCIES } from '../data/countries';
 import { DEFAULT_FEES, Fees } from '../data/methods';
 import { nextMonths } from './format';
@@ -39,9 +38,9 @@ const FALLBACK_RATES: Record<string, number> = {
   EUR: 0.16, USD: 0.18, CAD: 0.25, AUD: 0.28, GBP: 0.135, NZD: 0.31, JPY: 27, ZAR: 3.2,
 };
 
-// Servidor do assistente: o da nuvem (EXPO_PUBLIC_PONTE_SERVER) ou, em desenvolvimento, o do computador.
-export const DEFAULT_SERVER =
-  process.env.EXPO_PUBLIC_PONTE_SERVER || (Platform.OS === 'web' ? 'http://localhost:8787' : 'http://192.168.0.6:8787');
+// Servidor do assistente na nuvem. Para testar com o servidor do computador,
+// defina EXPO_PUBLIC_PONTE_SERVER no .env (ex.: http://192.168.0.6:8787).
+export const DEFAULT_SERVER = process.env.EXPO_PUBLIC_PONTE_SERVER || 'https://ponte-2dyt.onrender.com';
 // Endereços padrão antigos, que eram salvos no aparelho: passam a seguir o padrão atual.
 const OLD_DEFAULTS = ['http://localhost:8787', 'http://192.168.0.10:8787'];
 
