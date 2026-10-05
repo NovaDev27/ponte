@@ -6,9 +6,6 @@
     "start": "node --env-file-if-exists=.env index.mjs"
   },
   "type": "module",
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.131.0"
-  },
   "private": true,
   "engines": {
     "node": ">=20.6"

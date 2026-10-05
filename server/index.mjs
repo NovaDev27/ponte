@@ -1,13 +1,13 @@
 // Servidor do assistente da Ponte.
 // Mantém a chave da API fora do app: o celular fala com este servidor,
-// e só ele fala com a API do Claude.
+// e só ele fala com a IA (Groq, API compatível com o formato da OpenAI).
 //
 // Configuração por variáveis de ambiente (veja .env.example):
-//   ANTHROPIC_API_KEY   chave da API (obrigatória)
+//   GROQ_API_KEY        chave da API da Groq (obrigatória)
+//   GROQ_MODEL          modelo (padrão openai/gpt-oss-120b)
 //   PONTE_APP_TOKEN     senha compartilhada com o app (recomendada)
 //   PORT                porta (padrão 8787)
 //   LIMIT_HOUR / LIMIT_DAY / LIMIT_GLOBAL_DAY   limites de perguntas
-import Anthropic from '@anthropic-ai/sdk';
 import http from 'node:http';
 
 const PORT = Number(process.env.PORT ?? 8787);
@@ -19,12 +19,25 @@ const MAX_MSG_CHARS = 1000;
 const MAX_HISTORY = 12;
 const MAX_BODY_BYTES = 50_000;
 
-const client = new Anthropic();
+const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
+const GROQ_KEY = process.env.GROQ_API_KEY ?? '';
+const MODEL = process.env.GROQ_MODEL ?? 'openai/gpt-oss-120b';
+
+// Erro da IA com a mensagem que o app vai mostrar.
+class AiError extends Error {
+  constructor(status, userMessage, log) {
+    super(log ?? userMessage);
+    this.status = status;
+    this.userMessage = userMessage;
+  }
+}
 
 const SYSTEM = `Você é o assistente da Ponte, um app que ajuda estudantes brasileiros a planejar intercâmbio e a gastar menos com câmbio.
 
 Como responder:
-- Sempre em português do Brasil, de forma direta e amigável, em poucos parágrafos curtos. Use listas só quando ajudarem.
+- Sempre em português do Brasil, de forma direta e amigável. No máximo uns 150 palavras: vá direto ao ponto e ofereça detalhar se a pessoa quiser.
+- O app mostra só texto simples: nada de tabelas, títulos (#), negrito (**) ou links em markdown. Para listas, use linhas começando com "- ".
+- Use os mesmos números do app (médias de 2025, podem mudar): IOF de 3,5% no cartão internacional, no dinheiro em espécie e em envio para outra pessoa; IOF de 1,1% em envio para conta própria no exterior (conta global ou remessa). Spread típico: conta global cerca de 1,2%, remessa cerca de 3% mais tarifa fixa, cartão cerca de 5%, espécie cerca de 6%. Não invente outros valores; se não souber, diga para conferir no app de câmbio.
 - Ajude com: formas de levar e enviar dinheiro (conta global, remessa, cartão, espécie, stablecoins), orçamento, documentos, visto, chegada e vida no destino.
 - Stablecoins (como USDC) são apresentadas só como meio de transferência, sempre com os riscos (rede errada, golpes, risco da exchange). Nunca recomende comprar, guardar ou investir em criptomoedas ou qualquer outro ativo.
 - Não dê recomendação de investimento personalizada. Se pedirem, explique que a Ponte não faz isso e sugira um profissional registrado.
@@ -131,29 +144,42 @@ function cleanContext(ctx) {
 }
 
 async function chat(messages, context) {
-  const response = await client.beta.messages.create({
-    model: 'claude-opus-5-5',
-    // Teto de custo por resposta: as respostas do assistente são curtas por instrução.
-    max_tokens: 4000,
-    output_config: { effort: 'low' },
-    betas: ['server-side-fallback-2026-07-01'],
-    fallbacks: 'default',
-    system: [
-      { type: 'text', text: SYSTEM, cache_control: { type: 'ephemeral' } },
-      { type: 'text', text: context },
-    ],
-    messages,
-  });
+  if (!GROQ_KEY) throw new AiError(500, 'O servidor do assistente não está configurado. Defina GROQ_API_KEY e reinicie.', 'GROQ_API_KEY não definida.');
 
-  if (response.stop_reason === 'refusal') {
-    return 'Não posso ajudar com isso. Posso explicar câmbio, documentos ou orçamento do seu intercâmbio.';
+  let res;
+  try {
+    res = await fetch(GROQ_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_KEY}` },
+      body: JSON.stringify({
+        model: MODEL,
+        messages: [{ role: 'system', content: `${SYSTEM}\n\n${context}` }, ...messages],
+        // Teto por resposta: as respostas do assistente são curtas por instrução.
+        max_completion_tokens: 2000,
+        reasoning_effort: 'low',
+        temperature: 0.5,
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+  } catch (err) {
+    throw new AiError(502, 'O servidor não conseguiu se conectar à IA. Tente de novo mais tarde.', `Sem conexão com a Groq: ${err instanceof Error ? err.message : err}`);
   }
-  let reply = response.content
-    .filter((b) => b.type === 'text')
-    .map((b) => b.text)
-    .join('\n')
+
+  if (!res.ok) {
+    const detail = (await res.text().catch(() => '')).slice(0, 300);
+    if (res.status === 401) throw new AiError(500, 'O servidor do assistente está sem uma chave de API válida.', 'Chave da Groq inválida.');
+    if (res.status === 429) throw new AiError(429, 'Muitas perguntas ao mesmo tempo. Tente de novo em alguns segundos.', `Limite da Groq: ${detail}`);
+    throw new AiError(502, 'O assistente está indisponível agora. Tente de novo mais tarde.', `Erro da Groq ${res.status}: ${detail}`);
+  }
+
+  const data = await res.json();
+  const choice = data.choices?.[0];
+  // O app mostra texto simples: tira negrito e títulos em markdown que escaparem.
+  let reply = (choice?.message?.content ?? '')
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/^#{1,6}\s+/gm, '')
     .trim();
-  if (response.stop_reason === 'max_tokens') reply += '\n\n(Resposta cortada. Pergunte de novo de forma mais específica.)';
+  if (choice?.finish_reason === 'length') reply += '\n\n(Resposta cortada. Pergunte de novo de forma mais específica.)';
   return reply || 'Não consegui formular uma resposta. Tente perguntar de outro jeito.';
 }
 
@@ -203,28 +229,20 @@ const server = http.createServer(async (req, res) => {
     const reply = await chat(messages, cleanContext(body.context));
     send(res, 200, { reply });
   } catch (err) {
-    if (err instanceof Anthropic.AuthenticationError) {
-      console.error('Chave da API inválida.');
-      send(res, 500, { error: 'O servidor do assistente está sem uma chave de API válida.' });
-    } else if (err instanceof Anthropic.RateLimitError) {
-      send(res, 429, { error: 'Muitas perguntas ao mesmo tempo. Tente de novo em alguns segundos.' });
-    } else if (err instanceof Anthropic.APIConnectionError) {
-      // subclasse de APIError no SDK TypeScript: precisa vir antes dela
-      console.error('Sem conexão com a API:', err.message);
-      send(res, 502, { error: 'O servidor não conseguiu se conectar à IA. Tente de novo mais tarde.' });
-    } else if (err instanceof Anthropic.APIError) {
-      console.error('Erro da API:', err.status, err.message);
-      send(res, 502, { error: 'O assistente está indisponível agora. Tente de novo mais tarde.' });
+    if (err instanceof AiError) {
+      console.error(err.message);
+      send(res, err.status, { error: err.userMessage });
     } else {
-      // ex.: nenhuma chave de API configurada
       console.error(err instanceof Error ? err.message : err);
-      send(res, 500, { error: 'O servidor do assistente não está configurado. Defina ANTHROPIC_API_KEY e reinicie.' });
+      send(res, 500, { error: 'O assistente teve um problema. Tente de novo mais tarde.' });
     }
   }
 });
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Assistente da Ponte rodando na porta ${PORT}`);
+  console.log(`Modelo: ${MODEL}`);
   console.log(`Limites: ${LIMIT_HOUR}/hora e ${LIMIT_DAY}/dia por aparelho, ${LIMIT_GLOBAL_DAY}/dia no total`);
+  if (!GROQ_KEY) console.warn('Aviso: GROQ_API_KEY não definida. O assistente não vai responder.');
   if (!APP_TOKEN) console.warn('Aviso: PONTE_APP_TOKEN não definido. Qualquer pessoa com o endereço pode usar o servidor.');
 });

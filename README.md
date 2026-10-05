@@ -5,7 +5,7 @@ App de celular para estudantes brasileiros planejarem o intercâmbio sem perder 
 - **Câmbio (Quanto chega):** compara 5 jeitos de levar dinheiro (conta global, stablecoin, remessa, cartão, espécie) com IOF, spread e tarifas, usando a cotação do dia.
 - **Orçamento:** custo de vida estimado para 13 países e 33 cidades, editável, com total da viagem.
 - **Checklist:** do planejamento à primeira semana no destino, com itens específicos de cada país.
-- **Assistente:** chat com IA (Claude) sobre câmbio, documentos e vida lá fora.
+- **Assistente:** chat com IA (Groq) sobre câmbio, documentos e vida lá fora.
 - **Guia de stablecoins:** como usar USDC como meio de transferência e os riscos.
 
 Feito com Expo (React Native) e Expo Router. Os dados ficam só no aparelho.
@@ -28,9 +28,10 @@ O assistente precisa de um pequeno servidor (pasta `server/`), para que a chave 
 
 ### Configurar
 
-1. Crie uma chave em https://platform.claude.com (começa com `sk-ant-`) e defina um limite de gasto mensal na conta.
+1. Crie uma chave grátis em https://console.groq.com/keys (começa com `gsk_`).
 2. Copie `server/.env.example` para `server/.env` e preencha:
-   - `ANTHROPIC_API_KEY`: a chave.
+   - `GROQ_API_KEY`: a chave.
+   - `GROQ_MODEL` (opcional): o modelo. Padrão: `openai/gpt-oss-120b`.
    - `PONTE_APP_TOKEN`: uma senha longa e aleatória, compartilhada com o app.
 3. Copie `.env.example` (na raiz) para `.env` e coloque a mesma senha em `EXPO_PUBLIC_PONTE_TOKEN`.
 4. Rode:
