@@ -1,12 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Logo } from '../../components/Logo';
 import { s as ui } from '../../components/ui';
 import { getCountry } from '../../data/countries';
 import { monthLabel } from '../../lib/format';
-import { useApp } from '../../lib/store';
+import { serverOf, useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
 
 type Msg = { role: 'user' | 'assistant'; content: string };
@@ -26,6 +26,13 @@ export default function Assistente() {
   const scroll = useRef<ScrollView>(null);
   const country = getCountry(state.profile.country);
   const city = country.cities[state.profile.city] ?? country.cities[0];
+  const server = serverOf(state);
+
+  // O servidor grátis dorme quando fica parado. Acorda ele assim que a aba abre,
+  // para a primeira pergunta não demorar.
+  useEffect(() => {
+    fetch(`${server}/health`).catch(() => {});
+  }, [server]);
 
   async function send(content: string) {
     const q = content.trim();
@@ -35,7 +42,7 @@ export default function Assistente() {
     setText('');
     setBusy(true);
     try {
-      const res = await fetch(`${state.serverUrl.replace(/\/$/, '')}/chat`, {
+      const res = await fetch(`${server}/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

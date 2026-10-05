@@ -39,7 +39,16 @@ const FALLBACK_RATES: Record<string, number> = {
   EUR: 0.16, USD: 0.18, CAD: 0.25, AUD: 0.28, GBP: 0.135, NZD: 0.31, JPY: 27, ZAR: 3.2,
 };
 
-const defaultServer = Platform.OS === 'web' ? 'http://localhost:8787' : 'http://192.168.0.10:8787';
+// Servidor do assistente: o da nuvem (EXPO_PUBLIC_PONTE_SERVER) ou, em desenvolvimento, o do computador.
+export const DEFAULT_SERVER =
+  process.env.EXPO_PUBLIC_PONTE_SERVER || (Platform.OS === 'web' ? 'http://localhost:8787' : 'http://192.168.0.6:8787');
+// Endereços padrão antigos, que eram salvos no aparelho: passam a seguir o padrão atual.
+const OLD_DEFAULTS = ['http://localhost:8787', 'http://192.168.0.10:8787'];
+
+// Endereço em uso: o que a pessoa escreveu em Ajustes ou o padrão.
+export function serverOf(state: AppState): string {
+  return (state.serverUrl || DEFAULT_SERVER).replace(/\/$/, '');
+}
 
 export const initialState: AppState = {
   onboarded: false,
@@ -50,7 +59,7 @@ export const initialState: AppState = {
   done: {},
   fees: DEFAULT_FEES,
   overrides: {},
-  serverUrl: defaultServer,
+  serverUrl: '', // vazio = DEFAULT_SERVER
   deviceId: '',
 };
 
@@ -86,6 +95,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             profile: { ...initialState.profile, ...(saved.profile ?? {}) },
             fees: { ...DEFAULT_FEES, ...(saved.fees ?? {}) },
             deviceId: saved.deviceId || newDeviceId(),
+            serverUrl: OLD_DEFAULTS.includes(saved.serverUrl ?? '') ? '' : saved.serverUrl ?? '',
           });
         } else {
           setState({ ...initialState, deviceId: newDeviceId() });

@@ -4,7 +4,7 @@ import { Text, View } from 'react-native';
 import { Btn, Card, Field, H, Label, P, Screen } from '../components/ui';
 import { DEFAULT_FEES, FEE_FIELDS, Fees } from '../data/methods';
 import { num, parseNum } from '../lib/format';
-import { useApp } from '../lib/store';
+import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
 export default function Ajustes() {
@@ -48,9 +48,9 @@ export default function Ajustes() {
       <Card>
         <H>Servidor do assistente</H>
         <P muted style={{ fontSize: 13 }}>
-          Endereço do servidor que conversa com a IA. No celular, use o IP do computador na mesma rede Wi-Fi (ex.: http://192.168.0.10:8787).
+          Endereço do servidor que conversa com a IA. Deixe em branco para usar o servidor padrão da Ponte.
         </P>
-        <Field value={url} onChangeText={setUrl} keyboard="url" placeholder="http://..." />
+        <Field value={url} onChangeText={setUrl} keyboard="url" placeholder={DEFAULT_SERVER} />
         <Btn label="Salvar endereço" kind="ghost" onPress={() => update({ serverUrl: url.trim() })} />
       </Card>
 
