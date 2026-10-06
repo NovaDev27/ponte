@@ -1,4 +1,4 @@
-import { Country } from './countries';
+import type { Country } from './countries';
 
 export type Task = { id: string; text: string };
 export type Phase = { id: string; title: string; when: string; tasks: Task[] };

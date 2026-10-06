@@ -1,6 +1,7 @@
+import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { Linking, Text, View } from 'react-native';
 import { Btn, Card, Field, H, Label, P, Screen } from '../components/ui';
 import { DEFAULT_FEES, FEE_FIELDS, FEES_CHECKED, Fees } from '../data/methods';
 import { num, parseNum } from '../lib/format';
@@ -52,6 +53,13 @@ export default function Ajustes() {
         </P>
         <Field value={url} onChangeText={setUrl} keyboard="url" placeholder={DEFAULT_SERVER} />
         <Btn label="Salvar endereço" kind="ghost" onPress={() => update({ serverUrl: url.trim() })} />
+      </Card>
+
+      <Card>
+        <H>Sobre a Ponte</H>
+        <Btn label="Política de Privacidade" kind="ghost" icon="shield" onPress={() => Linking.openURL(`${DEFAULT_SERVER}/privacidade`)} />
+        <Btn label="Termos de Uso" kind="ghost" icon="file-text" onPress={() => Linking.openURL(`${DEFAULT_SERVER}/termos`)} />
+        <P muted style={{ fontSize: 13, textAlign: 'center' }}>Versão {Constants.expoConfig?.version ?? '?'}</P>
       </Card>
 
       <Card>

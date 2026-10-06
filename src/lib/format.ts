@@ -22,7 +22,10 @@ export function money(n: number, cur: string, decimals?: number): string {
 export const brl = (n: number, decimals = 2) => money(n, 'BRL', decimals);
 
 export function parseNum(s: string): number {
-  const clean = s.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.');
+  let clean = s.replace(/[^\d,.-]/g, '');
+  // Sem vírgula e com um único ponto que não separa milhar (ex.: "1.5", teclado do celular): o ponto é decimal.
+  if (!clean.includes(',') && /^-?\d*\.(\d{1,2}|\d{4,})$/.test(clean)) return parseFloat(clean) || 0;
+  clean = clean.replace(/\./g, '').replace(',', '.');
   const n = parseFloat(clean);
   return isFinite(n) ? n : 0;
 }

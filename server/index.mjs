@@ -9,6 +9,7 @@
 //   PORT                porta (padrão 8787)
 //   LIMIT_HOUR / LIMIT_DAY / LIMIT_GLOBAL_DAY   limites de perguntas
 import http from 'node:http';
+import { privacyPage, termsPage } from './pages.mjs';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const APP_TOKEN = process.env.PONTE_APP_TOKEN ?? '';
@@ -18,6 +19,8 @@ const LIMIT_GLOBAL_DAY = Number(process.env.LIMIT_GLOBAL_DAY ?? 500); // todos j
 const MAX_MSG_CHARS = 1000;
 const MAX_HISTORY = 12;
 const MAX_BODY_BYTES = 50_000;
+const CONTACT_EMAIL = process.env.CONTACT_EMAIL ?? '';
+const ERROR_LIMIT_DAY = 20; // relatórios de erro por aparelho
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_KEY = process.env.GROQ_API_KEY ?? '';
@@ -89,6 +92,7 @@ function checkGlobal() {
 setInterval(() => {
   const today = startOfDay();
   for (const [k, b] of buckets) if (b.dayStart !== today) buckets.delete(k);
+  for (const [k, c] of errorCounts) if (c.day !== today) errorCounts.delete(k);
 }, 3_600_000).unref();
 
 /* ---------- HTTP ---------- */
@@ -183,6 +187,31 @@ async function chat(messages, context) {
   return reply || 'Não consegui formular uma resposta. Tente perguntar de outro jeito.';
 }
 
+// Relatório de erro do app: só registra no log, sem dados pessoais.
+const errorCounts = new Map(); // aparelho -> { day, count }
+async function reportError(req, res) {
+  if (APP_TOKEN && req.headers['x-ponte-token'] !== APP_TOKEN) return send(res, 401, { error: 'Acesso não autorizado.' });
+  const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
+  const today = startOfDay();
+  const c = errorCounts.get(device);
+  const count = c && c.day === today ? c.count : 0;
+  if (count >= ERROR_LIMIT_DAY) return send(res, 429, { error: 'Limite de relatórios atingido.' });
+  errorCounts.set(device, { day: today, count: count + 1 });
+
+  let body;
+  try {
+    body = JSON.parse(await readBody(req));
+  } catch {
+    return send(res, 400, { error: 'Pedido inválido.' });
+  }
+  const pick = (v, n) => (typeof v === 'string' ? v.slice(0, n).replace(/\s+/g, ' ') : '?');
+  const stack = typeof body.stack === 'string' ? body.stack.split('\n').slice(0, 6).join(' | ').slice(0, 800) : '';
+  console.error(`[erro-app] v${pick(body.version, 20)} ${pick(body.platform, 20)} ${pick(body.where, 60)}: ${pick(body.message, 300)}${stack ? ` || ${stack}` : ''}`);
+  cors(res);
+  res.writeHead(204);
+  res.end();
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     cors(res);
@@ -192,6 +221,11 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
     return send(res, 200, { ok: true, perguntasHoje: global.count, limiteHoje: LIMIT_GLOBAL_DAY });
   }
+  if (req.method === 'GET' && (req.url === '/privacidade' || req.url === '/termos')) {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
+    return res.end(req.url === '/termos' ? termsPage(CONTACT_EMAIL) : privacyPage(CONTACT_EMAIL));
+  }
+  if (req.method === 'POST' && req.url === '/erro') return reportError(req, res);
   if (req.method !== 'POST' || req.url !== '/chat') return send(res, 404, { error: 'Rota não encontrada.' });
 
   // 1. Só o app da Ponte pode usar

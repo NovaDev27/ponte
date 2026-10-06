@@ -36,7 +36,8 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "server": "npm --prefix server start",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "node --test \"tests/*.test.mts\""
   },
   "private": true
 }
