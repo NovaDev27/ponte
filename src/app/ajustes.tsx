@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Text, View } from 'react-native';
 import { Btn, Card, Field, H, Label, P, Screen } from '../components/ui';
-import { DEFAULT_FEES, FEE_FIELDS, Fees } from '../data/methods';
+import { DEFAULT_FEES, FEE_FIELDS, FEES_CHECKED, Fees } from '../data/methods';
 import { num, parseNum } from '../lib/format';
 import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
@@ -33,7 +33,7 @@ export default function Ajustes() {
 
       <Card>
         <H>Taxas usadas nos cálculos</H>
-        <P muted style={{ fontSize: 13 }}>Valores de referência (IOF conforme as regras de 2025). Se o seu banco ou a lei mudar, ajuste aqui.</P>
+        <P muted style={{ fontSize: 13 }}>Valores de referência (IOF conforme as regras de 2025), conferidos em {FEES_CHECKED}. Se o seu banco ou a lei mudar, ajuste aqui.</P>
         {FEE_FIELDS.map((f) => (
           <View key={f.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Text style={{ flex: 1, color: C.ink, fontSize: 14 }}>{f.label}</Text>

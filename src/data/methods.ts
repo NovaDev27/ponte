@@ -16,6 +16,9 @@ export type Fees = {
   redeCriptoUSD: number; // US$
 };
 
+// Data da última conferência das taxas padrão com simulações reais.
+export const FEES_CHECKED = '05/10/2026';
+
 export const DEFAULT_FEES: Fees = {
   iofCartao: 3.5,
   iofEspecie: 3.5,
