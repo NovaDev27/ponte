@@ -18,7 +18,8 @@
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "app.ponte.intercambio"
+      "package": "app.ponte.intercambio",
+      "permissions": []
     },
     "web": {
       "favicon": "./assets/favicon.png"
