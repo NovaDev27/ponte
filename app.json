@@ -36,6 +36,13 @@
         }
       ]
     ],
-    "scheme": "ponte"
+    "scheme": "ponte",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "a250bc3e-eca1-4545-bcab-93d68b85864e"
+      }
+    },
+    "owner": "ponte.work.dev"
   }
 }
