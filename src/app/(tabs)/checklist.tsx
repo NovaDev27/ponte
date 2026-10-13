@@ -1,11 +1,13 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 import { PlanButton } from '../../components/PlanButton';
-import { Badge, Card, Chip, Hero, P, Ring, Screen } from '../../components/ui';
+import { Badge, Card, Chip, Hero, P, Ring, Screen, Tap } from '../../components/ui';
 import { phaseDue, phasesFor } from '../../data/checklist';
 import { getCountry } from '../../data/countries';
 import { hasCompleto } from '../../lib/completo';
+import { bump, tap } from '../../lib/motion';
 import { dateLabel } from '../../lib/format';
 import { ensurePermission } from '../../lib/notify';
 import { useApp } from '../../lib/store';
@@ -87,18 +89,28 @@ export default function Checklist() {
                 {ph.tasks.map((t, i) => {
                   const ok = !!state.done[t.id];
                   return (
-                    <Pressable
+                    <Tap
                       key={t.id}
-                      onPress={() => toggle(t.id)}
+                      onPress={() => {
+                        if (ok) tap();
+                        else bump();
+                        toggle(t.id);
+                      }}
+                      haptic={false}
+                      scaleTo={0.98}
                       accessibilityRole="checkbox"
                       accessibilityState={{ checked: ok }}
-                      style={({ pressed }) => [{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line, opacity: pressed ? 0.6 : 1 }]}
+                      style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}
                     >
                       <View style={{ width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: ok ? C.good : C.faint, backgroundColor: ok ? C.good : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                        {ok ? <Feather name="check" size={16} color="#FFFFFF" /> : null}
+                        {ok ? (
+                          <Animated.View entering={ZoomIn.springify().damping(11)}>
+                            <Feather name="check" size={16} color="#FFFFFF" />
+                          </Animated.View>
+                        ) : null}
                       </View>
                       <Text style={[{ flex: 1, fontSize: 15, color: C.ink, lineHeight: 21 }, ok && { color: C.faint, textDecorationLine: 'line-through' }]}>{t.text}</Text>
-                    </Pressable>
+                    </Tap>
                   );
                 })}
               </Card>

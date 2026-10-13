@@ -2,8 +2,8 @@ import Feather from '@expo/vector-icons/Feather';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
-import { Btn, Card, H, Label, P, Screen } from '../components/ui';
+import { Text, TextInput, View } from 'react-native';
+import { Btn, Card, H, Label, P, Screen, Tap } from '../components/ui';
 import { apiHeaders } from '../lib/api';
 import { serverOf, useApp } from '../lib/store';
 import { C, R } from '../lib/theme';
@@ -64,9 +64,9 @@ export default function Feedback() {
         <Label>De 1 a 5, quanto você gostou da Ponte?</Label>
         <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center', paddingVertical: 4 }}>
           {[1, 2, 3, 4, 5].map((n) => (
-            <Pressable key={n} onPress={() => setNota(n)} accessibilityRole="button" accessibilityLabel={`Nota ${n}`} accessibilityState={{ selected: nota === n }} hitSlop={6}>
+            <Tap key={n} onPress={() => setNota(n)} accessibilityRole="button" accessibilityLabel={`Nota ${n}`} accessibilityState={{ selected: nota === n }} hitSlop={6}>
               <Text style={{ fontSize: 36, color: n <= nota ? '#F5B301' : C.line }}>★</Text>
-            </Pressable>
+            </Tap>
           ))}
         </View>
       </Card>

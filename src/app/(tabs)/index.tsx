@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
 import { Logo, Wordmark } from '../../components/Logo';
-import { Badge, Card, Hero, Icon, IconBox, IconName, Ring, Screen, Section } from '../../components/ui';
+import { Badge, Card, Hero, Icon, IconBox, IconName, Ring, Screen, Section, Tap } from '../../components/ui';
 import { phasesFor } from '../../data/checklist';
 import { COUNTRIES, getCountry } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
@@ -49,9 +49,9 @@ export default function Home() {
     <Screen>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Wordmark />
-        <Pressable accessibilityLabel="Ajustes" onPress={() => router.push('/ajustes')} hitSlop={12} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center', ...shadow }}>
+        <Tap accessibilityLabel="Ajustes" onPress={() => router.push('/ajustes')} hitSlop={12} style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: C.card, alignItems: 'center', justifyContent: 'center', ...shadow }}>
           <Icon name="settings" color={C.sub} />
-        </Pressable>
+        </Tap>
       </View>
 
       <Hero>
@@ -78,7 +78,7 @@ export default function Home() {
         ))}
       </Card>
 
-      <Pressable onPress={() => router.push('/completo')} accessibilityRole="button">
+      <Tap onPress={() => router.push('/completo')} accessibilityRole="button">
         <Card tone="night" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           <IconBox name="star" color="#FFFFFF" soft={C.accent} />
           <View style={{ flex: 1 }}>
@@ -89,7 +89,7 @@ export default function Home() {
           </View>
           <Icon name="chevron-right" color="#9FB4CC" />
         </Card>
-      </Pressable>
+      </Tap>
 
       <Section title="Guias e ferramentas" />
       <Card style={{ paddingVertical: 4, gap: 0 }}>
@@ -114,7 +114,7 @@ export default function Home() {
           const m = (Object.values(mid.costs).reduce((a, b) => a + b, 0) + c.seguro) / r;
           const mine = c.code === p.country;
           return (
-            <Pressable key={c.code} onPress={() => router.push(`/pais/${c.code}`)}>
+            <Tap key={c.code} onPress={() => router.push(`/pais/${c.code}`)} scaleTo={0.95}>
               <View style={{ width: 140, padding: 14, borderRadius: 18, backgroundColor: mine ? C.primary : C.card, gap: 4, ...shadow }}>
                 <Text style={{ fontSize: 30 }}>{c.flag}</Text>
                 <Text style={{ fontWeight: '800', color: mine ? '#FFFFFF' : C.ink, fontSize: 15 }}>{c.name}</Text>
@@ -122,7 +122,7 @@ export default function Home() {
                 <Text style={{ color: mine ? '#FFFFFF' : C.ink, fontSize: 13, fontWeight: '700', marginTop: 4 }}>≈ {brl(m, 0)}/mês</Text>
                 <Text style={{ color: mine ? '#9FB4CC' : C.faint, fontSize: 11 }}>em {mid.name}</Text>
               </View>
-            </Pressable>
+            </Tap>
           );
         })}
       </ScrollView>
@@ -143,10 +143,11 @@ const GUIDES: Guide[] = [
 
 function GuideRow({ g, last }: { g: Guide; last: boolean }) {
   return (
-    <Pressable
+    <Tap
       onPress={() => router.push(g.route)}
       accessibilityRole="button"
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: C.line, opacity: pressed ? 0.7 : 1 })}
+      scaleTo={0.98}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: C.line }}
     >
       <IconBox name={g.icon} color={g.f.color} soft={g.f.soft} />
       <View style={{ flex: 1 }}>
@@ -157,7 +158,7 @@ function GuideRow({ g, last }: { g: Guide; last: boolean }) {
         <Text style={{ color: C.sub, fontSize: 13 }}>{g.hint}</Text>
       </View>
       <Icon name="chevron-right" color={C.faint} />
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -168,7 +169,7 @@ type Step = {
 
 function StepRow({ st, last }: { st: Step; last: boolean }) {
   return (
-    <Pressable onPress={() => router.push(st.route)} accessibilityRole="button" style={({ pressed }) => [{ flexDirection: 'row', gap: 14, paddingVertical: 12, opacity: pressed ? 0.7 : 1 }]}>
+    <Tap onPress={() => router.push(st.route)} accessibilityRole="button" scaleTo={0.98} style={{ flexDirection: 'row', gap: 14, paddingVertical: 12 }}>
       <View style={{ alignItems: 'center' }}>
         <Ring value={st.done ? 1 : 0} size={44} stroke={3} color={st.f.color} track={st.f.soft}>
           <View style={{ width: 34, height: 34, borderRadius: 17, backgroundColor: st.done ? st.f.color : st.f.soft, alignItems: 'center', justifyContent: 'center' }}>
@@ -185,7 +186,7 @@ function StepRow({ st, last }: { st: Step; last: boolean }) {
       <View style={{ justifyContent: 'center' }}>
         <Feather name="chevron-right" size={20} color={C.faint} />
       </View>
-    </Pressable>
+    </Tap>
   );
 }
 

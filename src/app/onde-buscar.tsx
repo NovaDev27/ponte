@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useState } from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
-import { Card, Chip, ChipRow, H, IconBox, Label, P, Screen } from '../components/ui';
+import { Linking, Text, View } from 'react-native';
+import { Card, Chip, ChipRow, H, IconBox, Label, P, Screen, Tap } from '../components/ui';
 import { COUNTRIES, getCountry } from '../data/countries';
 import { GENERAL_LINKS, LINK_KINDS, LinkKind, OFFICIAL_LINKS, OfficialLink } from '../data/links';
 import { useApp } from '../lib/store';
@@ -55,16 +55,17 @@ export default function OndeBuscar() {
 function LinkRow({ link }: { link: OfficialLink }) {
   const host = link.url.replace(/^https?:\/\/(www\.)?/, '').split('/')[0];
   return (
-    <Pressable
+    <Tap
       onPress={() => Linking.openURL(link.url)}
       accessibilityRole="link"
-      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8, opacity: pressed ? 0.6 : 1 })}
+      scaleTo={0.98}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}
     >
       <View style={{ flex: 1, gap: 1 }}>
         <Text style={{ color: C.ink, fontWeight: '700', fontSize: 15 }}>{link.label}</Text>
         <Text style={{ color: C.sub, fontSize: 12 }}>{host}</Text>
       </View>
       <Feather name="external-link" size={18} color={C.primary} />
-    </Pressable>
+    </Tap>
   );
 }

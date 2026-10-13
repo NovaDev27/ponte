@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { PlanButton } from '../../components/PlanButton';
-import { Card, Chip, ChipRow, Field, Hero, Label, P, Ring, Row, Screen, Section } from '../../components/ui';
+import { Card, Chip, ChipRow, Field, Hero, Label, P, Ring, Row, Screen, Section, Tap } from '../../components/ui';
 import { COST_LABELS, CostKey, STYLE_LABEL } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
 import { brl, money, num, parseNum } from '../../lib/format';
@@ -69,7 +69,7 @@ export default function Orcamento() {
           {(Object.keys(STYLE_LABEL) as Style[]).map((st) => {
             const on = st === p.style;
             return (
-              <Pressable
+              <Tap
                 key={st}
                 onPress={() => setProfile({ style: st })}
                 accessibilityRole="radio"
@@ -83,7 +83,7 @@ export default function Orcamento() {
                   <Text style={{ fontWeight: '800', color: C.ink }}>{STYLE_LABEL[st]}</Text>
                   <Text style={{ color: C.sub, fontSize: 13 }}>{STYLE_HINT[st]}</Text>
                 </View>
-              </Pressable>
+              </Tap>
             );
           })}
         </View>
@@ -123,9 +123,9 @@ export default function Orcamento() {
 
 function Step({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: F.orcamento.soft, alignItems: 'center', justifyContent: 'center' }}>
+    <Tap onPress={onPress} accessibilityRole="button" style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: F.orcamento.soft, alignItems: 'center', justifyContent: 'center' }}>
       <Text style={{ fontSize: 24, fontWeight: '700', color: F.orcamento.color }}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 

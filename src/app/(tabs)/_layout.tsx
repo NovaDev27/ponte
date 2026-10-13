@@ -1,16 +1,28 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Redirect, Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { ActivityIndicator, ColorValue, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
+import { SPRING, tap } from '../../lib/motion';
 import { useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
 
 type FeatherName = React.ComponentProps<typeof Feather>['name'];
 
+// A "pílula" colorida da aba abre com mola e o ícone dá um pulinho.
 function TabIcon({ name, color, focused, tint }: { name: FeatherName; color: ColorValue; focused: boolean; tint: string }) {
+  const f = useSharedValue(focused ? 1 : 0);
+  useEffect(() => {
+    f.set(withSpring(focused ? 1 : 0, SPRING));
+  }, [focused, f]);
+  const pill = useAnimatedStyle(() => ({ opacity: f.get(), transform: [{ scaleX: 0.4 + f.get() * 0.6 }] }));
+  const icon = useAnimatedStyle(() => ({ transform: [{ translateY: -1.5 * f.get() }, { scale: 1 + 0.1 * f.get() }] }));
   return (
-    <View style={{ width: 48, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center', backgroundColor: focused ? tint : 'transparent' }}>
-      <Feather name={name} size={20} color={color as string} />
+    <View style={{ width: 48, height: 30, alignItems: 'center', justifyContent: 'center' }}>
+      <Animated.View style={[{ position: 'absolute', width: 48, height: 30, borderRadius: 15, backgroundColor: tint }, pill]} />
+      <Animated.View style={icon}>
+        <Feather name={name} size={20} color={color as string} />
+      </Animated.View>
     </View>
   );
 }
@@ -35,6 +47,7 @@ export default function TabLayout() {
   if (!state.onboarded) return <Redirect href="/onboarding" />;
   return (
     <Tabs
+      screenListeners={{ tabPress: () => tap() }}
       screenOptions={{
         headerShown: false,
         tabBarInactiveTintColor: C.faint,

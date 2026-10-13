@@ -1,8 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { CompletoLock } from '../components/CompletoLock';
-import { Card, Chip, Field, H, Hero, Label, P, Screen } from '../components/ui';
+import { Card, Chip, Field, H, Hero, Label, P, Screen, Tap } from '../components/ui';
 import { getCountry } from '../data/countries';
 import { highlightOf, METHODS, quote } from '../data/methods';
 import { hasCompleto } from '../lib/completo';
@@ -101,8 +101,8 @@ export default function Simulacao() {
 
 function Step({ icon, onPress }: { icon: 'plus' | 'minus'; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={icon === 'plus' ? 'Mais um mês' : 'Menos um mês'} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
+    <Tap onPress={onPress} accessibilityRole="button" accessibilityLabel={icon === 'plus' ? 'Mais um mês' : 'Menos um mês'} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
       <Feather name={icon} size={20} color={C.primary} />
-    </Pressable>
+    </Tap>
   );
 }

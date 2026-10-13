@@ -1,7 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Linking, Pressable, Text, View } from 'react-native';
-import { Btn, Card, H, Icon, Label, P, Row, Screen } from '../../components/ui';
+import { Linking, Text, View } from 'react-native';
+import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap } from '../../components/ui';
 import { getCountry, STYLE_FACTOR } from '../../data/countries';
 import { brl, money } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
@@ -45,7 +45,7 @@ export default function Pais() {
         <P>{country.tip}</P>
       </Card>
 
-      <Pressable onPress={() => Linking.openURL(country.site.url)} accessibilityRole="link">
+      <Tap onPress={() => Linking.openURL(country.site.url)} accessibilityRole="link">
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <Icon name="external-link" />
@@ -55,7 +55,7 @@ export default function Pais() {
             </View>
           </View>
         </Card>
-      </Pressable>
+      </Tap>
 
       {mine ? (
         <P muted style={{ textAlign: 'center' }}>Este já é o seu destino.</P>

@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Logo } from '../../components/Logo';
-import { s as ui } from '../../components/ui';
+import { s as ui, Tap } from '../../components/ui';
 import { getCountry } from '../../data/countries';
 import { apiHeaders } from '../../lib/api';
 import { hasCompleto } from '../../lib/completo';
@@ -89,10 +89,10 @@ export default function Assistente() {
               </Text>
               <View style={{ gap: 8, width: '100%', marginTop: 8 }}>
                 {SUGGESTIONS.map((t) => (
-                  <Pressable key={t} onPress={() => send(t)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, backgroundColor: C.card, boxShadow: '0px 4px 14px rgba(18,32,51,0.06)' }}>
+                  <Tap key={t} onPress={() => send(t)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderRadius: 16, backgroundColor: C.card, boxShadow: '0px 4px 14px rgba(18,32,51,0.06)' }}>
                     <Feather name="message-circle" size={16} color={F.assistente.color} />
                     <Text style={{ flex: 1, color: C.ink, fontWeight: '600' }}>{t}</Text>
-                  </Pressable>
+                  </Tap>
                 ))}
               </View>
             </View>
@@ -127,14 +127,14 @@ export default function Assistente() {
             multiline
             onSubmitEditing={() => send(text)}
           />
-          <Pressable
+          <Tap
             accessibilityLabel="Enviar"
             onPress={() => send(text)}
             disabled={busy || !text.trim()}
             style={{ width: 46, height: 46, borderRadius: 14, backgroundColor: F.assistente.color, alignItems: 'center', justifyContent: 'center', opacity: busy || !text.trim() ? 0.4 : 1 }}
           >
             <Feather name="send" size={20} color="#FFFFFF" />
-          </Pressable>
+          </Tap>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

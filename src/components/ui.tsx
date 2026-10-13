@@ -1,19 +1,76 @@
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Pressable, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextStyle, View, ViewStyle,
+  Pressable, PressableProps, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextStyle, View, ViewStyle,
 } from 'react-native';
+import Animated, {
+  FadeIn, FadeInDown, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+} from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
+import { EASE_OUT, SPRING, tap } from '../lib/motion';
 import { C, R, shadow } from '../lib/theme';
+
+const APressable = Animated.createAnimatedComponent(Pressable);
+const ACircle = Animated.createAnimatedComponent(Circle);
+
+// Botão que "afunda" com mola ao tocar e dá uma vibração leve. Base de todos os toques do app.
+export function Tap({ onPress, onPressIn, onPressOut, style, children, scaleTo = 0.96, haptic = true, ...rest }: Omit<PressableProps, 'style' | 'children'> & {
+  style?: StyleProp<ViewStyle>; children?: React.ReactNode; scaleTo?: number; haptic?: boolean;
+}) {
+  const scale = useSharedValue(1);
+  const anim = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }] }));
+  return (
+    <APressable
+      {...rest}
+      onPressIn={(e) => {
+        scale.set(withSpring(scaleTo, SPRING));
+        onPressIn?.(e);
+      }}
+      onPressOut={(e) => {
+        scale.set(withSpring(1, SPRING));
+        onPressOut?.(e);
+      }}
+      onPress={(e) => {
+        if (haptic) tap();
+        onPress?.(e);
+      }}
+      style={[style, anim]}
+    >
+      {children}
+    </APressable>
+  );
+}
+
+// Os blocos da tela entram em cascata (de baixo para cima) só quando a tela abre.
+function Stagger({ children }: { children: React.ReactNode }) {
+  const [opening, setOpening] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setOpening(false), 700);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <>
+      {React.Children.toArray(children).map((child, i) => (
+        <Animated.View
+          key={React.isValidElement(child) && child.key != null ? child.key : i}
+          entering={FadeInDown.duration(420).delay(opening ? Math.min(i, 7) * 55 : 0).easing(EASE_OUT)}
+        >
+          {child}
+        </Animated.View>
+      ))}
+    </>
+  );
+}
 
 export type IconName = React.ComponentProps<typeof Feather>['name'];
 
-export function Screen({ title, subtitle, right, children, scroll = true, header = false, eyebrow, eyebrowColor }: {
+export function Screen({ title, subtitle, right, children, scroll = true, header = false, eyebrow, eyebrowColor, footer }: {
   title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; scroll?: boolean;
   header?: boolean; // tela com cabeçalho de navegação: não aplica o recuo superior
   eyebrow?: string; eyebrowColor?: string;
+  footer?: React.ReactNode; // fica fixo embaixo, fora da rolagem
 }) {
   const head = title ? (
     <View style={s.head}>
@@ -29,8 +86,10 @@ export function Screen({ title, subtitle, right, children, scroll = true, header
     <SafeAreaView style={s.safe} edges={header ? [] : ['top']}>
       {scroll ? (
         <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-          {head}
-          {children}
+          <Stagger>
+            {head}
+            {children}
+          </Stagger>
         </ScrollView>
       ) : (
         <View style={[s.content, { flex: 1 }]}>
@@ -38,6 +97,7 @@ export function Screen({ title, subtitle, right, children, scroll = true, header
           {children}
         </View>
       )}
+      {footer ? <View style={s.footer}>{footer}</View> : null}
     </SafeAreaView>
   );
 }
@@ -83,28 +143,30 @@ export function Btn({ label, onPress, kind = 'primary', icon, disabled, color }:
   const bg = kind === 'ghost' ? C.card : base;
   const fg = kind === 'ghost' ? base : '#FFFFFF';
   return (
-    <Pressable
+    <Tap
       accessibilityRole="button"
       onPress={onPress}
       disabled={disabled}
-      style={({ pressed }) => [s.btn, { backgroundColor: bg, borderColor: kind === 'ghost' ? C.line : bg, opacity: disabled ? 0.4 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }]}
+      scaleTo={0.97}
+      style={[s.btn, { backgroundColor: bg, borderColor: kind === 'ghost' ? C.line : bg, opacity: disabled ? 0.4 : 1 }]}
     >
       {icon ? <Feather name={icon} size={18} color={fg} /> : null}
       <Text style={[s.btnText, { color: fg }]}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
 export function Chip({ label, active, onPress, color = C.primary }: { label: string; active?: boolean; onPress: () => void; color?: string }) {
   return (
-    <Pressable
+    <Tap
       accessibilityRole="button"
       accessibilityState={{ selected: !!active }}
       onPress={onPress}
+      scaleTo={0.92}
       style={[s.chip, active ? { backgroundColor: color, borderColor: color } : null]}
     >
       <Text style={[s.chipText, active ? { color: '#FFFFFF' } : null]}>{label}</Text>
-    </Pressable>
+    </Tap>
   );
 }
 
@@ -137,10 +199,17 @@ export function Field({ value, onChangeText, prefix, placeholder, style, keyboar
   );
 }
 
+// A barra cresce até o valor (e acompanha quando ele muda).
 export function Bar({ value, color = C.primary, height = 8 }: { value: number; color?: string; height?: number }) {
+  const v = Math.max(0, Math.min(1, value));
+  const w = useSharedValue(0);
+  useEffect(() => {
+    w.set(withTiming(v, { duration: 750, easing: EASE_OUT }));
+  }, [v, w]);
+  const anim = useAnimatedStyle(() => ({ width: `${w.get() * 100}%` as `${number}%` }));
   return (
     <View style={[s.bar, { height, borderRadius: height / 2 }]}>
-      <View style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%`, height: '100%', backgroundColor: color, borderRadius: height / 2 }} />
+      <Animated.View style={[{ height: '100%', backgroundColor: color, borderRadius: height / 2 }, anim]} />
     </View>
   );
 }
@@ -151,11 +220,19 @@ export function Ring({ value, size = 64, stroke = 8, color = C.good, track = C.l
   const r = (size - stroke) / 2;
   const circ = 2 * Math.PI * r;
   const v = Math.max(0, Math.min(1, value));
+  const p = useSharedValue(0);
+  useEffect(() => {
+    p.set(withTiming(v, { duration: 900, easing: EASE_OUT }));
+  }, [v, p]);
+  const arc = useAnimatedProps(() => ({
+    strokeDashoffset: circ * (1 - p.get()),
+    strokeOpacity: p.get() > 0.002 ? 1 : 0, // sem isso a ponta arredondada vira um pontinho no zero
+  }));
   return (
     <View style={{ width: size, height: size, alignItems: 'center', justifyContent: 'center' }}>
       <Svg width={size} height={size} style={{ position: 'absolute', transform: [{ rotate: '-90deg' }] }}>
         <Circle cx={size / 2} cy={size / 2} r={r} stroke={track} strokeWidth={stroke} fill="none" />
-        {v > 0 ? <Circle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeDasharray={`${circ * v} ${circ}`} strokeLinecap="round" /> : null}
+        <ACircle cx={size / 2} cy={size / 2} r={r} stroke={color} strokeWidth={stroke} fill="none" strokeDasharray={`${circ} ${circ}`} strokeLinecap="round" animatedProps={arc} />
       </Svg>
       {children}
     </View>
@@ -195,15 +272,27 @@ export function Badge({ label, color, soft }: { label: string; color: string; so
 // Explicação curta que abre e fecha: para termos como IOF e spread.
 export function Explain({ title, children }: { title: string; children: string }) {
   const [open, setOpen] = useState(false);
+  const turn = useSharedValue(0);
+  const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get() * 180}deg` }] }));
+  function toggle() {
+    turn.set(withSpring(open ? 0 : 1, SPRING));
+    setOpen(!open);
+  }
   return (
-    <Pressable onPress={() => setOpen(!open)} accessibilityRole="button" accessibilityState={{ expanded: open }} style={s.explain}>
+    <Tap onPress={toggle} scaleTo={0.98} accessibilityRole="button" accessibilityState={{ expanded: open }} style={s.explain}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <Feather name="help-circle" size={18} color={C.primary} />
         <Text style={{ flex: 1, fontWeight: '700', color: C.ink, fontSize: 15 }}>{title}</Text>
-        <Feather name={open ? 'chevron-up' : 'chevron-down'} size={18} color={C.sub} />
+        <Animated.View style={chevron}>
+          <Feather name="chevron-down" size={18} color={C.sub} />
+        </Animated.View>
       </View>
-      {open ? <Text style={{ color: C.sub, fontSize: 14, lineHeight: 20 }}>{children}</Text> : null}
-    </Pressable>
+      {open ? (
+        <Animated.Text entering={FadeIn.duration(260)} style={{ color: C.sub, fontSize: 14, lineHeight: 20 }}>
+          {children}
+        </Animated.Text>
+      ) : null}
+    </Tap>
   );
 }
 
@@ -230,5 +319,6 @@ export const s = StyleSheet.create({
   input: { flex: 1, fontSize: 18, color: C.ink, fontWeight: '700', paddingVertical: 10 },
   bar: { backgroundColor: C.line, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  footer: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
   explain: { backgroundColor: C.card, borderRadius: R.md, borderWidth: 1, borderColor: C.line, padding: 14, gap: 8 },
 });

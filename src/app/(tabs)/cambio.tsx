@@ -1,9 +1,10 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Pressable, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { ShareResult } from '../../components/ShareResult';
-import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section } from '../../components/ui';
+import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section, Tap } from '../../components/ui';
 import { CURRENCIES, getCountry } from '../../data/countries';
 import { FEES_CHECKED, highlightOf, METHODS, quote } from '../../data/methods';
 import { brl, money, num, parseNum } from '../../lib/format';
@@ -106,7 +107,7 @@ export default function Cambio() {
       {quotes.map(({ m, q }, i) => {
         const expanded = open === m.id;
         return (
-          <Pressable key={m.id} onPress={() => setOpen(expanded ? null : m.id)} accessibilityRole="button" accessibilityState={{ expanded }}>
+          <Tap key={m.id} onPress={() => setOpen(expanded ? null : m.id)} scaleTo={0.98} accessibilityRole="button" accessibilityState={{ expanded }}>
             <Card>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <IconBox name={m.icon} color={m.id === best.m.id ? F.cambio.color : C.primary} soft={m.id === best.m.id ? F.cambio.soft : C.primarySoft} />
@@ -122,7 +123,7 @@ export default function Cambio() {
                 <Feather name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={C.faint} />
               </View>
               {expanded ? (
-                <View style={{ gap: 8, borderTopWidth: 1, borderTopColor: C.line, paddingTop: 12 }}>
+                <Animated.View entering={FadeInDown.duration(280)} style={{ gap: 8, borderTopWidth: 1, borderTopColor: C.line, paddingTop: 12 }}>
                   <Row left="IOF (imposto)" right={brl(q.iof)} />
                   <Row left="Spread e taxas" right={brl(q.spread)} />
                   <Row left="Tarifas fixas" right={brl(q.fixed)} />
@@ -144,14 +145,14 @@ export default function Cambio() {
                     </View>
                   ))}
                   {m.id === 'cripto' ? (
-                    <Pressable onPress={() => router.push('/guia-cripto')}>
+                    <Tap onPress={() => router.push('/guia-cripto')}>
                       <Text style={{ color: C.primary, fontWeight: '800' }}>Ler o guia completo de stablecoins →</Text>
-                    </Pressable>
+                    </Tap>
                   ) : null}
-                </View>
+                </Animated.View>
               ) : null}
             </Card>
-          </Pressable>
+          </Tap>
         );
       })}
 
