@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { ShareResult } from '../../components/ShareResult';
 import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section } from '../../components/ui';
 import { CURRENCIES, getCountry } from '../../data/countries';
 import { FEES_CHECKED, METHODS, quote } from '../../data/methods';
@@ -15,7 +16,8 @@ const QUICK = [500, 1000, 3000, 10000];
 export default function Cambio() {
   const { state, rates } = useApp();
   const [amountText, setAmountText] = useState('1.000');
-  const [cur, setCur] = useState(getCountry(state.profile.country).currency);
+  const country = getCountry(state.profile.country);
+  const [cur, setCur] = useState(country.currency);
   const [own, setOwn] = useState(true);
   const [open, setOpen] = useState<string | null>(null);
 
@@ -69,6 +71,18 @@ export default function Cambio() {
             </View>
           ) : null}
         </Hero>
+      ) : null}
+      {amount > 0 && saving > 0.5 ? (
+        <ShareResult
+          color={F.cambio.color}
+          data={{
+            kicker: `Meu intercâmbio · ${country.name}`,
+            line: 'Vou economizar no câmbio',
+            big: brl(saving, 0),
+            detail: `Levando ${brl(amount, 0)} por ${best.m.name.toLowerCase()} em vez de ${worst.m.name.toLowerCase()}.`,
+            message: `Vou economizar ${brl(saving, 0)} no câmbio do meu intercâmbio levando ${brl(amount, 0)} por ${best.m.name.toLowerCase()} em vez de ${worst.m.name.toLowerCase()}. Calculei no app Ponte 🌉✈️`,
+          }}
+        />
       ) : null}
 
       <Section title="Quanto você perde em cada caminho" hint={`Sem nenhuma taxa, chegariam ${money(ideal, cur)}. Barra menor = melhor.`} />
