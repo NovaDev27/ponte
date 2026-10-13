@@ -21,6 +21,8 @@ const MAX_HISTORY = 12;
 const MAX_BODY_BYTES = 50_000;
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL ?? '';
 const ERROR_LIMIT_DAY = 20; // relatórios de erro por aparelho
+const FEEDBACK_LIMIT_DAY = 5; // opiniões por aparelho
+const FEEDBACK_WEBHOOK_URL = process.env.FEEDBACK_WEBHOOK_URL ?? '';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_KEY = process.env.GROQ_API_KEY ?? '';
@@ -92,7 +94,7 @@ function checkGlobal() {
 setInterval(() => {
   const today = startOfDay();
   for (const [k, b] of buckets) if (b.dayStart !== today) buckets.delete(k);
-  for (const [k, c] of errorCounts) if (c.day !== today) errorCounts.delete(k);
+  for (const m of [errorCounts, feedbackCounts]) for (const [k, c] of m) if (c.day !== today) m.delete(k);
 }, 3_600_000).unref();
 
 /* ---------- HTTP ---------- */
@@ -187,16 +189,23 @@ async function chat(messages, context) {
   return reply || 'Não consegui formular uma resposta. Tente perguntar de outro jeito.';
 }
 
-// Relatório de erro do app: só registra no log, sem dados pessoais.
+// Conta envios por aparelho no dia (relatórios de erro, opiniões). false = passou do limite.
 const errorCounts = new Map(); // aparelho -> { day, count }
+const feedbackCounts = new Map();
+function allowDaily(map, device, limit) {
+  const today = startOfDay();
+  const c = map.get(device);
+  const count = c && c.day === today ? c.count : 0;
+  if (count >= limit) return false;
+  map.set(device, { day: today, count: count + 1 });
+  return true;
+}
+
+// Relatório de erro do app: só registra no log, sem dados pessoais.
 async function reportError(req, res) {
   if (APP_TOKEN && req.headers['x-ponte-token'] !== APP_TOKEN) return send(res, 401, { error: 'Acesso não autorizado.' });
   const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
-  const today = startOfDay();
-  const c = errorCounts.get(device);
-  const count = c && c.day === today ? c.count : 0;
-  if (count >= ERROR_LIMIT_DAY) return send(res, 429, { error: 'Limite de relatórios atingido.' });
-  errorCounts.set(device, { day: today, count: count + 1 });
+  if (!allowDaily(errorCounts, device, ERROR_LIMIT_DAY)) return send(res, 429, { error: 'Limite de relatórios atingido.' });
 
   let body;
   try {
@@ -210,6 +219,40 @@ async function reportError(req, res) {
   cors(res);
   res.writeHead(204);
   res.end();
+}
+
+// Opinião dos testadores: vai para o log ("[feedback]") e, se configurado, para um webhook
+// (ex.: canal do Discord), para o dono ler sem abrir o painel da Render.
+async function receiveFeedback(req, res) {
+  if (APP_TOKEN && req.headers['x-ponte-token'] !== APP_TOKEN) return send(res, 401, { error: 'Acesso não autorizado.' });
+  const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
+
+  let body;
+  try {
+    body = JSON.parse(await readBody(req));
+  } catch {
+    return send(res, 400, { error: 'Pedido inválido.' });
+  }
+  const text = (v) => (typeof v === 'string' ? v.trim().slice(0, 1000) : '');
+  const nota = Number.isInteger(body.nota) && body.nota >= 1 && body.nota <= 5 ? body.nota : 0;
+  const fb = { nota, gostou: text(body.gostou), melhorar: text(body.melhorar), pagaria: text(body.pagaria) };
+  if (!nota && !fb.gostou && !fb.melhorar && !fb.pagaria) return send(res, 400, { error: 'Escreva alguma coisa antes de enviar.' });
+  if (!allowDaily(feedbackCounts, device, FEEDBACK_LIMIT_DAY)) return send(res, 429, { error: 'Você já mandou muitas opiniões hoje. Obrigado!' });
+
+  const one = (v) => v.replace(/\s+/g, ' ');
+  const version = typeof body.version === 'string' ? body.version.slice(0, 20) : '?';
+  console.log(`[feedback] v${version} nota=${nota || '-'} | gostou: ${one(fb.gostou) || '-'} | melhorar: ${one(fb.melhorar) || '-'} | pagaria: ${one(fb.pagaria) || '-'}`);
+  if (FEEDBACK_WEBHOOK_URL) {
+    const stars = nota ? '★'.repeat(nota) + '☆'.repeat(5 - nota) : 'sem nota';
+    const content = `**Nova opinião na Ponte** (${stars}, v${version})\n**Gostou:** ${fb.gostou || '-'}\n**Melhorar:** ${fb.melhorar || '-'}\n**Pagaria por:** ${fb.pagaria || '-'}`;
+    fetch(FEEDBACK_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: content.slice(0, 1900) }),
+      signal: AbortSignal.timeout(10_000),
+    }).catch((err) => console.error('Webhook de feedback falhou:', err instanceof Error ? err.message : err));
+  }
+  send(res, 200, { ok: true });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -226,6 +269,7 @@ const server = http.createServer(async (req, res) => {
     return res.end(req.url === '/termos' ? termsPage(CONTACT_EMAIL) : privacyPage(CONTACT_EMAIL));
   }
   if (req.method === 'POST' && req.url === '/erro') return reportError(req, res);
+  if (req.method === 'POST' && req.url === '/feedback') return receiveFeedback(req, res);
   if (req.method !== 'POST' || req.url !== '/chat') return send(res, 404, { error: 'Rota não encontrada.' });
 
   // 1. Só o app da Ponte pode usar

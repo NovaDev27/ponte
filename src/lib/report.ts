@@ -1,5 +1,6 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
+import { apiHeaders } from './api';
 import { DEFAULT_SERVER } from './store';
 
 // Envia um relatório técnico de erro ao servidor (sem dados do planejamento nem conversas).
@@ -9,11 +10,7 @@ export function reportError(error: unknown, where: string, deviceId = '') {
   const e = error instanceof Error ? error : new Error(String(error));
   fetch(`${DEFAULT_SERVER}/erro`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Ponte-Token': process.env.EXPO_PUBLIC_PONTE_TOKEN ?? '',
-      'X-Ponte-Device': deviceId,
-    },
+    headers: apiHeaders(deviceId),
     body: JSON.stringify({
       message: e.message,
       stack: e.stack ?? '',

@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '06/10/2026';
+const UPDATED = '12/10/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -59,8 +59,9 @@ export function privacyPage(email) {
 <p>O nosso servidor repassa as mensagens e o contexto para a <strong>Groq</strong> (empresa que fornece o modelo de inteligência artificial), que gera a resposta. A Groq trata esses dados conforme a política de privacidade dela, disponível em <a href="https://groq.com/privacy-policy">groq.com/privacy-policy</a>. O nosso servidor <strong>não guarda</strong> o conteúdo das conversas. O código do aparelho e o endereço IP ficam só na memória do servidor, para contar o limite de perguntas, e são descartados em até um dia.</p>
 <p><strong>Não escreva no Assistente</strong> dados pessoais como nome completo, documentos, senhas ou dados bancários.</p>
 
-<h2>3. Relatórios de erro</h2>
+<h2>3. Relatórios de erro e opiniões</h2>
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
+<p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e podem ser encaminhadas para um canal privado da equipe, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
 <h2>4. Cotações de moedas</h2>
 <p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>

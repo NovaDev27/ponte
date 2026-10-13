@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { phasesFor } from '../src/data/checklist.ts';
 import { COST_LABELS, COUNTRIES, CURRENCIES, getCountry } from '../src/data/countries.ts';
+import { OFFICIAL_LINKS } from '../src/data/links.ts';
 import { DEFAULT_FEES, METHODS, quote } from '../src/data/methods.ts';
 import { brl, money, num, parseNum } from '../src/lib/format.ts';
 
@@ -132,6 +133,18 @@ describe('dados dos países', () => {
       const ids = phasesFor(c).flatMap((p) => p.tasks.map((t) => t.id));
       assert.ok(ids.length > 0, c.code);
       assert.equal(new Set(ids).size, ids.length, `ids repetidos em ${c.code}`);
+    }
+  });
+});
+
+describe('links oficiais', () => {
+  test('todo país tem links de visto e de embaixada, todos em https', () => {
+    for (const c of COUNTRIES) {
+      const links = OFFICIAL_LINKS[c.code];
+      assert.ok(links?.length, `${c.code} sem links`);
+      assert.ok(links.some((l) => l.kind === 'visto'), `${c.code} sem visto`);
+      assert.ok(links.some((l) => l.kind === 'embaixada'), `${c.code} sem embaixada`);
+      for (const l of links) assert.match(l.url, /^https:\/\//, `${c.code} ${l.url}`);
     }
   });
 });

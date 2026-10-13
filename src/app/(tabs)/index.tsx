@@ -78,16 +78,12 @@ export default function Home() {
         ))}
       </Card>
 
-      <Pressable onPress={() => router.push('/guia-cripto')}>
-        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <IconBox name="shield" color={F.cripto.color} soft={F.cripto.soft} />
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>Stablecoins com segurança</Text>
-            <Text style={{ color: C.sub, fontSize: 14 }}>Como usar USDC para mandar dinheiro, e os riscos</Text>
-          </View>
-          <Icon name="chevron-right" color={C.faint} />
-        </Card>
-      </Pressable>
+      <Section title="Guias e ferramentas" />
+      <Card style={{ paddingVertical: 4, gap: 0 }}>
+        {GUIDES.map((g, i) => (
+          <GuideRow key={g.route} g={g} last={i === GUIDES.length - 1} />
+        ))}
+      </Card>
 
       <Card tone="accent" style={{ flexDirection: 'row', gap: 12 }}>
         <Text style={{ fontSize: 22 }}>💡</Text>
@@ -118,6 +114,32 @@ export default function Home() {
         })}
       </ScrollView>
     </Screen>
+  );
+}
+
+type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback'; icon: IconName; title: string; hint: string; f: { color: string; soft: string } };
+
+const GUIDES: Guide[] = [
+  { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Taxas de cada cartão lá fora e como pedir', f: F.cambio },
+  { route: '/onde-buscar', icon: 'search', title: 'Onde buscar o seu intercâmbio', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
+  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins com segurança', hint: 'Como usar USDC para mandar dinheiro, e os riscos', f: F.cripto },
+  { route: '/feedback', icon: 'heart', title: 'Dê sua opinião', hint: 'Leva 2 minutos e ajuda a melhorar a Ponte', f: F.assistente },
+];
+
+function GuideRow({ g, last }: { g: Guide; last: boolean }) {
+  return (
+    <Pressable
+      onPress={() => router.push(g.route)}
+      accessibilityRole="button"
+      style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderBottomWidth: last ? 0 : 1, borderBottomColor: C.line, opacity: pressed ? 0.7 : 1 })}
+    >
+      <IconBox name={g.icon} color={g.f.color} soft={g.f.soft} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>{g.title}</Text>
+        <Text style={{ color: C.sub, fontSize: 13 }}>{g.hint}</Text>
+      </View>
+      <Icon name="chevron-right" color={C.faint} />
+    </Pressable>
   );
 }
 

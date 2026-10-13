@@ -50,6 +50,9 @@ export default function RootLayout() {
           <Stack.Screen name="pais/[code]" options={{ title: '' }} />
           <Stack.Screen name="guia-cripto" options={{ title: 'Stablecoins com segurança' }} />
           <Stack.Screen name="ajustes" options={{ title: 'Ajustes' }} />
+          <Stack.Screen name="feedback" options={{ title: 'Sua opinião' }} />
+          <Stack.Screen name="guia-cartoes" options={{ title: 'Qual cartão levar' }} />
+          <Stack.Screen name="onde-buscar" options={{ title: 'Onde buscar' }} />
         </Stack>
       </AppProvider>
     </SafeAreaProvider>

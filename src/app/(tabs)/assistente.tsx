@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Logo } from '../../components/Logo';
 import { s as ui } from '../../components/ui';
 import { getCountry } from '../../data/countries';
+import { apiHeaders } from '../../lib/api';
 import { monthLabel } from '../../lib/format';
 import { serverOf, useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
@@ -44,11 +45,7 @@ export default function Assistente() {
     try {
       const res = await fetch(`${server}/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ponte-Token': process.env.EXPO_PUBLIC_PONTE_TOKEN ?? '',
-          'X-Ponte-Device': state.deviceId,
-        },
+        headers: apiHeaders(state.deviceId),
         body: JSON.stringify({
           messages: next.slice(-20),
           context: {
