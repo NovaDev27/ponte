@@ -3,9 +3,11 @@ import { router } from 'expo-router';
 import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Logo, Wordmark } from '../../components/Logo';
-import { Card, Hero, Icon, IconBox, IconName, Ring, Screen, Section } from '../../components/ui';
+import { Badge, Card, Hero, Icon, IconBox, IconName, Ring, Screen, Section } from '../../components/ui';
 import { phasesFor } from '../../data/checklist';
-import { COUNTRIES, getCountry, STYLE_FACTOR } from '../../data/countries';
+import { COUNTRIES, getCountry } from '../../data/countries';
+import { budgetOf } from '../../lib/budget';
+import { hasCompleto } from '../../lib/completo';
 import { brl, daysUntil, money, monthLabel, num } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F, shadow } from '../../lib/theme';
@@ -18,9 +20,7 @@ export default function Home() {
   const rate = rateOf(rates, country.currency);
   const days = daysUntil(p.tripMonth);
 
-  const monthly = Object.values(city.costs).reduce((a, b) => a + b, 0) * STYLE_FACTOR[p.style] + country.seguro;
-  const totalBRL = (monthly * p.months) / rate + p.ticketBRL + p.courseLocal / rate;
-  const coverage = totalBRL > 0 ? p.savings / totalBRL : 0;
+  const { totalBRL, coverage } = budgetOf(state, rates);
 
   const tasks = phasesFor(country).flatMap((ph) => ph.tasks);
   const doneCount = tasks.filter((t) => state.done[t.id]).length;
@@ -78,6 +78,19 @@ export default function Home() {
         ))}
       </Card>
 
+      <Pressable onPress={() => router.push('/completo')} accessibilityRole="button">
+        <Card tone="night" style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <IconBox name="star" color="#FFFFFF" soft={C.accent} />
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontWeight: '800', color: '#FFFFFF', fontSize: 16 }}>Ponte Completo</Text>
+            <Text style={{ color: '#C8D6E5', fontSize: 13 }}>
+              {hasCompleto(state) ? (state.premium ? 'Liberado. Obrigado por apoiar!' : 'Liberado grátis durante o teste') : 'Plano em PDF, alertas, prazos e mais'}
+            </Text>
+          </View>
+          <Icon name="chevron-right" color="#9FB4CC" />
+        </Card>
+      </Pressable>
+
       <Section title="Guias e ferramentas" />
       <Card style={{ paddingVertical: 4, gap: 0 }}>
         {GUIDES.map((g, i) => (
@@ -117,11 +130,13 @@ export default function Home() {
   );
 }
 
-type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback'; icon: IconName; title: string; hint: string; f: { color: string; soft: string } };
+type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback' | '/simulacao' | '/alerta'; icon: IconName; title: string; hint: string; f: { color: string; soft: string }; completo?: boolean };
 
 const GUIDES: Guide[] = [
   { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Taxas de cada cartão lá fora e como pedir', f: F.cambio },
   { route: '/onde-buscar', icon: 'search', title: 'Onde buscar o seu intercâmbio', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
+  { route: '/simulacao', icon: 'trending-up', title: 'Envios mensais', hint: 'Quanto chega quando alguém manda dinheiro todo mês', f: F.cambio, completo: true },
+  { route: '/alerta', icon: 'bell', title: 'Alerta de cotação', hint: 'Aviso quando a moeda ficar mais barata', f: F.orcamento, completo: true },
   { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins com segurança', hint: 'Como usar USDC para mandar dinheiro, e os riscos', f: F.cripto },
   { route: '/feedback', icon: 'heart', title: 'Dê sua opinião', hint: 'Leva 2 minutos e ajuda a melhorar a Ponte', f: F.assistente },
 ];
@@ -135,7 +150,10 @@ function GuideRow({ g, last }: { g: Guide; last: boolean }) {
     >
       <IconBox name={g.icon} color={g.f.color} soft={g.f.soft} />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>{g.title}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>{g.title}</Text>
+          {g.completo ? <Badge label="COMPLETO" color={C.accent} soft={C.accentSoft} /> : null}
+        </View>
         <Text style={{ color: C.sub, fontSize: 13 }}>{g.hint}</Text>
       </View>
       <Icon name="chevron-right" color={C.faint} />

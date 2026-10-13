@@ -51,3 +51,7 @@ export function nextMonths(count: number): string[] {
   }
   return out;
 }
+
+export function dateLabel(d: Date): string {
+  return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+}

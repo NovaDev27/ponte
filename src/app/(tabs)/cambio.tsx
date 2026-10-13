@@ -5,7 +5,7 @@ import { Pressable, Text, View } from 'react-native';
 import { ShareResult } from '../../components/ShareResult';
 import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section } from '../../components/ui';
 import { CURRENCIES, getCountry } from '../../data/countries';
-import { FEES_CHECKED, METHODS, quote } from '../../data/methods';
+import { FEES_CHECKED, highlightOf, METHODS, quote } from '../../data/methods';
 import { brl, money, num, parseNum } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
@@ -29,7 +29,7 @@ export default function Cambio() {
     () => METHODS.map((m) => ({ m, q: quote(m.id, amount, rate, usd, state.fees, own) })).sort((a, b) => b.q.received - a.q.received),
     [amount, rate, usd, state.fees, own],
   );
-  const best = quotes[0];
+  const best = highlightOf(quotes);
   const worst = quotes[quotes.length - 1];
   const saving = worst.q.lostBRL - best.q.lostBRL;
   const maxLoss = Math.max(1, worst.q.lostBRL);
@@ -90,12 +90,12 @@ export default function Cambio() {
         {quotes.map(({ m, q }, i) => (
           <View key={m.id} style={{ gap: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Feather name={m.icon} size={16} color={i === 0 ? F.cambio.color : C.sub} />
+              <Feather name={m.icon} size={16} color={m.id === best.m.id ? F.cambio.color : C.sub} />
               <Text style={{ flex: 1, fontWeight: '700', color: C.ink }}>{m.name}</Text>
-              <Text style={{ fontWeight: '800', color: i === 0 ? F.cambio.color : q.lostPct > 6 ? C.bad : C.ink, fontVariant: ['tabular-nums'] }}>− {brl(q.lostBRL)}</Text>
+              <Text style={{ fontWeight: '800', color: m.id === best.m.id ? F.cambio.color : q.lostPct > 6 ? C.bad : C.ink, fontVariant: ['tabular-nums'] }}>− {brl(q.lostBRL)}</Text>
             </View>
             <View style={{ height: 12, borderRadius: 6, backgroundColor: C.bg, overflow: 'hidden' }}>
-              <View style={{ width: `${Math.max(2, (q.lostBRL / maxLoss) * 100)}%`, height: '100%', borderRadius: 6, backgroundColor: i === 0 ? F.cambio.color : q.lostPct > 6 ? '#E07A65' : '#E3B26A' }} />
+              <View style={{ width: `${Math.max(2, (q.lostBRL / maxLoss) * 100)}%`, height: '100%', borderRadius: 6, backgroundColor: m.id === best.m.id ? F.cambio.color : q.lostPct > 6 ? '#E07A65' : '#E3B26A' }} />
             </View>
             <Text style={{ fontSize: 12, color: C.sub }}>{num(q.lostPct, 1)}% em taxas · chegam {money(q.received, cur)}</Text>
           </View>
@@ -109,11 +109,12 @@ export default function Cambio() {
           <Pressable key={m.id} onPress={() => setOpen(expanded ? null : m.id)} accessibilityRole="button" accessibilityState={{ expanded }}>
             <Card>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <IconBox name={m.icon} color={i === 0 ? F.cambio.color : C.primary} soft={i === 0 ? F.cambio.soft : C.primarySoft} />
+                <IconBox name={m.icon} color={m.id === best.m.id ? F.cambio.color : C.primary} soft={m.id === best.m.id ? F.cambio.soft : C.primarySoft} />
                 <View style={{ flex: 1, gap: 2 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                     <Text style={{ fontSize: 16, fontWeight: '800', color: C.ink }}>{m.name}</Text>
-                    {i === 0 ? <Badge label="MAIS BARATO" color={F.cambio.color} soft={F.cambio.soft} /> : null}
+                    {m.id === best.m.id ? <Badge label="MELHOR CAMINHO" color={F.cambio.color} soft={F.cambio.soft} /> : null}
+                    {i === 0 && m.id === 'cripto' ? <Badge label="MAIS BARATO, COM RISCOS" color={C.warn} soft={C.warnSoft} /> : null}
                     {i === quotes.length - 1 ? <Badge label="MAIS CARO" color={C.bad} soft="#FBE6E1" /> : null}
                   </View>
                   <Text style={{ color: C.sub, fontSize: 13 }}>{m.short}</Text>

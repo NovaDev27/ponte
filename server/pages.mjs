@@ -63,7 +63,11 @@ export function privacyPage(email) {
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
 <p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e podem ser encaminhadas para um canal privado da equipe, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
-<h2>4. Cotações de moedas</h2>
+<h2>4. Ponte Completo, alertas e lembretes</h2>
+<p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
+<p>O alerta de cotação e os lembretes de prazo são <strong>notificações do próprio celular</strong>: o valor do alerta e as datas ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
+
+<h2>4.1 Cotações de moedas</h2>
 <p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>
 
 <h2>5. Onde os dados são processados</h2>
@@ -105,6 +109,9 @@ export function termsPage(email) {
 
 <h2>4. O Assistente pode errar</h2>
 <p>As respostas são geradas por inteligência artificial e podem conter erros ou informações incompletas. Use como ponto de partida, não como resposta final. O Assistente tem limite de perguntas por hora e por dia para manter o serviço gratuito.</p>
+
+<h2>4.1 Ponte Completo</h2>
+<p>O Ponte Completo é uma compra opcional, de <strong>pagamento único</strong>, feita pelo Google Play, que mostra o preço final antes de você confirmar. Pedidos de reembolso seguem as regras do Google Play. A compra fica ligada à sua conta Google e pode ser recuperada em outro celular pela opção "Já comprei". As funções grátis continuam grátis.</p>
 
 <h2>5. Uso permitido</h2>
 <p>Não é permitido usar a Ponte para fins ilegais, tentar burlar os limites de uso, sobrecarregar ou atacar o servidor, ou usar o Assistente para gerar conteúdo que não tenha relação com o planejamento de intercâmbio.</p>

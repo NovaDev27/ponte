@@ -1,14 +1,25 @@
 import Feather from '@expo/vector-icons/Feather';
-import React from 'react';
+import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { Card, Hero, Ring, Screen } from '../../components/ui';
-import { phasesFor } from '../../data/checklist';
+import { PlanButton } from '../../components/PlanButton';
+import { Badge, Card, Chip, Hero, P, Ring, Screen } from '../../components/ui';
+import { phaseDue, phasesFor } from '../../data/checklist';
 import { getCountry } from '../../data/countries';
+import { hasCompleto } from '../../lib/completo';
+import { dateLabel } from '../../lib/format';
+import { ensurePermission } from '../../lib/notify';
 import { useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
 
 export default function Checklist() {
-  const { state, toggle } = useApp();
+  const { state, toggle, update } = useApp();
+  const completo = hasCompleto(state);
+  const [today] = useState(() => Date.now());
+
+  async function setReminders(on: boolean) {
+    if (on) await ensurePermission();
+    update({ reminders: on });
+  }
   const country = getCountry(state.profile.country);
   const phases = phasesFor(country);
   const all = phases.flatMap((p) => p.tasks);
@@ -28,10 +39,28 @@ export default function Checklist() {
         </View>
       </Hero>
 
+      <Card>
+        <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>Prazos e lembretes</Text>
+        {completo ? (
+          <>
+            <P muted style={{ fontSize: 14 }}>As datas são calculadas a partir do seu embarque. Receba um aviso 7 dias antes de cada prazo.</P>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Chip label="Lembretes ligados" active={state.reminders} color={F.checklist.color} onPress={() => setReminders(true)} />
+              <Chip label="Desligados" active={!state.reminders} color={F.checklist.color} onPress={() => setReminders(false)} />
+            </View>
+          </>
+        ) : (
+          <P muted style={{ fontSize: 14 }}>Com o Ponte Completo, cada etapa ganha uma data e você recebe lembretes antes dos prazos.</P>
+        )}
+        <PlanButton color={F.checklist.color} />
+      </Card>
+
       {phases.map((ph, pi) => {
         const n = ph.tasks.filter((t) => state.done[t.id]).length;
         const complete = n === ph.tasks.length;
         const current = ph.id === currentPhase;
+        const due = completo ? phaseDue(ph.id, state.profile.tripMonth) : null;
+        const late = !!due && !complete && due.getTime() < today;
         return (
           <View key={ph.id} style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ alignItems: 'center', width: 30 }}>
@@ -45,6 +74,12 @@ export default function Checklist() {
                 <View>
                   <Text style={{ fontSize: 12, fontWeight: '800', color: current ? F.checklist.color : C.sub, letterSpacing: 0.6 }}>{ph.when.toUpperCase()}</Text>
                   <Text style={{ fontSize: 18, fontWeight: '800', color: C.ink }}>{ph.title}</Text>
+                  {due ? (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                      <Text style={{ color: late ? C.bad : C.sub, fontSize: 13, fontWeight: '700' }}>até {dateLabel(due)}</Text>
+                      {late ? <Badge label="ATRASADO" color={C.bad} soft="#FBE6E1" /> : null}
+                    </View>
+                  ) : null}
                 </View>
                 <Text style={{ color: C.sub, fontSize: 13, fontWeight: '700' }}>{n}/{ph.tasks.length}</Text>
               </View>

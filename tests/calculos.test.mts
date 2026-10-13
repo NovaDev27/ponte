@@ -5,7 +5,7 @@ import { describe, test } from 'node:test';
 import { phasesFor } from '../src/data/checklist.ts';
 import { COST_LABELS, COUNTRIES, CURRENCIES, getCountry } from '../src/data/countries.ts';
 import { OFFICIAL_LINKS } from '../src/data/links.ts';
-import { DEFAULT_FEES, METHODS, quote } from '../src/data/methods.ts';
+import { DEFAULT_FEES, highlightOf, METHODS, quote } from '../src/data/methods.ts';
 import { brl, money, num, parseNum } from '../src/lib/format.ts';
 
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} deveria ser ~${b}`);
@@ -146,5 +146,13 @@ describe('links oficiais', () => {
       assert.ok(links.some((l) => l.kind === 'embaixada'), `${c.code} sem embaixada`);
       for (const l of links) assert.match(l.url, /^https:\/\//, `${c.code} ${l.url}`);
     }
+  });
+});
+
+describe('destaque do melhor caminho', () => {
+  test('nunca destaca cripto, mesmo quando é o mais barato', () => {
+    const sorted = METHODS.map((m) => ({ m, q: quote(m.id, 30000, 0.16, 0.18, DEFAULT_FEES, true) })).sort((a, b) => b.q.received - a.q.received);
+    assert.equal(sorted[0].m.id, 'cripto'); // em R$ 30 mil a stablecoin sai mais barata
+    assert.equal(highlightOf(sorted).m.id, 'global');
   });
 });

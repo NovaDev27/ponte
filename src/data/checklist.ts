@@ -3,6 +3,23 @@ import type { Country } from './countries';
 export type Task = { id: string; text: string };
 export type Phase = { id: string; title: string; when: string; tasks: Task[] };
 
+// Prazo de cada fase em dias a partir do embarque (negativo = antes).
+export const PHASE_OFFSET_DAYS: Record<string, number> = { p6: -180, p3: -90, p1: -30, p0: -7, pa: 7 };
+
+// Embarque considerado no dia 1 do mês escolhido ("2027-02").
+export function tripDate(tripMonth: string): Date {
+  const [y, m] = tripMonth.split('-').map(Number);
+  return new Date(y, m - 1, 1);
+}
+
+export function phaseDue(phaseId: string, tripMonth: string): Date | null {
+  const offset = PHASE_OFFSET_DAYS[phaseId];
+  if (offset === undefined) return null;
+  const d = tripDate(tripMonth);
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+
 const BASE: Phase[] = [
   {
     id: 'p6', title: 'Planejamento', when: '6 meses ou mais antes',

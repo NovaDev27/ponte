@@ -62,9 +62,11 @@ function startOfDay() {
 
 // Várias pessoas podem dividir o mesmo IP (Wi-Fi da escola), então o limite por IP é maior.
 const IP_FACTOR = 5;
+const COMPLETO_FACTOR = 3;
 
-function checkLimit(key) {
-  const f = key.startsWith('ip:') ? IP_FACTOR : 1;
+// `plan` multiplica o limite do aparelho (Ponte Completo tem o triplo).
+function checkLimit(key, plan = 1) {
+  const f = key.startsWith('ip:') ? IP_FACTOR : plan;
   const now = Date.now();
   const b = buckets.get(key) ?? { hourStart: now, hour: 0, dayStart: startOfDay(), day: 0 };
   if (now - b.hourStart >= 3_600_000) { b.hourStart = now; b.hour = 0; }
@@ -101,7 +103,7 @@ setInterval(() => {
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Ponte-Token, X-Ponte-Device');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Ponte-Token, X-Ponte-Device, X-Ponte-Plano');
 }
 
 function send(res, status, body) {
@@ -279,11 +281,13 @@ const server = http.createServer(async (req, res) => {
 
   // 2. Limites por aparelho, por IP e no total do dia
   const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
+  // O plano vem do app; não é verificado aqui (limite total do dia continua valendo para todos).
+  const plan = req.headers['x-ponte-plano'] === 'completo' ? COMPLETO_FACTOR : 1;
   const keys = [`d:${device}`, `ip:${clientIp(req)}`];
   for (const k of keys) {
-    const hit = checkLimit(k);
-    if (hit === 'hora') return send(res, 429, { error: `Você chegou ao limite de ${LIMIT_HOUR} perguntas por hora. Tente de novo mais tarde.` });
-    if (hit === 'dia') return send(res, 429, { error: `Você chegou ao limite de ${LIMIT_DAY} perguntas por dia. Volte amanhã!` });
+    const hit = checkLimit(k, plan);
+    if (hit === 'hora') return send(res, 429, { error: `Você chegou ao limite de ${LIMIT_HOUR * plan} perguntas por hora. Tente de novo mais tarde.` });
+    if (hit === 'dia') return send(res, 429, { error: `Você chegou ao limite de ${LIMIT_DAY * plan} perguntas por dia. Volte amanhã!` });
   }
   if (!checkGlobal()) {
     return send(res, 429, { error: 'O assistente atingiu o limite de uso de hoje. Volte amanhã!' });

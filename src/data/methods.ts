@@ -171,3 +171,9 @@ export function quote(id: MethodId, amount: number, rate: number, usdPerBRL: num
     fixed: Math.min(fixed, Math.max(0, base - spread)),
   };
 }
+
+// Caminho a destacar como "melhor": o mais barato que não seja cripto.
+// Stablecoin aparece nas comparações, com os riscos, mas nunca como recomendação.
+export function highlightOf<T extends { m: { id: MethodId } }>(sorted: T[]): T {
+  return sorted.find((x) => x.m.id !== 'cripto') ?? sorted[0];
+}

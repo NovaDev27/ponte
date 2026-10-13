@@ -3,6 +3,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { Background } from '../components/Background';
 import { Logo } from '../components/Logo';
 import { Btn } from '../components/ui';
 import { installGlobalErrorReporter, reportError } from '../lib/report';
@@ -35,6 +36,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AppProvider>
         <StatusBar style="dark" />
+        <Background />
         <Stack
           screenOptions={{
             headerTintColor: C.primary,
@@ -53,6 +55,9 @@ export default function RootLayout() {
           <Stack.Screen name="feedback" options={{ title: 'Sua opinião' }} />
           <Stack.Screen name="guia-cartoes" options={{ title: 'Qual cartão levar' }} />
           <Stack.Screen name="onde-buscar" options={{ title: 'Onde buscar' }} />
+          <Stack.Screen name="completo" options={{ title: 'Ponte Completo' }} />
+          <Stack.Screen name="simulacao" options={{ title: 'Envios mensais' }} />
+          <Stack.Screen name="alerta" options={{ title: 'Alerta de cotação' }} />
         </Stack>
       </AppProvider>
     </SafeAreaProvider>

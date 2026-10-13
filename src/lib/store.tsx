@@ -1,8 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { CURRENCIES } from '../data/countries';
 import { DEFAULT_FEES, Fees } from '../data/methods';
 import { nextMonths } from './format';
+import { fetchRates, FALLBACK_RATES, type Rates } from './rates';
+
+export { fetchRates, rateOf, type Rates } from './rates';
 
 export type Style = 'eco' | 'mod' | 'conf';
 export type Profile = {
@@ -24,19 +26,20 @@ export type AppState = {
   overrides: Record<string, number>;
   serverUrl: string;
   deviceId: string; // identificador anônimo, usado só para os limites do assistente
+  premium: boolean; // comprou o Ponte Completo
+  rateAlert: RateAlert | null; // alerta de cotação ativo
+  reminders: boolean; // lembretes de prazo do checklist
 };
+
+// Avisar quando 1 unidade de `cur` custar `target` reais ou menos.
+export type RateAlert = { cur: string; target: number; createdAt: number };
 
 function newDeviceId(): string {
   return Array.from({ length: 24 }, () => Math.floor(Math.random() * 36).toString(36)).join('');
 }
 
-const KEY = 'ponte:v1';
+export const KEY = 'ponte:v1';
 const RATES_KEY = 'ponte:rates';
-
-// Cotações de reserva (unidades por 1 real) caso o app esteja offline.
-const FALLBACK_RATES: Record<string, number> = {
-  EUR: 0.16, USD: 0.18, CAD: 0.25, AUD: 0.28, GBP: 0.135, NZD: 0.31, JPY: 27, ZAR: 3.2,
-};
 
 // Servidor do assistente na nuvem. Para testar com o servidor do computador,
 // defina EXPO_PUBLIC_PONTE_SERVER no .env (ex.: http://192.168.0.6:8787).
@@ -60,9 +63,11 @@ export const initialState: AppState = {
   overrides: {},
   serverUrl: '', // vazio = DEFAULT_SERVER
   deviceId: '',
+  premium: false,
+  rateAlert: null,
+  reminders: false,
 };
 
-type Rates = { values: Record<string, number>; updated: number | null; live: boolean };
 
 type Ctx = {
   ready: boolean;
@@ -135,16 +140,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, [applyRates]);
 
+  // Funções estáveis: não mudam a cada alteração do estado (efeitos podem depender delas).
+  const setProfile = useCallback((p: Partial<Profile>) => setState((s) => ({ ...s, profile: { ...s.profile, ...p } })), []);
+  const update = useCallback((p: Partial<AppState>) => setState((s) => ({ ...s, ...p })), []);
+  const toggle = useCallback((id: string) => setState((s) => ({ ...s, done: { ...s.done, [id]: !s.done[id] } })), []);
+  // Apagar dados não apaga a compra do Ponte Completo.
+  const reset = useCallback(() => setState((s) => ({ ...initialState, deviceId: s.deviceId, premium: s.premium })), []);
+
   const value = useMemo<Ctx>(() => ({
     ready,
     state,
     rates,
     refreshRates,
-    setProfile: (p) => setState((s) => ({ ...s, profile: { ...s.profile, ...p } })),
-    update: (p) => setState((s) => ({ ...s, ...p })),
-    toggle: (id) => setState((s) => ({ ...s, done: { ...s.done, [id]: !s.done[id] } })),
-    reset: () => setState((s) => ({ ...initialState, deviceId: s.deviceId })),
-  }), [ready, state, rates, refreshRates]);
+    setProfile,
+    update,
+    toggle,
+    reset,
+  }), [ready, state, rates, refreshRates, setProfile, update, toggle, reset]);
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
@@ -153,21 +165,4 @@ export function useApp(): Ctx {
   const v = useContext(AppCtx);
   if (!v) throw new Error('useApp fora do AppProvider');
   return v;
-}
-
-export function rateOf(rates: Rates, cur: string): number {
-  return rates.values[cur] ?? FALLBACK_RATES[cur] ?? 1;
-}
-
-async function fetchRates(): Promise<Rates | null> {
-  try {
-    const res = await fetch('https://open.er-api.com/v6/latest/BRL');
-    const json = await res.json();
-    if (json?.result !== 'success') return null;
-    const values: Record<string, number> = {};
-    for (const c of [...CURRENCIES, 'USD']) if (json.rates[c]) values[c] = json.rates[c];
-    return { values, updated: Date.now(), live: true };
-  } catch {
-    return null;
-  }
 }

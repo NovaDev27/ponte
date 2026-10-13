@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
+import { PlanButton } from '../../components/PlanButton';
 import { Card, Chip, ChipRow, Field, Hero, Label, P, Ring, Row, Screen, Section } from '../../components/ui';
-import { COST_LABELS, CostKey, getCountry, STYLE_FACTOR, STYLE_LABEL } from '../../data/countries';
+import { COST_LABELS, CostKey, STYLE_LABEL } from '../../data/countries';
+import { budgetOf } from '../../lib/budget';
 import { brl, money, num, parseNum } from '../../lib/format';
-import { rateOf, Style, useApp } from '../../lib/store';
+import { Style, useApp } from '../../lib/store';
 import { C, CAT, F } from '../../lib/theme';
 
 const KEYS = Object.keys(COST_LABELS) as CostKey[];
@@ -16,18 +18,7 @@ const STYLE_HINT: Record<Style, string> = {
 export default function Orcamento() {
   const { state, setProfile, update, rates } = useApp();
   const p = state.profile;
-  const country = getCountry(p.country);
-  const city = country.cities[p.city] ?? country.cities[0];
-  const rate = rateOf(rates, country.currency);
-  const cur = country.currency;
-
-  const keyOf = (k: CostKey) => `${country.code}-${p.city}-${k}`;
-  const valueOf = (k: CostKey) => state.overrides[keyOf(k)] ?? Math.round(city.costs[k] * STYLE_FACTOR[p.style]);
-  const monthly = KEYS.reduce((a, k) => a + valueOf(k), 0) + country.seguro;
-  const monthlyBRL = monthly / rate;
-  const totalBRL = monthlyBRL * p.months + p.ticketBRL + p.courseLocal / rate;
-  const coverage = totalBRL > 0 ? p.savings / totalBRL : 0;
-  const monthsCovered = Math.max(0, (p.savings - p.ticketBRL - p.courseLocal / rate) / monthlyBRL);
+  const { country, city, rate, cur, keyOf, valueOf, monthly, monthlyBRL, totalBRL, coverage, monthsCovered } = budgetOf(state, rates);
 
   const parts = [...KEYS.map((k) => ({ key: k as string, label: COST_LABELS[k], value: valueOf(k), color: CAT[k] })), { key: 'seguro', label: 'Seguro saúde', value: country.seguro, color: CAT.seguro }];
 
@@ -125,6 +116,7 @@ export default function Orcamento() {
       <P muted style={{ fontSize: 13 }}>
         Convertido pela cotação comercial ({brl(1 / rate)} por {cur}). Na prática, some de 1% a 8% de custo de câmbio, conforme o caminho escolhido na aba Câmbio.
       </P>
+      <PlanButton color={F.orcamento.color} />
     </Screen>
   );
 }

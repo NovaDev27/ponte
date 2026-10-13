@@ -8,14 +8,19 @@
     "@react-native-async-storage/async-storage": "2.2.0",
     "eslint-config-expo": "~57.0.2",
     "expo": "~57.0.28",
+    "expo-background-task": "~57.0.21",
     "expo-constants": "~57.0.20",
     "expo-font": "~57.0.4",
+    "expo-iap": "^6.0.1",
     "expo-linear-gradient": "~57.0.2",
     "expo-linking": "~57.0.12",
+    "expo-notifications": "~57.0.22",
+    "expo-print": "~57.0.2",
     "expo-router": "~57.0.26",
     "expo-sharing": "~57.0.23",
     "expo-splash-screen": "~57.0.10",
     "expo-status-bar": "~57.0.1",
+    "expo-task-manager": "~57.0.21",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-native": "0.86.3",
@@ -41,7 +46,7 @@
     "web": "expo start --web",
     "server": "npm --prefix server start",
     "lint": "expo lint",
-    "test": "node --test \"tests/*.test.mts\""
+    "test": "node --import ./tests/registrar.mjs --test \"tests/*.test.mts\""
   },
   "private": true
 }
