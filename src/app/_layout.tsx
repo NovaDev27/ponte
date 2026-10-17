@@ -7,18 +7,15 @@ import { Background } from '../components/Background';
 import { Logo } from '../components/Logo';
 import { Btn } from '../components/ui';
 import { installGlobalErrorReporter, reportError } from '../lib/report';
-import { captureError, initSentry, wrapRoot } from '../lib/sentry';
 import { AppProvider } from '../lib/store';
 import { C } from '../lib/theme';
 
-initSentry();
 installGlobalErrorReporter();
 
 // Se alguma tela quebrar: mostra uma mensagem amigável e envia o relatório técnico.
 export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   useEffect(() => {
     reportError(error, 'tela');
-    captureError(error);
   }, [error]);
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 14 }}>
@@ -34,7 +31,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   );
 }
 
-function RootLayout() {
+export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AppProvider>
@@ -66,5 +63,3 @@ function RootLayout() {
     </SafeAreaProvider>
   );
 }
-
-export default wrapRoot(RootLayout);

@@ -70,13 +70,12 @@ A Ponte é uma ferramenta de informação e planejamento. Ela não movimenta din
 **Recursos financeiros:** o app não oferece serviços financeiros. Ele só compara custos e dá informações; não movimenta dinheiro, não faz empréstimos, não negocia ativos nem cripto.
 
 **Segurança dos dados** (conferir com a Política de Privacidade):
-- O app coleta ou compartilha dados? **Sim**: perguntas ao Assistente, opiniões enviadas, relatórios de erro e diagnóstico.
+- O app coleta ou compartilha dados? **Sim**: perguntas ao Assistente, opiniões enviadas e relatórios de erro.
 - Os dados são criptografados em trânsito? **Sim** (HTTPS).
 - A pessoa pode pedir exclusão? **Sim** (Ajustes → Apagar meus dados, e pelo e-mail de contato).
 - Tipos de dados:
   - **Mensagens no app** (perguntas ao Assistente): coletadas, compartilhadas com o provedor de IA (Groq) para gerar a resposta, não armazenadas pela Ponte. Finalidade: funcionalidade do app. Opcional (só se a pessoa usar o Assistente).
-  - **Registros de falhas** (relatórios de erro, pelo servidor da Ponte e pelo Sentry): coletados, não compartilhados (o Sentry atua como prestador de serviço). Finalidade: análise e correção de problemas.
-  - **Diagnóstico** (modelo do aparelho, versão do sistema e do app, junto com o erro): coletado, não compartilhado. Finalidade: análise e correção de problemas.
+  - **Registros de falhas** (relatórios de erro enviados ao servidor da Ponte): coletados, não compartilhados. Finalidade: análise e correção de problemas.
   - **Outro conteúdo gerado pelo usuário** (nota e textos da tela "Dê sua opinião"): coletado, não compartilhado (o e-mail é entregue pelo Resend, como prestador de serviço). Finalidade: análise para melhorar o app. Opcional.
   - **Identificadores do dispositivo ou outros IDs** (código aleatório criado pelo app): coletado, não compartilhado. Finalidade: segurança e prevenção de abuso (limite de perguntas).
 - Localização, contatos, fotos, dados financeiros, dados pessoais (nome, e-mail, CPF): **não coletados**.
