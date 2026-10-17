@@ -21,6 +21,17 @@ export function money(n: number, cur: string, decimals?: number): string {
 
 export const brl = (n: number, decimals = 2) => money(n, 'BRL', decimals);
 
+// Moedas "pequenas" (iene, rand) ficam ilegíveis por unidade ("¥ 1 = R$ 0,03").
+// Mostra a cotação de 10 ou 100 unidades para o número fazer sentido.
+export function quoteUnit(brlPerUnit: number): number {
+  return brlPerUnit < 0.1 ? 100 : brlPerUnit < 1 ? 10 : 1;
+}
+
+export function rateLabel(cur: string, brlPerUnit: number): string {
+  const u = quoteUnit(brlPerUnit);
+  return `${money(u, cur, 0)} = ${brl(u * brlPerUnit)}`;
+}
+
 export function parseNum(s: string): number {
   let clean = s.replace(/[^\d,.-]/g, '');
   // Sem vírgula e com um único ponto que não separa milhar (ex.: "1.5", teclado do celular): o ponto é decimal.

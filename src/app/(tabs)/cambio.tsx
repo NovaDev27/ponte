@@ -7,7 +7,7 @@ import { ShareResult } from '../../components/ShareResult';
 import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section, Tap } from '../../components/ui';
 import { CURRENCIES, getCountry } from '../../data/countries';
 import { FEES_CHECKED, highlightOf, METHODS, quote } from '../../data/methods';
-import { brl, money, num, parseNum } from '../../lib/format';
+import { brl, money, num, parseNum, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
 
@@ -168,7 +168,7 @@ export default function Cambio() {
       </Explain>
 
       <P muted style={{ fontSize: 13 }}>
-        Cotação comercial: 1 {cur} = {brl(1 / rate)} {rates.live ? '(atualizada agora)' : '(sem internet: última cotação salva)'}. As taxas são médias de mercado, conferidas em {FEES_CHECKED}, e podem ser ajustadas em Ajustes. Confirme sempre a cotação final no app que você usar.
+        Cotação comercial: {rateLabel(cur, 1 / rate)} {rates.live ? '(atualizada agora)' : '(sem internet: última cotação salva)'}. As taxas são médias de mercado, conferidas em {FEES_CHECKED}, e podem ser ajustadas em Ajustes. Confirme sempre a cotação final no app que você usar.
       </P>
     </Screen>
   );

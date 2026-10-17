@@ -1,20 +1,22 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { Logo, Wordmark } from '../../components/Logo';
 import { Badge, Card, Hero, Icon, IconBox, IconName, Ring, Screen, Section, Tap } from '../../components/ui';
 import { phasesFor } from '../../data/checklist';
 import { COUNTRIES, getCountry } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
-import { hasCompleto } from '../../lib/completo';
-import { brl, daysUntil, money, monthLabel, num } from '../../lib/format';
+import { COMPLETO_GRATIS, hasCompleto } from '../../lib/completo';
+import { brl, daysUntil, money, monthLabel, num, quoteUnit, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F, shadow } from '../../lib/theme';
 
 export default function Home() {
   const { state, rates } = useApp();
   const p = state.profile;
+  const [allGuides, setAllGuides] = useState(false);
+  const shown = allGuides ? GUIDES : GUIDES.slice(0, 3);
   const country = getCountry(p.country);
   const city = country.cities[p.city] ?? country.cities[0];
   const rate = rateOf(rates, country.currency);
@@ -40,7 +42,7 @@ export default function Home() {
       status: `${doneCount} de ${tasks.length} tarefas feitas`, done: doneCount === tasks.length, route: '/checklist',
     },
     {
-      n: 4, icon: 'message-circle', title: 'Tire dúvidas com o assistente', f: F.assistente,
+      n: 4, icon: 'message-circle', title: 'Tire dúvidas com o Orbi', f: F.assistente,
       status: 'Visto, câmbio, chegada e vida lá fora', done: false, route: '/assistente',
     },
   ];
@@ -67,7 +69,7 @@ export default function Home() {
         </Text>
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 8 }}>
           <Stat big={days > 0 ? String(days) : 'Já!'} small={days > 0 ? 'dias para embarcar' : 'você está lá'} />
-          <Stat big={`R$ ${num(1 / rate, 2)}`} small={`1 ${country.currency} ${rates.live ? 'hoje' : '(offline)'}`} />
+          <Stat big={brl(quoteUnit(1 / rate) / rate)} small={`${money(quoteUnit(1 / rate), country.currency, 0)} ${rates.live ? 'hoje' : '(offline)'}`} />
         </View>
       </Hero>
 
@@ -93,9 +95,15 @@ export default function Home() {
 
       <Section title="Guias e ferramentas" />
       <Card style={{ paddingVertical: 4, gap: 0 }}>
-        {GUIDES.map((g, i) => (
-          <GuideRow key={g.route} g={g} last={i === GUIDES.length - 1} />
+        {shown.map((g, i) => (
+          <GuideRow key={g.route} g={g} last={i === shown.length - 1 && allGuides} />
         ))}
+        {allGuides ? null : (
+          <Tap onPress={() => setAllGuides(true)} scaleTo={0.98} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12 }}>
+            <Text style={{ color: C.primary, fontWeight: '800', fontSize: 15 }}>Ver todos ({GUIDES.length})</Text>
+            <Feather name="chevron-down" size={18} color={C.primary} />
+          </Tap>
+        )}
       </Card>
 
       <Card tone="accent" style={{ flexDirection: 'row', gap: 12 }}>
@@ -118,7 +126,7 @@ export default function Home() {
               <View style={{ width: 140, padding: 14, borderRadius: 18, backgroundColor: mine ? C.primary : C.card, gap: 4, ...shadow }}>
                 <Text style={{ fontSize: 30 }}>{c.flag}</Text>
                 <Text style={{ fontWeight: '800', color: mine ? '#FFFFFF' : C.ink, fontSize: 15 }}>{c.name}</Text>
-                <Text style={{ color: mine ? '#C8D6E5' : C.sub, fontSize: 12 }}>{money(1, c.currency, 0)} = {brl(1 / r)}</Text>
+                <Text style={{ color: mine ? '#C8D6E5' : C.sub, fontSize: 12 }}>{rateLabel(c.currency, 1 / r)}</Text>
                 <Text style={{ color: mine ? '#FFFFFF' : C.ink, fontSize: 13, fontWeight: '700', marginTop: 4 }}>≈ {brl(m, 0)}/mês</Text>
                 <Text style={{ color: mine ? '#9FB4CC' : C.faint, fontSize: 11 }}>em {mid.name}</Text>
               </View>
@@ -133,12 +141,13 @@ export default function Home() {
 type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback' | '/simulacao' | '/alerta'; icon: IconName; title: string; hint: string; f: { color: string; soft: string }; completo?: boolean };
 
 const GUIDES: Guide[] = [
+  // Os 3 primeiros aparecem direto; o resto fica em "Ver todos".
   { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Taxas de cada cartão lá fora e como pedir', f: F.cambio },
-  { route: '/onde-buscar', icon: 'search', title: 'Onde buscar o seu intercâmbio', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
-  { route: '/simulacao', icon: 'trending-up', title: 'Envios mensais', hint: 'Quanto chega quando alguém manda dinheiro todo mês', f: F.cambio, completo: true },
   { route: '/alerta', icon: 'bell', title: 'Alerta de cotação', hint: 'Aviso quando a moeda ficar mais barata', f: F.orcamento, completo: true },
-  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins com segurança', hint: 'Como usar USDC para mandar dinheiro, e os riscos', f: F.cripto },
   { route: '/feedback', icon: 'heart', title: 'Dê sua opinião', hint: 'Leva 2 minutos e ajuda a melhorar a Ponte', f: F.assistente },
+  { route: '/simulacao', icon: 'trending-up', title: 'Envios mensais', hint: 'Quanto chega quando alguém manda dinheiro todo mês', f: F.cambio, completo: true },
+  { route: '/onde-buscar', icon: 'search', title: 'Onde buscar o seu intercâmbio', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
+  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins com segurança', hint: 'Como usar USDC para mandar dinheiro, e os riscos', f: F.cripto },
 ];
 
 function GuideRow({ g, last }: { g: Guide; last: boolean }) {
@@ -153,7 +162,7 @@ function GuideRow({ g, last }: { g: Guide; last: boolean }) {
       <View style={{ flex: 1 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
           <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>{g.title}</Text>
-          {g.completo ? <Badge label="COMPLETO" color={C.accent} soft={C.accentSoft} /> : null}
+          {g.completo && !COMPLETO_GRATIS ? <Badge label="COMPLETO" color={C.accent} soft={C.accentSoft} /> : null}
         </View>
         <Text style={{ color: C.sub, fontSize: 13 }}>{g.hint}</Text>
       </View>

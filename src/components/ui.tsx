@@ -171,12 +171,17 @@ export function Chip({ label, active, onPress, color = C.primary }: { label: str
 }
 
 // Linha de opções que desliza para o lado. Quando não cabe tudo, mostra uma barrinha embaixo
-// (indica que dá para arrastar) e, com `peek`, dá uma "espiadinha" sozinha ao abrir.
+// (indica que dá para arrastar), rola sozinha até a opção escolhida (para ela nunca ficar
+// escondida) e, com `peek`, dá uma "espiadinha" ao abrir.
 const TRACK = 56;
 
 export function ChipRow({ children, peek = false }: { children: React.ReactNode; peek?: boolean }) {
+  const ref = useRef<Animated.ScrollView>(null);
   const [box, setBox] = useState(0);
   const [content, setContent] = useState(0);
+  const spots = useRef<{ x: number; w: number }[]>([]);
+  const items = React.Children.toArray(children);
+  const activeIdx = items.findIndex((c) => React.isValidElement(c) && (c.props as { active?: boolean }).active);
   const x = useSharedValue(0);
   const nudge = useSharedValue(0);
   const peeked = useRef(false);
@@ -192,6 +197,18 @@ export function ChipRow({ children, peek = false }: { children: React.ReactNode;
     return { transform: [{ translateX: p * (TRACK - thumb) }] };
   });
 
+  // Rola até a opção escolhida quando ela está fora da parte visível.
+  useEffect(() => {
+    if (!overflow || activeIdx < 0) return;
+    const spot = spots.current[activeIdx];
+    if (!spot) return;
+    const left = x.get();
+    if (spot.x >= left && spot.x + spot.w <= left + box) return;
+    const first = !peeked.current;
+    peeked.current = true; // já mostrou que dá para rolar: não precisa da espiadinha
+    ref.current?.scrollTo({ x: Math.max(0, Math.min(spot.x - 24, content - box)), animated: !first });
+  }, [overflow, activeIdx, box, content, x]);
+
   useEffect(() => {
     if (!peek || !overflow || peeked.current) return;
     peeked.current = true;
@@ -203,6 +220,7 @@ export function ChipRow({ children, peek = false }: { children: React.ReactNode;
   return (
     <View style={{ gap: 8 }}>
       <Animated.ScrollView
+        ref={ref}
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
@@ -211,7 +229,18 @@ export function ChipRow({ children, peek = false }: { children: React.ReactNode;
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        <Animated.View style={[{ flexDirection: 'row', gap: 8 }, nudgeStyle]}>{children}</Animated.View>
+        <Animated.View style={[{ flexDirection: 'row', gap: 8 }, nudgeStyle]}>
+          {items.map((c, i) => (
+            <View
+              key={React.isValidElement(c) && c.key != null ? c.key : i}
+              onLayout={(e) => {
+                spots.current[i] = { x: e.nativeEvent.layout.x, w: e.nativeEvent.layout.width };
+              }}
+            >
+              {c}
+            </View>
+          ))}
+        </Animated.View>
       </Animated.ScrollView>
       {overflow ? (
         <View style={s.track} accessible={false}>

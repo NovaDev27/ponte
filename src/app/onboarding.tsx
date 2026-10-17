@@ -59,7 +59,7 @@ export default function Onboarding() {
             Seu intercâmbio sem perder dinheiro no câmbio.
           </Animated.Text>
           <View style={{ gap: 8, marginTop: 8 }}>
-            {['Compare 5 jeitos de levar dinheiro', 'Orçamento real para 13 países', 'Checklist do visto à chegada', 'Assistente com IA'].map((t, i) => (
+            {['Compare 5 jeitos de levar dinheiro', 'Orçamento real para 13 países', 'Checklist do visto à chegada', 'Orbi, seu assistente com IA'].map((t, i) => (
               <Animated.Text key={t} entering={FadeInDown.duration(420).delay(520 + i * 90).easing(EASE_OUT)} style={{ color: '#9FB4CC', fontSize: 15 }}>
                 ✓  {t}
               </Animated.Text>

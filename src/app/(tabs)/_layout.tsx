@@ -32,7 +32,7 @@ const TABS: { name: string; title: string; icon: FeatherName; color: string; sof
   { name: 'orcamento', title: 'Orçamento', icon: 'pie-chart', color: F.orcamento.color, soft: F.orcamento.soft },
   { name: 'cambio', title: 'Câmbio', icon: 'repeat', color: F.cambio.color, soft: F.cambio.soft },
   { name: 'checklist', title: 'Checklist', icon: 'check-square', color: F.checklist.color, soft: F.checklist.soft },
-  { name: 'assistente', title: 'Assistente', icon: 'message-circle', color: F.assistente.color, soft: F.assistente.soft },
+  { name: 'assistente', title: 'Orbi', icon: 'message-circle', color: F.assistente.color, soft: F.assistente.soft },
 ];
 
 export default function TabLayout() {

@@ -16,5 +16,5 @@ export const COMPLETO_BENEFITS: { icon: 'file-text' | 'bell' | 'calendar' | 'tre
   { icon: 'bell', title: 'Alerta de cotação', text: 'Escolha um valor e receba um aviso quando a moeda do seu destino ficar mais barata.' },
   { icon: 'calendar', title: 'Checklist com prazos', text: 'Datas calculadas a partir do seu embarque e lembretes antes de cada etapa.' },
   { icon: 'trending-up', title: 'Simulação de envios mensais', text: 'Quanto chega e quanto se perde quando alguém manda dinheiro todo mês.' },
-  { icon: 'message-circle', title: 'Assistente com mais perguntas', text: 'O triplo do limite diário de perguntas.' },
+  { icon: 'message-circle', title: 'Orbi com mais perguntas', text: 'O triplo do limite diário de perguntas.' },
 ];

@@ -6,7 +6,7 @@ import { phasesFor } from '../src/data/checklist.ts';
 import { COST_LABELS, COUNTRIES, CURRENCIES, getCountry } from '../src/data/countries.ts';
 import { OFFICIAL_LINKS } from '../src/data/links.ts';
 import { DEFAULT_FEES, highlightOf, METHODS, quote } from '../src/data/methods.ts';
-import { brl, money, num, parseNum } from '../src/lib/format.ts';
+import { brl, money, num, parseNum, quoteUnit, rateLabel } from '../src/lib/format.ts';
 
 const near = (a: number, b: number, tol = 0.01) => assert.ok(Math.abs(a - b) <= tol, `${a} deveria ser ~${b}`);
 
@@ -154,5 +154,17 @@ describe('destaque do melhor caminho', () => {
     const sorted = METHODS.map((m) => ({ m, q: quote(m.id, 30000, 0.16, 0.18, DEFAULT_FEES, true) })).sort((a, b) => b.q.received - a.q.received);
     assert.equal(sorted[0].m.id, 'cripto'); // em R$ 30 mil a stablecoin sai mais barata
     assert.equal(highlightOf(sorted).m.id, 'global');
+  });
+});
+
+describe('cotação legível', () => {
+  test('moedas fortes aparecem por 1 unidade', () => {
+    assert.equal(quoteUnit(5.61), 1);
+    assert.equal(rateLabel('EUR', 5.61), '€ 1 = R$ 5,61');
+  });
+
+  test('iene aparece por 100 e rand por 10', () => {
+    assert.equal(rateLabel('JPY', 0.0368), '¥ 100 = R$ 3,68');
+    assert.equal(rateLabel('ZAR', 0.31), 'R 10 = R$ 3,10');
   });
 });

@@ -6,7 +6,7 @@ import { Btn, Card, Chip, ChipRow, Field, H, Hero, Label, P, Screen } from '../c
 import { CURRENCIES, getCountry } from '../data/countries';
 import { alertFired, priceOf } from '../lib/alerts';
 import { hasCompleto } from '../lib/completo';
-import { brl, num, parseNum } from '../lib/format';
+import { brl, money, num, parseNum, quoteUnit } from '../lib/format';
 import { ensurePermission, notifySupported } from '../lib/notify';
 import { useApp } from '../lib/store';
 import { C, F } from '../lib/theme';
@@ -18,9 +18,13 @@ export default function Alerta() {
   const active = state.rateAlert;
   const [cur, setCur] = useState(active?.cur ?? getCountry(state.profile.country).currency);
   const now = priceOf(rates, cur);
+  // Moedas "pequenas" (iene, rand) são mostradas em 10 ou 100 unidades para o número fazer sentido.
+  // O alerta continua guardado por 1 unidade; só a tela usa a unidade maior.
+  const unit = now ? quoteUnit(now) : 1;
+  const unitLabel = money(unit, cur, 0);
   // null = sugestão automática (2% abaixo de hoje), que acompanha a cotação ao vivo até a pessoa digitar.
-  const [typed, setText] = useState<string | null>(active ? num(active.target, 2) : null);
-  const text = typed ?? (now ? num(now * 0.98, 2) : '');
+  const [typed, setText] = useState<string | null>(active ? num(active.target * unit, 2) : null);
+  const text = typed ?? (now ? num(now * unit * 0.98, 2) : '');
   const [fired, setFired] = useState(false);
   const [msg, setMsg] = useState('');
 
@@ -34,6 +38,10 @@ export default function Alerta() {
     };
   }, [active]);
 
+  const activeNow = active ? priceOf(rates, active.cur) : null;
+  const activeUnit = activeNow ? quoteUnit(activeNow) : 1;
+  const activeLabel = active ? money(activeUnit, active.cur, 0) : '';
+
   if (!hasCompleto(state)) {
     return (
       <Screen header>
@@ -42,7 +50,7 @@ export default function Alerta() {
     );
   }
 
-  const target = parseNum(text);
+  const target = parseNum(text) / unit;
 
   function pickCur(c: string) {
     setCur(c);
@@ -73,9 +81,9 @@ export default function Alerta() {
             <Feather name={fired ? 'check-circle' : 'bell'} size={18} color="#FFFFFF" />
             <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>{fired ? 'ALERTA ATINGIDO' : 'ALERTA ATIVO'}</Text>
           </View>
-          <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '800' }}>1 {active.cur} ≤ {brl(active.target)}</Text>
+          <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '800' }}>{activeLabel} ≤ {brl(active.target * activeUnit)}</Text>
           <Text style={{ color: '#C8D6E5', fontSize: 14 }}>
-            Hoje: {priceOf(rates, active.cur) ? brl(priceOf(rates, active.cur) as number) : '...'} {rates.live ? '' : '(sem internet)'}
+            Hoje: {activeNow ? brl(activeNow * activeUnit) : '...'} {rates.live ? '' : '(sem internet)'}
           </Text>
         </Hero>
       ) : null}
@@ -85,14 +93,14 @@ export default function Alerta() {
         <ChipRow>
           {CURRENCIES.map((c) => <Chip key={c} label={c} active={c === cur} color={F.cambio.color} onPress={() => pickCur(c)} />)}
         </ChipRow>
-        <Text style={{ color: C.sub, fontSize: 14 }}>Hoje: 1 {cur} = {now ? brl(now) : '...'}</Text>
+        <Text style={{ color: C.sub, fontSize: 14 }}>Hoje: {unitLabel} = {now ? brl(now * unit) : '...'}</Text>
 
-        <Label style={{ marginTop: 6 }}>Me avise quando 1 {cur} custar até</Label>
+        <Label style={{ marginTop: 6 }}>Me avise quando {unitLabel} custar até</Label>
         <Field value={text} onChangeText={setText} prefix="R$" big />
         {now ? (
           <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
             {DROPS.map((d) => (
-              <Chip key={d} label={`−${d}%`} active={Math.abs(target - now * (1 - d / 100)) < 0.005} color={F.cambio.color} onPress={() => setText(num(now * (1 - d / 100), 2))} />
+              <Chip key={d} label={`−${d}%`} active={Math.abs((target - now * (1 - d / 100)) * unit) < 0.005} color={F.cambio.color} onPress={() => setText(num(now * unit * (1 - d / 100), 2))} />
             ))}
           </View>
         ) : null}

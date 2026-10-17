@@ -3,7 +3,7 @@ import React from 'react';
 import { Linking, Text, View } from 'react-native';
 import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap } from '../../components/ui';
 import { getCountry, STYLE_FACTOR } from '../../data/countries';
-import { brl, money } from '../../lib/format';
+import { brl, money, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C } from '../../lib/theme';
 
@@ -15,7 +15,7 @@ export default function Pais() {
   const mine = state.profile.country === country.code;
 
   return (
-    <Screen header title={`${country.flag} ${country.name}`} subtitle={`Moeda: ${country.currency} · ${money(1, country.currency, 0)} = ${brl(1 / rate)}`}>
+    <Screen header title={`${country.flag} ${country.name}`} subtitle={`Moeda: ${country.currency} · ${rateLabel(country.currency, 1 / rate)}`}>
       <Stack.Screen options={{ title: country.name }} />
 
       <Card>
