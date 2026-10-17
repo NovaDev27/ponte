@@ -1,11 +1,11 @@
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Pressable, PressableProps, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextStyle, View, ViewStyle,
 } from 'react-native';
 import Animated, {
-  FadeIn, FadeInDown, useAnimatedProps, useAnimatedStyle, useSharedValue, withSpring, withTiming,
+  FadeIn, FadeInDown, useAnimatedProps, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
@@ -170,11 +170,55 @@ export function Chip({ label, active, onPress, color = C.primary }: { label: str
   );
 }
 
-export function ChipRow({ children }: { children: React.ReactNode }) {
+// Linha de opções que desliza para o lado. Quando não cabe tudo, mostra uma barrinha embaixo
+// (indica que dá para arrastar) e, com `peek`, dá uma "espiadinha" sozinha ao abrir.
+const TRACK = 56;
+
+export function ChipRow({ children, peek = false }: { children: React.ReactNode; peek?: boolean }) {
+  const [box, setBox] = useState(0);
+  const [content, setContent] = useState(0);
+  const x = useSharedValue(0);
+  const nudge = useSharedValue(0);
+  const peeked = useRef(false);
+  const overflow = box > 0 && content > box + 4;
+  const thumb = overflow ? Math.max(14, (box / content) * TRACK) : TRACK;
+
+  const onScroll = useAnimatedScrollHandler((e) => {
+    x.value = e.contentOffset.x;
+  });
+  const thumbStyle = useAnimatedStyle(() => {
+    const max = content - box;
+    const p = max > 0 ? Math.min(1, Math.max(0, x.value / max)) : 0;
+    return { transform: [{ translateX: p * (TRACK - thumb) }] };
+  });
+
+  useEffect(() => {
+    if (!peek || !overflow || peeked.current) return;
+    peeked.current = true;
+    // Empurra a linha um pouco para a esquerda e volta com mola: "tem mais aqui".
+    nudge.set(withDelay(700, withSequence(withTiming(-48, { duration: 420, easing: EASE_OUT }), withSpring(0, { damping: 11, stiffness: 140 }))));
+  }, [peek, overflow, nudge]);
+  const nudgeStyle = useAnimatedStyle(() => ({ transform: [{ translateX: nudge.get() }] }));
+
   return (
-    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 2 }}>
-      {children}
-    </ScrollView>
+    <View style={{ gap: 8 }}>
+      <Animated.ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ gap: 8, paddingVertical: 2 }}
+        onLayout={(e) => setBox(e.nativeEvent.layout.width)}
+        onContentSizeChange={(w) => setContent(w)}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
+      >
+        <Animated.View style={[{ flexDirection: 'row', gap: 8 }, nudgeStyle]}>{children}</Animated.View>
+      </Animated.ScrollView>
+      {overflow ? (
+        <View style={s.track} accessible={false}>
+          <Animated.View style={[s.thumb, { width: thumb }, thumbStyle]} />
+        </View>
+      ) : null}
+    </View>
   );
 }
 
@@ -319,6 +363,8 @@ export const s = StyleSheet.create({
   input: { flex: 1, fontSize: 18, color: C.ink, fontWeight: '700', paddingVertical: 10 },
   bar: { backgroundColor: C.line, overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  track: { alignSelf: 'center', width: TRACK, height: 4, borderRadius: 2, backgroundColor: C.line, overflow: 'hidden' },
+  thumb: { height: 4, borderRadius: 2, backgroundColor: C.faint },
   footer: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
   explain: { backgroundColor: C.card, borderRadius: R.md, borderWidth: 1, borderColor: C.line, padding: 14, gap: 8 },
 });

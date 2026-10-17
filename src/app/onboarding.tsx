@@ -150,7 +150,7 @@ export default function Onboarding() {
           {country.cities.map((c, i) => <Chip key={c.name} label={c.name} active={i === p.city} onPress={() => setProfile({ city: i })} />)}
         </ChipRow>
         <Label>Quando você embarca</Label>
-        <ChipRow>
+        <ChipRow peek>
           {nextMonths(18).map((m) => <Chip key={m} label={monthLabel(m)} active={m === p.tripMonth} onPress={() => setProfile({ tripMonth: m })} />)}
         </ChipRow>
         <Label>Por quanto tempo</Label>

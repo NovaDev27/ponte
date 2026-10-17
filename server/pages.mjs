@@ -61,6 +61,7 @@ export function privacyPage(email) {
 
 <h2>3. Relatórios de erro e opiniões</h2>
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
+<p>Para entender travamentos, o app usa o <strong>Sentry</strong>, um serviço de monitoramento de erros. Quando o app trava, o Sentry recebe dados técnicos: a mensagem e o caminho do erro no código, o modelo do aparelho, a versão do sistema e do app. Configuramos o Sentry para <strong>não</strong> enviar o seu endereço IP, nome, e-mail ou o que você digita no app.</p>
 <p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
 <h2>4. Ponte Completo, alertas e lembretes</h2>
