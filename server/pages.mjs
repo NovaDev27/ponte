@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '12/10/2026';
+const UPDATED = '16/10/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -61,7 +61,7 @@ export function privacyPage(email) {
 
 <h2>3. Relatórios de erro e opiniões</h2>
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
-<p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e podem ser encaminhadas para um canal privado da equipe, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
+<p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
 <h2>4. Ponte Completo, alertas e lembretes</h2>
 <p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>

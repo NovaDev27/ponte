@@ -23,6 +23,11 @@ const CONTACT_EMAIL = process.env.CONTACT_EMAIL ?? '';
 const ERROR_LIMIT_DAY = 20; // relatórios de erro por aparelho
 const FEEDBACK_LIMIT_DAY = 5; // opiniões por aparelho
 const FEEDBACK_WEBHOOK_URL = process.env.FEEDBACK_WEBHOOK_URL ?? '';
+// Opiniões por e-mail via Resend (resend.com). Sem domínio próprio, o remetente de teste
+// onboarding@resend.dev só entrega no e-mail da própria conta do Resend.
+const RESEND_API_KEY = process.env.RESEND_API_KEY ?? '';
+const FEEDBACK_EMAIL_TO = process.env.FEEDBACK_EMAIL_TO || CONTACT_EMAIL;
+const FEEDBACK_EMAIL_FROM = process.env.FEEDBACK_EMAIL_FROM || 'Ponte <onboarding@resend.dev>';
 
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions';
 const GROQ_KEY = process.env.GROQ_API_KEY ?? '';
@@ -223,8 +228,8 @@ async function reportError(req, res) {
   res.end();
 }
 
-// Opinião dos testadores: vai para o log ("[feedback]") e, se configurado, para um webhook
-// (ex.: canal do Discord), para o dono ler sem abrir o painel da Render.
+// Opinião dos testadores: vai para o log ("[feedback]") e, se configurado, por e-mail (Resend)
+// e/ou para um webhook (ex.: canal do Discord), para o dono ler sem abrir o painel da Render.
 async function receiveFeedback(req, res) {
   if (APP_TOKEN && req.headers['x-ponte-token'] !== APP_TOKEN) return send(res, 401, { error: 'Acesso não autorizado.' });
   const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
@@ -244,8 +249,23 @@ async function receiveFeedback(req, res) {
   const one = (v) => v.replace(/\s+/g, ' ');
   const version = typeof body.version === 'string' ? body.version.slice(0, 20) : '?';
   console.log(`[feedback] v${version} nota=${nota || '-'} | gostou: ${one(fb.gostou) || '-'} | melhorar: ${one(fb.melhorar) || '-'} | pagaria: ${one(fb.pagaria) || '-'}`);
+  const stars = nota ? '★'.repeat(nota) + '☆'.repeat(5 - nota) : 'sem nota';
+  if (RESEND_API_KEY && FEEDBACK_EMAIL_TO) {
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: FEEDBACK_EMAIL_FROM,
+        to: [FEEDBACK_EMAIL_TO],
+        subject: `Nova opinião na Ponte: ${stars}`,
+        text: `Nota: ${stars}\nVersão do app: ${version}\n\nO que gostou:\n${fb.gostou || '-'}\n\nO que melhorar:\n${fb.melhorar || '-'}\n\nPagaria por:\n${fb.pagaria || '-'}\n`,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    })
+      .then((r) => { if (!r.ok) console.error('E-mail de feedback falhou: HTTP', r.status); })
+      .catch((err) => console.error('E-mail de feedback falhou:', err instanceof Error ? err.message : err));
+  }
   if (FEEDBACK_WEBHOOK_URL) {
-    const stars = nota ? '★'.repeat(nota) + '☆'.repeat(5 - nota) : 'sem nota';
     const content = `**Nova opinião na Ponte** (${stars}, v${version})\n**Gostou:** ${fb.gostou || '-'}\n**Melhorar:** ${fb.melhorar || '-'}\n**Pagaria por:** ${fb.pagaria || '-'}`;
     fetch(FEEDBACK_WEBHOOK_URL, {
       method: 'POST',
