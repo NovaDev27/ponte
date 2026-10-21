@@ -1,12 +1,12 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { Logo } from '../components/Logo';
-import { Badge, Btn, Card, Hero, IconBox, P, Screen } from '../components/ui';
+import { Badge, Btn, Card, Hero, IconBox, P, Screen, Txt } from '../components/ui';
 import { billingAvailable, buyCompleto, completoPrice, listenPurchases, ownsCompleto } from '../lib/billing';
 import { COMPLETO_BENEFITS, COMPLETO_GRATIS, hasCompleto } from '../lib/completo';
 import { useApp } from '../lib/store';
-import { C } from '../lib/theme';
+import { C, FONT } from '../lib/theme';
 
 export default function Completo() {
   const { state, update } = useApp();
@@ -80,17 +80,17 @@ export default function Completo() {
           <Logo size={170} color="#FFFFFF" accent="#FFFFFF" />
         </View>
         <Badge label="PONTE COMPLETO" color="#FFFFFF" soft="rgba(255,255,255,0.16)" />
-        <Text style={{ color: '#FFFFFF', fontSize: 26, fontWeight: '800', letterSpacing: -0.5 }}>Seu intercâmbio planejado do começo ao fim</Text>
-        <Text style={{ color: '#C8D6E5', fontSize: 15 }}>
+        <Txt w="heavy" size={28} color={'#FFFFFF'} style={{ lineHeight: 32 }}>Seu intercâmbio planejado do começo ao fim</Txt>
+        <Txt size={15} color={C.creamSub}>
           {COMPLETO_GRATIS && !state.premium ? 'Liberado grátis durante o teste' : 'Pagamento único. Sem mensalidade.'}
-        </Text>
+        </Txt>
       </Hero>
 
       {COMPLETO_BENEFITS.map((b) => (
         <Card key={b.title} style={{ flexDirection: 'row', gap: 12 }}>
           <IconBox name={b.icon} color={C.accent} soft={C.accentSoft} />
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>{b.title}</Text>
+            <Txt w="display" size={16} color={C.ink}>{b.title}</Txt>
             <P muted style={{ fontSize: 14 }}>{b.text}</P>
           </View>
         </Card>
@@ -99,15 +99,15 @@ export default function Completo() {
       {state.premium ? (
         <Card tone="good" style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
           <Feather name="check-circle" size={22} color={C.good} />
-          <P style={{ flex: 1, fontWeight: '700' }}>Você tem o Ponte Completo. Obrigado!</P>
+          <P style={{ flex: 1, fontFamily: FONT.bold }}>Você tem o Ponte Completo. Obrigado!</P>
         </Card>
       ) : unlocked ? (
         <Card tone="good">
-          <P style={{ fontWeight: '700' }}>Durante o teste, tudo isso está liberado para você.</P>
+          <P style={{ fontFamily: FONT.bold }}>Durante o teste, tudo isso está liberado para você.</P>
           <P muted style={{ fontSize: 14 }}>Use à vontade e conte em “Dê sua opinião” o que valeria a pena pagar.</P>
         </Card>
       ) : store === 'loading' ? (
-        <ActivityIndicator color={C.primary} />
+        <ActivityIndicator color={C.ink} />
       ) : store === 'ok' ? (
         <>
           <Btn label={busy ? 'Abrindo o Google Play...' : `Liberar por ${price ?? '...'}`} kind="accent" icon="star" onPress={buy} disabled={busy || !price} />
@@ -119,7 +119,7 @@ export default function Completo() {
         </Card>
       )}
 
-      {msg ? <P style={{ textAlign: 'center', fontWeight: '700' }}>{msg}</P> : null}
+      {msg ? <P style={{ textAlign: 'center', fontFamily: FONT.bold }}>{msg}</P> : null}
 
       <P muted style={{ fontSize: 12, textAlign: 'center' }}>
         O pagamento é feito pelo Google Play, que mostra o preço final antes de confirmar. As funções grátis da Ponte continuam grátis.

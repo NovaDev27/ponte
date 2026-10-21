@@ -1,7 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { Linking, Text, View } from 'react-native';
-import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap } from '../../components/ui';
+import { Linking, View } from 'react-native';
+import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap, Txt } from '../../components/ui';
 import { getCountry, STYLE_FACTOR } from '../../data/countries';
 import { brl, money, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
@@ -50,8 +50,8 @@ export default function Pais() {
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <Icon name="external-link" />
             <View style={{ flex: 1 }}>
-              <Text style={{ fontWeight: '700', color: C.ink }}>Site oficial: {country.site.label}</Text>
-              <Text style={{ color: C.sub, fontSize: 13 }}>Regras de imigração mudam. Confira sempre a fonte oficial.</Text>
+              <Txt w="bold" color={C.ink}>Site oficial: {country.site.label}</Txt>
+              <Txt size={13} color={C.sub}>Regras de imigração mudam. Confira sempre a fonte oficial.</Txt>
             </View>
           </View>
         </Card>

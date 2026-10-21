@@ -1,17 +1,19 @@
 import Feather from '@expo/vector-icons/Feather';
-import React, { useState } from 'react';
-import { Text, View } from 'react-native';
-import Animated, { ZoomIn } from 'react-native-reanimated';
+import React, { useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
+import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSpring, withTiming, ZoomIn } from 'react-native-reanimated';
 import { PlanButton } from '../../components/PlanButton';
-import { Badge, Card, Chip, Hero, P, Ring, Screen, Tap } from '../../components/ui';
-import { phaseDue, phasesFor } from '../../data/checklist';
+import { Badge, Card, Hero, P, Ring, Screen, Segment, Tap, Txt } from '../../components/ui';
+import { phaseDue, phasesFor, type Task } from '../../data/checklist';
 import { getCountry } from '../../data/countries';
 import { hasCompleto } from '../../lib/completo';
-import { bump, tap } from '../../lib/motion';
 import { dateLabel } from '../../lib/format';
+import { bump, success, tap } from '../../lib/motion';
 import { ensurePermission } from '../../lib/notify';
 import { useApp } from '../../lib/store';
 import { C, F } from '../../lib/theme';
+
+const COLOR = F.checklist.color;
 
 export default function Checklist() {
   const { state, toggle, update } = useApp();
@@ -30,31 +32,34 @@ export default function Checklist() {
   const currentPhase = phases.find((ph) => ph.tasks.some((t) => !state.done[t.id]))?.id;
 
   return (
-    <Screen title="Checklist" eyebrow="Passo 3 · Checklist" eyebrowColor={F.checklist.color} subtitle={`Do planejamento à primeira semana em ${country.name}`}>
-      <Hero colors={['#B85A16', '#E07A2F']} style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-        <Ring value={done / all.length} size={84} stroke={9} color="#FFFFFF" track="rgba(255,255,255,0.25)">
-          <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 18 }}>{Math.round((done / all.length) * 100)}%</Text>
+    <Screen title="Checklist" eyebrow="Passo 3 · Checklist" eyebrowColor={COLOR} subtitle={`Do planejamento à primeira semana em ${country.name}`}>
+      <Hero style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
+        <Ring value={done / all.length} size={92} stroke={9} color={C.accent} track="rgba(245,241,234,0.12)">
+          <Txt w="heavy" size={22} color={C.cream}>{Math.round((done / all.length) * 100)}%</Txt>
         </Ring>
         <View style={{ flex: 1, gap: 4 }}>
-          <Text style={{ color: '#FFFFFF', fontSize: 20, fontWeight: '800' }}>{done === all.length ? 'Tudo pronto!' : `${done} de ${all.length} feitas`}</Text>
-          <Text style={{ color: '#FFE4CF', fontSize: 14 }}>{next ? `Próxima: ${next.text}` : 'Boa viagem! ✈️'}</Text>
+          <Txt w="mono" size={10} color={C.creamSub} style={{ letterSpacing: 1.3 }}>PASSAPORTE DE CARIMBOS</Txt>
+          <Txt w="display" size={21} color={C.cream}>{done === all.length ? 'Tudo carimbado!' : `${done} de ${all.length} carimbos`}</Txt>
+          <Txt size={13} color={C.creamSub} numberOfLines={2}>{next ? `Próximo: ${next.text}` : 'Boa viagem! ✈️'}</Txt>
         </View>
       </Hero>
 
       <Card>
-        <Text style={{ fontWeight: '800', color: C.ink, fontSize: 16 }}>Prazos e lembretes</Text>
+        <Txt w="display" size={17}>Prazos e lembretes</Txt>
         {completo ? (
           <>
-            <P muted style={{ fontSize: 14 }}>As datas são calculadas a partir do seu embarque. Receba um aviso 7 dias antes de cada prazo.</P>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Chip label="Lembretes ligados" active={state.reminders} color={F.checklist.color} onPress={() => setReminders(true)} />
-              <Chip label="Desligados" active={!state.reminders} color={F.checklist.color} onPress={() => setReminders(false)} />
-            </View>
+            <P muted style={{ fontSize: 14 }}>As datas saem do seu embarque. Receba um aviso 7 dias antes de cada prazo.</P>
+            <Segment
+              options={[{ value: true, label: 'Lembretes ligados' }, { value: false, label: 'Desligados' }]}
+              value={state.reminders}
+              onChange={setReminders}
+              color={COLOR}
+            />
           </>
         ) : (
           <P muted style={{ fontSize: 14 }}>Com o Ponte Completo, cada etapa ganha uma data e você recebe lembretes antes dos prazos.</P>
         )}
-        <PlanButton color={F.checklist.color} />
+        <PlanButton color={COLOR} />
       </Card>
 
       {phases.map((ph, pi) => {
@@ -66,53 +71,48 @@ export default function Checklist() {
         return (
           <View key={ph.id} style={{ flexDirection: 'row', gap: 12 }}>
             <View style={{ alignItems: 'center', width: 30 }}>
-              <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: complete ? C.good : current ? F.checklist.color : C.line, alignItems: 'center', justifyContent: 'center', marginTop: 4 }}>
-                {complete ? <Feather name="check" size={16} color="#FFFFFF" /> : <Text style={{ color: current ? '#FFFFFF' : C.sub, fontWeight: '800' }}>{pi + 1}</Text>}
+              <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: complete ? C.good : current ? COLOR : C.sunk, alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                {complete ? <Feather name="check" size={16} color="#FFFFFF" /> : <Txt w="bold" size={13} color={current ? '#FFFFFF' : C.sub} style={{ lineHeight: 16 }}>{pi + 1}</Txt>}
               </View>
-              {pi < phases.length - 1 ? <View style={{ width: 2, flex: 1, backgroundColor: complete ? C.good : C.line, marginTop: 4 }} /> : null}
+              {pi < phases.length - 1 ? <View style={{ width: 2, flex: 1, borderRadius: 1, backgroundColor: complete ? C.good : C.line, marginTop: 4 }} /> : null}
             </View>
-            <View style={{ flex: 1, gap: 8, paddingBottom: 8 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
-                <View>
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: current ? F.checklist.color : C.sub, letterSpacing: 0.6 }}>{ph.when.toUpperCase()}</Text>
-                  <Text style={{ fontSize: 18, fontWeight: '800', color: C.ink }}>{ph.title}</Text>
+            <View style={{ flex: 1, gap: 10, paddingBottom: 14 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Txt w="mono" size={10} color={current ? COLOR : C.sub} style={{ letterSpacing: 1.1 }}>{ph.when.toUpperCase()}</Txt>
+                  <Txt w="display" size={19}>{ph.title}</Txt>
                   {due ? (
-                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
-                      <Text style={{ color: late ? C.bad : C.sub, fontSize: 13, fontWeight: '700' }}>até {dateLabel(due)}</Text>
-                      {late ? <Badge label="ATRASADO" color={C.bad} soft="#FBE6E1" /> : null}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Txt w="medium" size={13} color={late ? C.bad : C.sub}>até {dateLabel(due)}</Txt>
+                      {late ? <Badge label="ATRASADO" color={C.bad} soft={C.badSoft} /> : null}
                     </View>
                   ) : null}
                 </View>
-                <Text style={{ color: C.sub, fontSize: 13, fontWeight: '700' }}>{n}/{ph.tasks.length}</Text>
+                {complete ? (
+                  <Animated.View entering={ZoomIn.springify().damping(9).stiffness(220)} style={{ marginTop: 6 }}>
+                    <View style={{ transform: [{ rotate: '-8deg' }], borderWidth: 2, borderColor: C.good, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3 }}>
+                      <Txt w="mono" size={11} color={C.good} style={{ letterSpacing: 1.2 }}>CARIMBADO</Txt>
+                    </View>
+                  </Animated.View>
+                ) : (
+                  <Txt w="mono" size={12} color={C.sub} style={{ marginTop: 4 }}>{n}/{ph.tasks.length}</Txt>
+                )}
               </View>
-              <Card style={{ paddingVertical: 4, gap: 0 }}>
-                {ph.tasks.map((t, i) => {
-                  const ok = !!state.done[t.id];
-                  return (
-                    <Tap
-                      key={t.id}
-                      onPress={() => {
-                        if (ok) tap();
-                        else bump();
-                        toggle(t.id);
-                      }}
-                      haptic={false}
-                      scaleTo={0.98}
-                      accessibilityRole="checkbox"
-                      accessibilityState={{ checked: ok }}
-                      style={{ flexDirection: 'row', gap: 12, alignItems: 'center', paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}
-                    >
-                      <View style={{ width: 26, height: 26, borderRadius: 8, borderWidth: 2, borderColor: ok ? C.good : C.faint, backgroundColor: ok ? C.good : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
-                        {ok ? (
-                          <Animated.View entering={ZoomIn.springify().damping(11)}>
-                            <Feather name="check" size={16} color="#FFFFFF" />
-                          </Animated.View>
-                        ) : null}
-                      </View>
-                      <Text style={[{ flex: 1, fontSize: 15, color: C.ink, lineHeight: 21 }, ok && { color: C.faint, textDecorationLine: 'line-through' }]}>{t.text}</Text>
-                    </Tap>
-                  );
-                })}
+              <Card style={{ paddingVertical: 2, gap: 0 }}>
+                {ph.tasks.map((t, i) => (
+                  <TaskRow
+                    key={t.id}
+                    t={t}
+                    first={i === 0}
+                    ok={!!state.done[t.id]}
+                    onToggle={(ok) => {
+                      if (ok) tap();
+                      else if (n === ph.tasks.length - 1) success(); // carimbou a última da fase
+                      else bump();
+                      toggle(t.id);
+                    }}
+                  />
+                ))}
               </Card>
             </View>
           </View>
@@ -121,3 +121,52 @@ export default function Checklist() {
     </Screen>
   );
 }
+
+// Tarefa com "carimbo": ao marcar, o selo cai girando e deixa uma marquinha de tinta.
+function TaskRow({ t, ok, first, onToggle }: { t: Task; ok: boolean; first: boolean; onToggle: (ok: boolean) => void }) {
+  const reduce = useReducedMotion();
+  const scale = useSharedValue(1);
+  const rot = useSharedValue(ok ? -8 : 0);
+  const ink = useSharedValue(0);
+  const was = useRef(ok);
+
+  useEffect(() => {
+    if (ok && !was.current && !reduce) {
+      scale.set(1.9);
+      scale.set(withSpring(1, { damping: 10, stiffness: 260 }));
+      rot.set(-30);
+      rot.set(withSpring(-8, { damping: 10, stiffness: 200 }));
+      ink.set(0);
+      ink.set(withTiming(1, { duration: 520 }));
+    }
+    if (!ok) rot.set(0);
+    was.current = ok;
+  }, [ok, reduce, scale, rot, ink]);
+
+  const stamp = useAnimatedStyle(() => ({ transform: [{ scale: scale.get() }, { rotate: `${rot.get()}deg` }] }));
+  const splash = useAnimatedStyle(() => ({ opacity: ink.get() > 0 && ink.get() < 1 ? 0.35 * (1 - ink.get()) : 0, transform: [{ scale: 1 + ink.get() * 1.4 }] }));
+
+  return (
+    <Tap
+      onPress={() => onToggle(ok)}
+      haptic={false}
+      scaleTo={0.98}
+      accessibilityRole="checkbox"
+      accessibilityState={{ checked: ok }}
+      style={{ flexDirection: 'row', gap: 14, alignItems: 'center', paddingVertical: 13, borderTopWidth: first ? 0 : 1, borderTopColor: C.line }}
+    >
+      <View style={{ width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }}>
+        <Animated.View style={[{ position: 'absolute', width: 30, height: 30, borderRadius: 15, backgroundColor: COLOR }, splash]} />
+        {ok ? (
+          <Animated.View style={[{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLOR, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#F7B98A' }, stamp]}>
+            <Feather name="check" size={15} color="#FFFFFF" />
+          </Animated.View>
+        ) : (
+          <View style={{ width: 28, height: 28, borderRadius: 14, borderWidth: 1.5, borderColor: C.faint, borderStyle: 'dashed' }} />
+        )}
+      </View>
+      <Txt size={15} color={ok ? C.faint : C.ink} style={[{ flex: 1 }, ok && { textDecorationLine: 'line-through' }]}>{t.text}</Txt>
+    </Tap>
+  );
+}
+

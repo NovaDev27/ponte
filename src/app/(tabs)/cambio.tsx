@@ -1,15 +1,17 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import React, { useMemo, useState } from 'react';
-import { Text, View } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { View } from 'react-native';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { ShareResult } from '../../components/ShareResult';
-import { Badge, Card, Chip, ChipRow, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section, Tap } from '../../components/ui';
+import { Badge, Bar, Card, Chip, ChipRow, CountUp, Explain, Field, Hero, IconBox, Label, P, Row, Screen, Section, Segment, Tap, Txt } from '../../components/ui';
 import { CURRENCIES, getCountry } from '../../data/countries';
 import { FEES_CHECKED, highlightOf, METHODS, quote } from '../../data/methods';
 import { brl, money, num, parseNum, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
-import { C, F } from '../../lib/theme';
+import { C, F, FONT, R } from '../../lib/theme';
+
+const COLOR = F.cambio.color;
 
 const FLAG: Record<string, string> = { EUR: '🇪🇺', USD: '🇺🇸', CAD: '🇨🇦', AUD: '🇦🇺', GBP: '🇬🇧', NZD: '🇳🇿', JPY: '🇯🇵', ZAR: '🇿🇦' };
 const QUICK = [500, 1000, 3000, 10000];
@@ -39,43 +41,40 @@ export default function Cambio() {
   return (
     <Screen title="Quanto chega" eyebrow="Passo 2 · Câmbio" eyebrowColor={F.cambio.color} subtitle="Veja quanto sobra de verdade em cada jeito de levar dinheiro">
       <Card>
-        <Label>Quanto você quer levar</Label>
+        <Label>Você leva</Label>
         <Field value={amountText} onChangeText={setAmountText} prefix="R$" placeholder="1.000" big />
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {QUICK.map((v) => (
-            <Chip key={v} label={brl(v, 0)} active={amount === v} color={F.cambio.color} onPress={() => setAmountText(num(v, 0))} />
+            <Chip key={v} label={brl(v, 0)} active={amount === v} color={COLOR} onPress={() => setAmountText(num(v, 0))} />
           ))}
         </View>
         <Label style={{ marginTop: 6 }}>Para qual moeda</Label>
         <ChipRow>
-          {CURRENCIES.map((c) => <Chip key={c} label={`${FLAG[c] ?? ''} ${c}`} active={c === cur} color={F.cambio.color} onPress={() => setCur(c)} />)}
+          {CURRENCIES.map((c) => <Chip key={c} label={`${FLAG[c] ?? ''} ${c}`} active={c === cur} color={COLOR} onPress={() => setCur(c)} />)}
         </ChipRow>
         <Label style={{ marginTop: 6 }}>Para quem</Label>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Chip label="Minha conta lá fora" active={own} color={F.cambio.color} onPress={() => setOwn(true)} />
-          <Chip label="Outra pessoa" active={!own} color={F.cambio.color} onPress={() => setOwn(false)} />
-        </View>
+        <Segment options={[{ value: true, label: 'Minha conta lá fora' }, { value: false, label: 'Outra pessoa' }]} value={own} onChange={setOwn} color={COLOR} />
       </Card>
 
       {amount > 0 ? (
-        <Hero colors={['#145C3D', '#1F8A5B']}>
+        <Hero colors={['#1F5A40', COLOR]}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Feather name="award" size={18} color="#C9F0DA" />
-            <Text style={{ color: '#C9F0DA', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>MELHOR CAMINHO: {best.m.name.toUpperCase()}</Text>
+            <Feather name="award" size={15} color="#CDEBD9" />
+            <Txt w="mono" size={11} color="#CDEBD9" style={{ letterSpacing: 1.2, flex: 1 }} numberOfLines={1}>MELHOR CAMINHO · {best.m.name.toUpperCase()}</Txt>
           </View>
-          <Text style={{ color: '#FFFFFF', fontSize: 15 }}>Chegam</Text>
-          <Text style={{ color: '#FFFFFF', fontSize: 40, fontWeight: '800', letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{money(best.q.received, cur)}</Text>
+          <Txt size={15} color="#E6F4EC" style={{ marginTop: 4 }}>Chegam</Txt>
+          <CountUp value={best.q.received} format={(v) => money(v, cur)} style={{ color: '#FFFFFF', fontSize: 42, fontFamily: FONT.heavy, letterSpacing: -1 }} />
           {saving > 0.5 ? (
-            <View style={{ backgroundColor: 'rgba(255,255,255,0.14)', borderRadius: 14, padding: 12, marginTop: 4 }}>
-              <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 16 }}>Você economiza {brl(saving)}</Text>
-              <Text style={{ color: '#D7F3E3', fontSize: 14 }}>comparado com {worst.m.name.toLowerCase()}. Em 6 envios, são {brl(saving * 6, 0)}.</Text>
+            <View style={{ backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: R.md, padding: 14, marginTop: 6, gap: 2 }}>
+              <Txt w="display" size={17} color="#FFFFFF">Você economiza {brl(saving)}</Txt>
+              <Txt size={14} color="#D7F3E3">comparado com {worst.m.name.toLowerCase()}. Em 6 envios, são {brl(saving * 6, 0)}.</Txt>
             </View>
           ) : null}
         </Hero>
       ) : null}
       {amount > 0 && saving > 0.5 ? (
         <ShareResult
-          color={F.cambio.color}
+          color={COLOR}
           data={{
             kicker: `Meu intercâmbio · ${country.name}`,
             line: 'Vou economizar no câmbio',
@@ -87,20 +86,22 @@ export default function Cambio() {
       ) : null}
 
       <Section title="Quanto você perde em cada caminho" hint={`Sem nenhuma taxa, chegariam ${money(ideal, cur)}. Barra menor = melhor.`} />
-      <Card style={{ gap: 14 }}>
-        {quotes.map(({ m, q }, i) => (
-          <View key={m.id} style={{ gap: 6 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <Feather name={m.icon} size={16} color={m.id === best.m.id ? F.cambio.color : C.sub} />
-              <Text style={{ flex: 1, fontWeight: '700', color: C.ink }}>{m.name}</Text>
-              <Text style={{ fontWeight: '800', color: m.id === best.m.id ? F.cambio.color : q.lostPct > 6 ? C.bad : C.ink, fontVariant: ['tabular-nums'] }}>− {brl(q.lostBRL)}</Text>
+      <Card style={{ gap: 16 }}>
+        {quotes.map(({ m, q }, i) => {
+          const isBest = m.id === best.m.id;
+          const tone = isBest ? COLOR : q.lostPct > 6 ? C.bad : C.ink;
+          return (
+            <View key={m.id} style={{ gap: 7 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Feather name={m.icon} size={16} color={isBest ? COLOR : C.sub} />
+                <Txt w="bold" style={{ flex: 1 }}>{m.name}</Txt>
+                <Txt w="display" size={16} color={tone} style={{ fontVariant: ['tabular-nums'] }}>− {brl(q.lostBRL)}</Txt>
+              </View>
+              <Bar value={Math.max(0.02, q.lostBRL / maxLoss)} color={isBest ? COLOR : q.lostPct > 6 ? '#E07A65' : '#E3B26A'} height={10} delay={i * 90} />
+              <Txt size={12} color={C.sub}>{num(q.lostPct, 1)}% em taxas · chegam {money(q.received, cur)}</Txt>
             </View>
-            <View style={{ height: 12, borderRadius: 6, backgroundColor: C.bg, overflow: 'hidden' }}>
-              <View style={{ width: `${Math.max(2, (q.lostBRL / maxLoss) * 100)}%`, height: '100%', borderRadius: 6, backgroundColor: m.id === best.m.id ? F.cambio.color : q.lostPct > 6 ? '#E07A65' : '#E3B26A' }} />
-            </View>
-            <Text style={{ fontSize: 12, color: C.sub }}>{num(q.lostPct, 1)}% em taxas · chegam {money(q.received, cur)}</Text>
-          </View>
-        ))}
+          );
+        })}
       </Card>
 
       <Section title="Como fazer cada um" hint="Toque para ver o passo a passo e os cuidados" />
@@ -108,50 +109,56 @@ export default function Cambio() {
         const expanded = open === m.id;
         return (
           <Tap key={m.id} onPress={() => setOpen(expanded ? null : m.id)} scaleTo={0.98} accessibilityRole="button" accessibilityState={{ expanded }}>
-            <Card>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-                <IconBox name={m.icon} color={m.id === best.m.id ? F.cambio.color : C.primary} soft={m.id === best.m.id ? F.cambio.soft : C.primarySoft} />
-                <View style={{ flex: 1, gap: 2 }}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <Text style={{ fontSize: 16, fontWeight: '800', color: C.ink }}>{m.name}</Text>
-                    {m.id === best.m.id ? <Badge label="MELHOR CAMINHO" color={F.cambio.color} soft={F.cambio.soft} /> : null}
-                    {i === 0 && m.id === 'cripto' ? <Badge label="MAIS BARATO, COM RISCOS" color={C.warn} soft={C.warnSoft} /> : null}
-                    {i === quotes.length - 1 ? <Badge label="MAIS CARO" color={C.bad} soft="#FBE6E1" /> : null}
-                  </View>
-                  <Text style={{ color: C.sub, fontSize: 13 }}>{m.short}</Text>
-                </View>
-                <Feather name={expanded ? 'chevron-up' : 'chevron-down'} size={20} color={C.faint} />
-              </View>
-              {expanded ? (
-                <Animated.View entering={FadeInDown.duration(280)} style={{ gap: 8, borderTopWidth: 1, borderTopColor: C.line, paddingTop: 12 }}>
-                  <Row left="IOF (imposto)" right={brl(q.iof)} />
-                  <Row left="Spread e taxas" right={brl(q.spread)} />
-                  <Row left="Tarifas fixas" right={brl(q.fixed)} />
-                  <Row left="Total perdido" right={brl(q.lostBRL)} strong />
-                  <Label style={{ marginTop: 6 }}>Passo a passo</Label>
-                  {m.steps.map((t, k) => (
-                    <View key={k} style={{ flexDirection: 'row', gap: 10 }}>
-                      <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
-                        <Text style={{ color: C.primary, fontWeight: '800', fontSize: 12 }}>{k + 1}</Text>
+            <Animated.View layout={LinearTransition.duration(280)}>
+              <Card>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+                  <IconBox name={m.icon} color={m.id === best.m.id ? '#FFFFFF' : C.ink} soft={m.id === best.m.id ? COLOR : C.sunk} />
+                  <View style={{ flex: 1, gap: 3 }}>
+                    <Txt w="display" size={17}>{m.name}</Txt>
+                    {m.id === best.m.id || (i === 0 && m.id === 'cripto') || i === quotes.length - 1 ? (
+                      <View style={{ flexDirection: 'row', gap: 6, flexWrap: 'wrap' }}>
+                        {m.id === best.m.id ? <Badge label="MELHOR CAMINHO" color={COLOR} soft={F.cambio.soft} /> : null}
+                        {i === 0 && m.id === 'cripto' ? <Badge label="MAIS BARATO, COM RISCOS" color={C.warn} soft={C.warnSoft} /> : null}
+                        {i === quotes.length - 1 ? <Badge label="MAIS CARO" color={C.bad} soft={C.badSoft} /> : null}
                       </View>
-                      <P style={{ flex: 1 }}>{t}</P>
-                    </View>
-                  ))}
-                  <Label style={{ marginTop: 6 }}>Cuidados</Label>
-                  {m.watch.map((t, k) => (
-                    <View key={k} style={{ flexDirection: 'row', gap: 8 }}>
-                      <Feather name="alert-triangle" size={15} color={C.warn} style={{ marginTop: 3 }} />
-                      <P muted style={{ flex: 1 }}>{t}</P>
-                    </View>
-                  ))}
-                  {m.id === 'cripto' ? (
-                    <Tap onPress={() => router.push('/guia-cripto')}>
-                      <Text style={{ color: C.primary, fontWeight: '800' }}>Ler o guia completo de stablecoins →</Text>
-                    </Tap>
-                  ) : null}
-                </Animated.View>
-              ) : null}
-            </Card>
+                    ) : null}
+                    <Txt size={13} color={C.sub}>{m.short}</Txt>
+                  </View>
+                  <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: C.sunk, alignItems: 'center', justifyContent: 'center' }}>
+                    <Feather name={expanded ? 'minus' : 'plus'} size={16} color={C.ink} />
+                  </View>
+                </View>
+                {expanded ? (
+                  <Animated.View entering={FadeInDown.duration(300)} style={{ gap: 9, borderTopWidth: 1, borderTopColor: C.line, paddingTop: 14, marginTop: 2 }}>
+                    <Row left="IOF (imposto)" right={brl(q.iof)} />
+                    <Row left="Spread e taxas" right={brl(q.spread)} />
+                    <Row left="Tarifas fixas" right={brl(q.fixed)} />
+                    <Row left="Total perdido" right={brl(q.lostBRL)} strong />
+                    <Label style={{ marginTop: 8 }}>Passo a passo</Label>
+                    {m.steps.map((t, k) => (
+                      <View key={k} style={{ flexDirection: 'row', gap: 10 }}>
+                        <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: C.ink, alignItems: 'center', justifyContent: 'center', marginTop: 1 }}>
+                          <Txt w="bold" size={12} color={C.cream} style={{ lineHeight: 15 }}>{k + 1}</Txt>
+                        </View>
+                        <P style={{ flex: 1 }}>{t}</P>
+                      </View>
+                    ))}
+                    <Label style={{ marginTop: 8 }}>Cuidados</Label>
+                    {m.watch.map((t, k) => (
+                      <View key={k} style={{ flexDirection: 'row', gap: 10 }}>
+                        <Feather name="alert-triangle" size={15} color={C.warn} style={{ marginTop: 4 }} />
+                        <P muted style={{ flex: 1 }}>{t}</P>
+                      </View>
+                    ))}
+                    {m.id === 'cripto' ? (
+                      <Tap onPress={() => router.push('/guia-cripto')}>
+                        <Txt w="bold" color={C.accent}>Ler o guia completo de stablecoins →</Txt>
+                      </Tap>
+                    ) : null}
+                  </Animated.View>
+                ) : null}
+              </Card>
+            </Animated.View>
           </Tap>
         );
       })}

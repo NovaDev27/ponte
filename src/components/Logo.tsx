@@ -1,12 +1,12 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import Svg, { G, Line, Path } from 'react-native-svg';
-import { C } from '../lib/theme';
+import { C, FONT } from '../lib/theme';
 
 type Props = { size?: number; color?: string; accent?: string };
 
 // Ponte pênsil minimalista com um avião ao fundo.
-export function Logo({ size = 120, color = C.primary, accent = C.accent }: Props) {
+export function Logo({ size = 120, color = C.ink, accent = C.accent }: Props) {
   const hangers = [44, 52, 60, 68, 76];
   return (
     <Svg width={size} height={size * 0.7} viewBox="0 0 120 84">
@@ -34,8 +34,8 @@ export function Logo({ size = 120, color = C.primary, accent = C.accent }: Props
 export function Wordmark({ light = false }: { light?: boolean }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-      <Logo size={44} color={light ? '#FFFFFF' : C.primary} />
-      <Text style={{ fontSize: 22, fontWeight: '800', color: light ? '#FFFFFF' : C.ink, letterSpacing: -0.5 }}>ponte</Text>
+      <Logo size={40} color={light ? C.cream : C.ink} />
+      <Text style={{ fontSize: 24, fontFamily: FONT.heavy, color: light ? C.cream : C.ink, letterSpacing: -0.8 }}>ponte</Text>
     </View>
   );
 }

@@ -1,42 +1,60 @@
+// Visual da Ponte: papel creme, tinta quase preta e um laranja de pôr do sol.
+// Pensado para parecer um cartão de embarque: calmo, limpo e com cara de viagem.
 export const C = {
-  bg: '#F3F6FA',
-  card: '#FFFFFF',
-  ink: '#122033',
-  sub: '#5B6B7E',
-  faint: '#97A3B3',
-  line: '#E3E9F0',
-  night: '#0F2338',
-  night2: '#1D4E7E',
-  primary: '#1D4E7E',
-  primarySoft: '#E3ECF6',
-  accent: '#FF7A45',
-  accentSoft: '#FFEDE4',
-  good: '#1F8A5B',
-  goodSoft: '#E0F2E9',
+  bg: '#F5F1EA', // papel
+  card: '#FFFCF7',
+  sunk: '#EDE7DC', // fundo de campos e trilhos
+  ink: '#171B21',
+  ink2: '#2A313C',
+  sub: '#6A7079',
+  faint: '#A8A39A',
+  line: '#E6DFD3',
+  night: '#171B21',
+  night2: '#2A313C',
+  primary: '#171B21',
+  primarySoft: '#ECE6DC',
+  accent: '#EE6A3C',
+  accentSoft: '#FBE5DA',
+  good: '#2F7D5B',
+  goodSoft: '#E1EEE5',
   bad: '#C2412D',
+  badSoft: '#F8E3DD',
   warn: '#9A6512',
-  warnSoft: '#FBF0DC',
+  warnSoft: '#F6EBD6',
+  cream: '#F5F1EA', // texto claro sobre fundo escuro
+  creamSub: '#B9B3A8',
 };
 
 // Cada função do app tem a sua cor, para a pessoa se localizar rápido.
 export const F = {
-  cambio: { color: '#1F8A5B', soft: '#E0F2E9' },
-  orcamento: { color: '#2F6FD6', soft: '#E4EEFC' },
-  checklist: { color: '#E07A2F', soft: '#FDEEDF' },
-  assistente: { color: '#7A5AF8', soft: '#EEE9FE' },
-  cripto: { color: '#0E8C9A', soft: '#DFF4F6' },
+  cambio: { color: '#2F7D5B', soft: '#E1EEE5' },
+  orcamento: { color: '#3B63C4', soft: '#E3E9F6' },
+  checklist: { color: '#D2702A', soft: '#F8E6D5' },
+  assistente: { color: '#171B21', soft: '#E9E3D8' },
+  cripto: { color: '#1F8590', soft: '#DDEFF0' },
 };
 
 // Cores das categorias do orçamento
 export const CAT = {
-  moradia: '#2F6FD6',
-  transporte: '#0E8C9A',
-  alimentacao: '#E07A2F',
-  celular: '#7A5AF8',
-  lazer: '#E0A100',
-  seguro: '#97A3B3',
+  moradia: '#3B63C4',
+  transporte: '#1F8590',
+  alimentacao: '#D2702A',
+  celular: '#7B61D9',
+  lazer: '#D9A21B',
+  seguro: '#A8A39A',
 };
 
-export const R = { sm: 10, md: 14, lg: 22 };
+// Tipografia: Bricolage Grotesque nos títulos, DM Sans no texto e DM Mono nos "códigos" de viagem.
+export const FONT = {
+  regular: 'DMSans_400Regular',
+  medium: 'DMSans_500Medium',
+  bold: 'DMSans_700Bold',
+  display: 'BricolageGrotesque_700Bold',
+  heavy: 'BricolageGrotesque_800ExtraBold',
+  mono: 'DMMono_500Medium',
+};
 
-export const shadow = { boxShadow: '0px 6px 18px rgba(18, 32, 51, 0.07)' } as const;
+export const R = { sm: 12, md: 16, lg: 24, pill: 999 };
+
+export const shadow = { boxShadow: '0px 10px 30px rgba(23, 27, 33, 0.07)' } as const;
+export const lift = { boxShadow: '0px 18px 40px rgba(23, 27, 33, 0.16)' } as const;

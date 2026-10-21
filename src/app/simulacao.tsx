@@ -1,14 +1,15 @@
-import Feather from '@expo/vector-icons/Feather';
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { CompletoLock } from '../components/CompletoLock';
-import { Card, Chip, Field, H, Hero, Label, P, Screen, Tap } from '../components/ui';
+import { Card, Chip, CountUp, Field, H, Hero, Label, P, Screen, Segment, Stepper, Txt } from '../components/ui';
 import { getCountry } from '../data/countries';
 import { highlightOf, METHODS, quote } from '../data/methods';
 import { hasCompleto } from '../lib/completo';
 import { brl, money, num, parseNum } from '../lib/format';
 import { rateOf, useApp } from '../lib/store';
-import { C, F } from '../lib/theme';
+import { C, F, FONT } from '../lib/theme';
+
+const COLOR = F.cambio.color;
 
 const QUICK = [1000, 2000, 3000, 5000];
 
@@ -44,46 +45,39 @@ export default function Simulacao() {
         <Field value={text} onChangeText={setText} prefix="R$" big />
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {QUICK.map((v) => (
-            <Chip key={v} label={brl(v, 0)} active={monthly === v} color={F.cambio.color} onPress={() => setText(num(v, 0))} />
+            <Chip key={v} label={brl(v, 0)} active={monthly === v} color={COLOR} onPress={() => setText(num(v, 0))} />
           ))}
         </View>
 
         <Label style={{ marginTop: 6 }}>Por quantos meses</Label>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-          <Step icon="minus" onPress={() => setMonths((m) => Math.max(1, m - 1))} />
-          <Text style={{ fontSize: 22, fontWeight: '800', color: C.ink, minWidth: 90, textAlign: 'center' }}>{months} {months === 1 ? 'mês' : 'meses'}</Text>
-          <Step icon="plus" onPress={() => setMonths((m) => Math.min(36, m + 1))} />
-        </View>
+        <Stepper value={months} onChange={setMonths} format={(v) => `${v} ${v === 1 ? 'mês' : 'meses'}`} color={COLOR} soft={F.cambio.soft} />
 
         <Label style={{ marginTop: 6 }}>Quem envia</Label>
-        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-          <Chip label="Meus pais, para mim" active={!own} color={F.cambio.color} onPress={() => setOwn(false)} />
-          <Chip label="Eu, para a minha conta" active={own} color={F.cambio.color} onPress={() => setOwn(true)} />
-        </View>
+        <Segment options={[{ value: false, label: 'Meus pais, para mim' }, { value: true, label: 'Eu, para mim' }]} value={own} onChange={setOwn} color={COLOR} />
       </Card>
 
       {monthly > 0 ? (
-        <Hero colors={['#145C3D', '#1F8A5B']}>
-          <Text style={{ color: '#C9F0DA', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>EM {months} MESES, PELO MELHOR CAMINHO</Text>
-          <Text style={{ color: '#FFFFFF', fontSize: 15 }}>{best.m.name} entrega no total</Text>
-          <Text style={{ color: '#FFFFFF', fontSize: 36, fontWeight: '800', letterSpacing: -1 }}>{money(best.q.received * months, cur)}</Text>
-          <Text style={{ color: '#D7F3E3', fontSize: 14 }}>
+        <Hero colors={['#1F5A40', COLOR]}>
+          <Txt w="mono" size={11} color="#CDEBD9" style={{ letterSpacing: 1.2 }}>EM {months} MESES, PELO MELHOR CAMINHO</Txt>
+          <Txt size={15} color="#E6F4EC">{best.m.name} entrega no total</Txt>
+          <CountUp value={best.q.received * months} format={(v) => money(v, cur)} style={{ color: '#FFFFFF', fontSize: 38, fontFamily: FONT.heavy, letterSpacing: -1 }} />
+          <Txt size={14} color="#D7F3E3">
             {brl(monthly * months, 0)} enviados · {saving > 1 ? `${brl(saving, 0)} a menos de perda que ${worst.m.name.toLowerCase()}` : 'diferença pequena entre os caminhos'}
-          </Text>
+          </Txt>
         </Hero>
       ) : null}
 
       <Card style={{ gap: 12 }}>
         <H>Cada caminho, mês a mês</H>
         {rows.map(({ m, q }, i) => (
-          <View key={m.id} style={{ gap: 2, paddingBottom: 10, borderBottomWidth: i === rows.length - 1 ? 0 : 1, borderBottomColor: C.line }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontWeight: '800', color: m.id === best.m.id ? F.cambio.color : C.ink }}>{m.name}{m.id === 'cripto' ? ' · com riscos' : ''}</Text>
-              <Text style={{ fontWeight: '800', color: C.ink, fontVariant: ['tabular-nums'] }}>{money(q.received, cur)}/mês</Text>
+          <View key={m.id} style={{ gap: 2, paddingBottom: 12, borderBottomWidth: i === rows.length - 1 ? 0 : 1, borderBottomColor: C.line }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 8 }}>
+              <Txt w="bold" color={m.id === best.m.id ? COLOR : C.ink} style={{ flex: 1 }}>{m.name}{m.id === 'cripto' ? ' · com riscos' : ''}</Txt>
+              <Txt w="display" size={16} style={{ fontVariant: ['tabular-nums'] }}>{money(q.received, cur)}/mês</Txt>
             </View>
-            <Text style={{ color: C.sub, fontSize: 13 }}>
+            <Txt size={13} color={C.sub}>
               Perde {brl(q.lostBRL)} por mês ({num(q.lostPct, 1)}%) · {brl(q.lostBRL * months, 0)} em {months} meses
-            </Text>
+            </Txt>
           </View>
         ))}
       </Card>
@@ -96,13 +90,5 @@ export default function Simulacao() {
 
       <P muted style={{ fontSize: 12 }}>Estimativa com a cotação de hoje e as taxas da aba Câmbio. A cotação muda todo mês.</P>
     </Screen>
-  );
-}
-
-function Step({ icon, onPress }: { icon: 'plus' | 'minus'; onPress: () => void }) {
-  return (
-    <Tap onPress={onPress} accessibilityRole="button" accessibilityLabel={icon === 'plus' ? 'Mais um mês' : 'Menos um mês'} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: C.primarySoft, alignItems: 'center', justifyContent: 'center' }}>
-      <Feather name={icon} size={20} color={C.primary} />
-    </Tap>
   );
 }

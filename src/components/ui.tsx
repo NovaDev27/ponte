@@ -1,19 +1,37 @@
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import {
-  Pressable, PressableProps, ScrollView, StyleProp, StyleSheet, Text, TextInput, TextStyle, View, ViewStyle,
+  Pressable, PressableProps, StyleProp, StyleSheet, Text, TextInput, TextProps, TextStyle, View, ViewStyle,
 } from 'react-native';
 import Animated, {
-  FadeIn, FadeInDown, useAnimatedProps, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withDelay, withSequence, withSpring, withTiming,
+  FadeIn, FadeInDown, interpolate, LinearTransition, SlideInDown, SlideInUp, useAnimatedProps, useAnimatedScrollHandler, useAnimatedStyle,
+  useReducedMotion, useSharedValue, withDelay, withSequence, withSpring, withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import { EASE_OUT, SPRING, tap } from '../lib/motion';
-import { C, R, shadow } from '../lib/theme';
+import { C, FONT, R } from '../lib/theme';
 
 const APressable = Animated.createAnimatedComponent(Pressable);
 const ACircle = Animated.createAnimatedComponent(Circle);
+
+// Espaço que a barra de abas flutuante ocupa embaixo (0 fora das abas).
+export const TabSpace = createContext(0);
+
+type Weight = keyof typeof FONT;
+
+// Texto com a fonte da Ponte. Use sempre este no lugar do <Text> puro.
+export function Txt({ w = 'regular', size = 15, color = C.ink, style, ...rest }: TextProps & { w?: Weight; size?: number; color?: string }) {
+  const body = w === 'regular' || w === 'medium';
+  const fs = (StyleSheet.flatten(style)?.fontSize as number | undefined) ?? size; // quem passa fontSize pelo style
+  return (
+    <Text
+      {...rest}
+      style={[{ fontFamily: FONT[w], fontSize: size, color }, body ? { lineHeight: Math.round(fs * 1.42) } : null, w === 'display' || w === 'heavy' ? { letterSpacing: -fs * 0.02 } : null, style]}
+    />
+  );
+}
 
 // Botão que "afunda" com mola ao tocar e dá uma vibração leve. Base de todos os toques do app.
 export function Tap({ onPress, onPressIn, onPressOut, style, children, scaleTo = 0.96, haptic = true, ...rest }: Omit<PressableProps, 'style' | 'children'> & {
@@ -47,7 +65,7 @@ export function Tap({ onPress, onPressIn, onPressOut, style, children, scaleTo =
 function Stagger({ children }: { children: React.ReactNode }) {
   const [opening, setOpening] = useState(true);
   useEffect(() => {
-    const t = setTimeout(() => setOpening(false), 700);
+    const t = setTimeout(() => setOpening(false), 800);
     return () => clearTimeout(t);
   }, []);
   return (
@@ -55,7 +73,7 @@ function Stagger({ children }: { children: React.ReactNode }) {
       {React.Children.toArray(children).map((child, i) => (
         <Animated.View
           key={React.isValidElement(child) && child.key != null ? child.key : i}
-          entering={FadeInDown.duration(420).delay(opening ? Math.min(i, 7) * 55 : 0).easing(EASE_OUT)}
+          entering={FadeInDown.duration(480).delay(opening ? Math.min(i, 8) * 50 : 0).easing(EASE_OUT)}
         >
           {child}
         </Animated.View>
@@ -66,97 +84,128 @@ function Stagger({ children }: { children: React.ReactNode }) {
 
 export type IconName = React.ComponentProps<typeof Feather>['name'];
 
+// Tela padrão. O título grande some ao rolar e reaparece pequeno numa barrinha no topo.
 export function Screen({ title, subtitle, right, children, scroll = true, header = false, eyebrow, eyebrowColor, footer }: {
   title?: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; scroll?: boolean;
   header?: boolean; // tela com cabeçalho de navegação: não aplica o recuo superior
   eyebrow?: string; eyebrowColor?: string;
   footer?: React.ReactNode; // fica fixo embaixo, fora da rolagem
 }) {
+  const tabSpace = useContext(TabSpace);
+  const y = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    y.value = e.contentOffset.y;
+  });
+  const bar = useAnimatedStyle(() => ({ opacity: interpolate(y.value, [50, 90], [0, 1], 'clamp') }));
+  const big = useAnimatedStyle(() => ({
+    opacity: interpolate(y.value, [0, 70], [1, 0], 'clamp'),
+    transform: [{ translateY: interpolate(y.value, [-100, 0, 100], [20, 0, -12], 'clamp') }],
+  }));
+
   const head = title ? (
-    <View style={s.head}>
-      <View style={{ flex: 1 }}>
-        {eyebrow ? <Text style={[s.eyebrow, eyebrowColor ? { color: eyebrowColor } : null]}>{eyebrow}</Text> : null}
-        <Text style={s.title}>{title}</Text>
-        {subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}
+    <Animated.View style={[s.head, big]}>
+      <View style={{ flex: 1, gap: 4 }}>
+        {eyebrow ? (
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: eyebrowColor ?? C.accent }} />
+            <Txt w="mono" size={11} color={C.sub} style={{ letterSpacing: 1.2, textTransform: 'uppercase' }}>{eyebrow}</Txt>
+          </View>
+        ) : null}
+        <Txt w="heavy" size={34} style={{ lineHeight: 38 }}>{title}</Txt>
+        {subtitle ? <Txt color={C.sub} size={15}>{subtitle}</Txt> : null}
       </View>
       {right}
-    </View>
+    </Animated.View>
   ) : null;
+  const pad = { paddingBottom: (footer ? 24 : 56) + tabSpace };
   return (
     <SafeAreaView style={s.safe} edges={header ? [] : ['top']}>
       {scroll ? (
-        <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <Animated.ScrollView contentContainerStyle={[s.content, pad]} keyboardShouldPersistTaps="handled" onScroll={onScroll} scrollEventThrottle={16}>
           <Stagger>
             {head}
             {children}
           </Stagger>
-        </ScrollView>
+        </Animated.ScrollView>
       ) : (
         <View style={[s.content, { flex: 1 }]}>
           {head}
           {children}
         </View>
       )}
+      {title && scroll && !header ? (
+        <Animated.View pointerEvents="none" style={[s.topbar, bar]}>
+          <Txt w="display" size={16} numberOfLines={1}>{title}</Txt>
+        </Animated.View>
+      ) : null}
       {footer ? <View style={s.footer}>{footer}</View> : null}
     </SafeAreaView>
   );
 }
 
-export function Card({ children, style, tone }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; tone?: 'night' | 'accent' | 'good' | 'flat' }) {
-  const bg = tone === 'night' ? C.night : tone === 'accent' ? C.accentSoft : tone === 'good' ? C.goodSoft : C.card;
-  return <View style={[s.card, { backgroundColor: bg }, !tone ? shadow : null, tone === 'flat' ? s.flat : null, style]}>{children}</View>;
+export function Card({ children, style, tone }: { children: React.ReactNode; style?: StyleProp<ViewStyle>; tone?: 'night' | 'accent' | 'good' | 'flat' | 'sunk' }) {
+  const bg = tone === 'night' ? C.night : tone === 'accent' ? C.accentSoft : tone === 'good' ? C.goodSoft : tone === 'sunk' ? C.sunk : C.card;
+  const border = !tone || tone === 'flat';
+  return <View style={[s.card, { backgroundColor: tone === 'flat' ? 'transparent' : bg }, border ? s.border : null, style]}>{children}</View>;
 }
 
+// Bloco de destaque escuro (ou na cor da função), com dois círculos suaves de enfeite.
 export function Hero({ children, colors = [C.night, C.night2], style }: { children: React.ReactNode; colors?: [string, string]; style?: StyleProp<ViewStyle> }) {
   return (
     <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[s.hero, style]}>
+      <View pointerEvents="none" style={[s.orb, { width: 220, height: 220, right: -90, top: -110 }]} />
+      <View pointerEvents="none" style={[s.orb, { width: 140, height: 140, right: -30, top: -60 }]} />
       {children}
     </LinearGradient>
   );
 }
 
 export function H({ children, style }: { children: React.ReactNode; style?: StyleProp<TextStyle> }) {
-  return <Text style={[s.h, style]}>{children}</Text>;
+  return <Txt w="display" size={18} style={style}>{children}</Txt>;
 }
 
 export function P({ children, style, muted }: { children: React.ReactNode; style?: StyleProp<TextStyle>; muted?: boolean }) {
-  return <Text style={[s.p, muted && { color: C.sub }, style]}>{children}</Text>;
+  return <Txt color={muted ? C.sub : C.ink} style={style}>{children}</Txt>;
 }
 
 export function Label({ children, style }: { children: React.ReactNode; style?: StyleProp<TextStyle> }) {
-  return <Text style={[s.label, style]}>{children}</Text>;
+  return <Txt w="mono" size={11} color={C.sub} style={[{ letterSpacing: 1.1, textTransform: 'uppercase' }, style]}>{children}</Txt>;
 }
 
-export function Section({ title, hint }: { title: string; hint?: string }) {
+export function Section({ title, hint, right }: { title: string; hint?: string; right?: React.ReactNode }) {
   return (
-    <View style={{ marginTop: 8, gap: 2 }}>
-      <Text style={s.section}>{title}</Text>
-      {hint ? <Text style={{ color: C.sub, fontSize: 14 }}>{hint}</Text> : null}
+    <View style={{ marginTop: 10, flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Txt w="display" size={21}>{title}</Txt>
+        {hint ? <Txt color={C.sub} size={14}>{hint}</Txt> : null}
+      </View>
+      {right}
     </View>
   );
 }
 
 export function Btn({ label, onPress, kind = 'primary', icon, disabled, color }: {
-  label: string; onPress: () => void; kind?: 'primary' | 'ghost' | 'accent'; icon?: IconName; disabled?: boolean; color?: string;
+  label: string; onPress: () => void; kind?: 'primary' | 'ghost' | 'accent' | 'soft'; icon?: IconName; disabled?: boolean; color?: string;
 }) {
-  const base = color ?? (kind === 'accent' ? C.accent : C.primary);
-  const bg = kind === 'ghost' ? C.card : base;
-  const fg = kind === 'ghost' ? base : '#FFFFFF';
+  const base = color ?? (kind === 'accent' ? C.accent : C.ink);
+  const bg = kind === 'ghost' ? 'transparent' : kind === 'soft' ? C.sunk : base;
+  const fg = kind === 'ghost' || kind === 'soft' ? (color ?? C.ink) : '#FFFFFF';
   return (
     <Tap
       accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
       onPress={onPress}
       disabled={disabled}
       scaleTo={0.97}
       style={[s.btn, { backgroundColor: bg, borderColor: kind === 'ghost' ? C.line : bg, opacity: disabled ? 0.4 : 1 }]}
     >
       {icon ? <Feather name={icon} size={18} color={fg} /> : null}
-      <Text style={[s.btnText, { color: fg }]}>{label}</Text>
+      <Txt w="bold" size={16} color={fg}>{label}</Txt>
     </Tap>
   );
 }
 
-export function Chip({ label, active, onPress, color = C.primary }: { label: string; active?: boolean; onPress: () => void; color?: string }) {
+export function Chip({ label, active, onPress, color = C.ink }: { label: string; active?: boolean; onPress: () => void; color?: string }) {
   return (
     <Tap
       accessibilityRole="button"
@@ -165,9 +214,113 @@ export function Chip({ label, active, onPress, color = C.primary }: { label: str
       scaleTo={0.92}
       style={[s.chip, active ? { backgroundColor: color, borderColor: color } : null]}
     >
-      <Text style={[s.chipText, active ? { color: '#FFFFFF' } : null]}>{label}</Text>
+      <Txt w="medium" size={14} color={active ? '#FFFFFF' : C.ink} style={{ lineHeight: 18 }}>{label}</Txt>
     </Tap>
   );
+}
+
+// Escolha entre poucas opções, com uma pílula que desliza até a opção marcada.
+export function Segment<T extends string | boolean>({ options, value, onChange, color = C.ink }: {
+  options: { value: T; label: string }[]; value: T; onChange: (v: T) => void; color?: string;
+}) {
+  const [w, setW] = useState(0);
+  const idx = Math.max(0, options.findIndex((o) => o.value === value));
+  const x = useSharedValue(0);
+  const each = w / options.length;
+  useEffect(() => {
+    x.set(withSpring(idx * each, SPRING));
+  }, [idx, each, x]);
+  const pill = useAnimatedStyle(() => ({ transform: [{ translateX: x.get() }] }));
+  return (
+    <View style={s.segment} onLayout={(e) => setW(e.nativeEvent.layout.width - 8)} accessibilityRole="radiogroup">
+      {w > 0 ? <Animated.View style={[s.segPill, { width: each, backgroundColor: color }, pill]} /> : null}
+      {options.map((o) => {
+        const on = o.value === value;
+        return (
+          <Pressable
+            key={String(o.value)}
+            onPress={() => {
+              if (!on) tap();
+              onChange(o.value);
+            }}
+            accessibilityRole="radio"
+            accessibilityState={{ checked: on }}
+            style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 11, paddingHorizontal: 6 }}
+          >
+            <Txt w={on ? 'bold' : 'medium'} size={14} color={on ? '#FFFFFF' : C.sub} numberOfLines={1} style={{ lineHeight: 18 }}>{o.label}</Txt>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
+// − valor +. O número "rola" para cima ou para baixo quando muda.
+export function Stepper({ value, onChange, min = 1, max = 36, format, color = C.ink, soft = C.sunk }: {
+  value: number; onChange: (v: number) => void; min?: number; max?: number; format: (v: number) => string; color?: string; soft?: string;
+}) {
+  const [dir, setDir] = useState(0); // 0 = ainda não mexeu: o número aparece sem animação
+  const reduce = useReducedMotion();
+  const go = (d: number) => {
+    const v = Math.min(max, Math.max(min, value + d));
+    if (v === value) return;
+    setDir(d);
+    onChange(v);
+  };
+  const btn = (d: number) => (
+    <Tap
+      onPress={() => go(d)}
+      accessibilityRole="button"
+      accessibilityLabel={d > 0 ? 'Aumentar' : 'Diminuir'}
+      disabled={d > 0 ? value >= max : value <= min}
+      scaleTo={0.88}
+      style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: soft, alignItems: 'center', justifyContent: 'center', opacity: (d > 0 ? value >= max : value <= min) ? 0.4 : 1 }}
+    >
+      <Feather name={d > 0 ? 'plus' : 'minus'} size={20} color={color} />
+    </Tap>
+  );
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+      {btn(-1)}
+      <View style={{ flex: 1, height: 48, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+        <Animated.View key={value} entering={reduce || !dir ? undefined : (dir > 0 ? SlideInDown : SlideInUp).springify().damping(16).stiffness(260)}>
+          <Txt w="display" size={24}>{format(value)}</Txt>
+        </Animated.View>
+      </View>
+      {btn(1)}
+    </View>
+  );
+}
+
+// Número que conta até o valor (e acompanha quando ele muda).
+export function CountUp({ value, format, style, fromZero = false, duration = 750 }: {
+  value: number; format: (v: number) => string; style?: StyleProp<TextStyle>; fromZero?: boolean; duration?: number;
+}) {
+  const reduce = useReducedMotion();
+  const start = fromZero && !reduce ? 0 : value;
+  const from = useRef(start);
+  const [shown, setShown] = useState(start);
+  useEffect(() => {
+    const a = from.current;
+    const b = value;
+    if (a === b || reduce) {
+      from.current = b;
+      setShown(b);
+      return;
+    }
+    const start = Date.now();
+    let raf = 0;
+    const step = () => {
+      const t = Math.min(1, (Date.now() - start) / duration);
+      const v = a + (b - a) * (1 - Math.pow(1 - t, 3));
+      from.current = v;
+      setShown(v);
+      if (t < 1) raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [value, duration, reduce]);
+  return <Text style={[{ fontVariant: ['tabular-nums'] }, style]}>{format(shown)}</Text>;
 }
 
 // Linha de opções que desliza para o lado. Quando não cabe tudo, mostra uma barrinha embaixo
@@ -251,13 +404,15 @@ export function ChipRow({ children, peek = false }: { children: React.ReactNode;
   );
 }
 
-export function Field({ value, onChangeText, prefix, placeholder, style, keyboard = 'decimal-pad', big }: {
+export function Field({ value, onChangeText, prefix, placeholder, style, keyboard = 'decimal-pad', big, icon }: {
   value: string; onChangeText: (t: string) => void; prefix?: string; placeholder?: string; style?: StyleProp<ViewStyle>;
-  keyboard?: 'decimal-pad' | 'default' | 'url'; big?: boolean;
+  keyboard?: 'decimal-pad' | 'default' | 'url'; big?: boolean; icon?: IconName;
 }) {
+  const [focus, setFocus] = useState(false);
   return (
-    <View style={[s.field, big && { minHeight: 64 }, style]}>
-      {prefix ? <Text style={[s.prefix, big && { fontSize: 24 }]}>{prefix}</Text> : null}
+    <View style={[s.field, big && { minHeight: 68 }, focus && { borderColor: C.ink }, style]}>
+      {icon ? <Feather name={icon} size={18} color={C.sub} style={{ marginRight: 8 }} /> : null}
+      {prefix ? <Txt w="medium" size={big ? 22 : 16} color={C.sub} style={{ marginRight: 8, lineHeight: undefined }}>{prefix}</Txt> : null}
       <TextInput
         value={value}
         onChangeText={onChangeText}
@@ -266,28 +421,30 @@ export function Field({ value, onChangeText, prefix, placeholder, style, keyboar
         keyboardType={keyboard}
         autoCapitalize="none"
         autoCorrect={false}
-        style={[s.input, big && { fontSize: 30, fontWeight: '800' }]}
+        onFocus={() => setFocus(true)}
+        onBlur={() => setFocus(false)}
+        style={[s.input, big && { fontSize: 30, fontFamily: FONT.display }]}
       />
     </View>
   );
 }
 
 // A barra cresce até o valor (e acompanha quando ele muda).
-export function Bar({ value, color = C.primary, height = 8 }: { value: number; color?: string; height?: number }) {
+export function Bar({ value, color = C.ink, height = 8, track = C.sunk, delay = 0 }: { value: number; color?: string; height?: number; track?: string; delay?: number }) {
   const v = Math.max(0, Math.min(1, value));
   const w = useSharedValue(0);
   useEffect(() => {
-    w.set(withTiming(v, { duration: 750, easing: EASE_OUT }));
-  }, [v, w]);
+    w.set(withDelay(delay, withTiming(v, { duration: 800, easing: EASE_OUT })));
+  }, [v, w, delay]);
   const anim = useAnimatedStyle(() => ({ width: `${w.get() * 100}%` as `${number}%` }));
   return (
-    <View style={[s.bar, { height, borderRadius: height / 2 }]}>
+    <View style={[s.bar, { height, borderRadius: height / 2, backgroundColor: track }]}>
       <Animated.View style={[{ height: '100%', backgroundColor: color, borderRadius: height / 2 }, anim]} />
     </View>
   );
 }
 
-export function Ring({ value, size = 64, stroke = 8, color = C.good, track = C.line, children }: {
+export function Ring({ value, size = 64, stroke = 8, color = C.good, track = C.sunk, children }: {
   value: number; size?: number; stroke?: number; color?: string; track?: string; children?: React.ReactNode;
 }) {
   const r = (size - stroke) / 2;
@@ -295,7 +452,7 @@ export function Ring({ value, size = 64, stroke = 8, color = C.good, track = C.l
   const v = Math.max(0, Math.min(1, value));
   const p = useSharedValue(0);
   useEffect(() => {
-    p.set(withTiming(v, { duration: 900, easing: EASE_OUT }));
+    p.set(withTiming(v, { duration: 1000, easing: EASE_OUT }));
   }, [v, p]);
   const arc = useAnimatedProps(() => ({
     strokeDashoffset: circ * (1 - p.get()),
@@ -316,29 +473,29 @@ export function Row({ left, right, strong, dot }: { left: string; right: string;
   return (
     <View style={s.row}>
       {dot ? <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: dot }} /> : null}
-      <Text style={[s.p, { color: C.sub, flex: 1 }, strong && { color: C.ink, fontWeight: '700' }]}>{left}</Text>
-      <Text style={[s.p, { fontVariant: ['tabular-nums'] }, strong && { fontWeight: '800' }]}>{right}</Text>
+      <Txt w={strong ? 'bold' : 'regular'} color={strong ? C.ink : C.sub} style={{ flex: 1 }}>{left}</Txt>
+      <Txt w={strong ? 'display' : 'medium'} size={strong ? 17 : 15} style={{ fontVariant: ['tabular-nums'] }}>{right}</Txt>
     </View>
   );
 }
 
-export function Icon({ name, size = 20, color = C.primary }: { name: IconName; size?: number; color?: string }) {
+export function Icon({ name, size = 20, color = C.ink }: { name: IconName; size?: number; color?: string }) {
   return <Feather name={name} size={size} color={color} />;
 }
 
-export function IconBox({ name, color, soft, size = 42 }: { name: IconName; color: string; soft: string; size?: number }) {
+export function IconBox({ name, color, soft, size = 44 }: { name: IconName; color: string; soft: string; size?: number }) {
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.32, backgroundColor: soft, alignItems: 'center', justifyContent: 'center' }}>
-      <Feather name={name} size={size * 0.48} color={color} />
+    <View style={{ width: size, height: size, borderRadius: size * 0.36, backgroundColor: soft, alignItems: 'center', justifyContent: 'center' }}>
+      <Feather name={name} size={size * 0.46} color={color} />
     </View>
   );
 }
 
 export function Badge({ label, color, soft }: { label: string; color: string; soft: string }) {
   return (
-    <Text style={{ fontSize: 11, fontWeight: '800', color, backgroundColor: soft, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999, overflow: 'hidden', letterSpacing: 0.4 }}>
-      {label}
-    </Text>
+    <View style={{ backgroundColor: soft, paddingHorizontal: 8, paddingVertical: 3, borderRadius: R.pill, alignSelf: 'flex-start' }}>
+      <Txt w="mono" size={10} color={color} style={{ letterSpacing: 0.8 }}>{label}</Txt>
+    </View>
   );
 }
 
@@ -346,54 +503,76 @@ export function Badge({ label, color, soft }: { label: string; color: string; so
 export function Explain({ title, children }: { title: string; children: string }) {
   const [open, setOpen] = useState(false);
   const turn = useSharedValue(0);
-  const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get() * 180}deg` }] }));
+  const chevron = useAnimatedStyle(() => ({ transform: [{ rotate: `${turn.get() * 45}deg` }] }));
   function toggle() {
     turn.set(withSpring(open ? 0 : 1, SPRING));
     setOpen(!open);
   }
   return (
     <Tap onPress={toggle} scaleTo={0.98} accessibilityRole="button" accessibilityState={{ expanded: open }} style={s.explain}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Feather name="help-circle" size={18} color={C.primary} />
-        <Text style={{ flex: 1, fontWeight: '700', color: C.ink, fontSize: 15 }}>{title}</Text>
-        <Animated.View style={chevron}>
-          <Feather name="chevron-down" size={18} color={C.sub} />
-        </Animated.View>
+      <Animated.View layout={LinearTransition.duration(260)} style={{ gap: 8 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Txt w="bold" style={{ flex: 1 }}>{title}</Txt>
+          <Animated.View style={[{ width: 28, height: 28, borderRadius: 14, backgroundColor: C.sunk, alignItems: 'center', justifyContent: 'center' }, chevron]}>
+            <Feather name="plus" size={16} color={C.ink} />
+          </Animated.View>
+        </View>
+        {open ? (
+          <Animated.View entering={FadeIn.duration(260)}>
+            <Txt color={C.sub} size={14}>{children}</Txt>
+          </Animated.View>
+        ) : null}
+      </Animated.View>
+    </Tap>
+  );
+}
+
+// Linha de toque padrão das listas: ícone, título, dica e setinha.
+export function ListRow({ icon, color, soft, title, hint, onPress, last, right }: {
+  icon: IconName; color: string; soft: string; title: string; hint?: string; onPress: () => void; last?: boolean; right?: React.ReactNode;
+}) {
+  return (
+    <Tap
+      onPress={onPress}
+      accessibilityRole="button"
+      scaleTo={0.98}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 14, paddingVertical: 14, borderBottomWidth: last ? 0 : 1, borderBottomColor: C.line }}
+    >
+      <IconBox name={icon} color={color} soft={soft} />
+      <View style={{ flex: 1, gap: 1 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+          <Txt w="bold" size={16}>{title}</Txt>
+          {right}
+        </View>
+        {hint ? <Txt color={C.sub} size={13}>{hint}</Txt> : null}
       </View>
-      {open ? (
-        <Animated.Text entering={FadeIn.duration(260)} style={{ color: C.sub, fontSize: 14, lineHeight: 20 }}>
-          {children}
-        </Animated.Text>
-      ) : null}
+      <Feather name="arrow-up-right" size={18} color={C.faint} />
     </Tap>
   );
 }
 
 export const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
-  content: { padding: 16, paddingBottom: 48, gap: 14 },
-  head: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 4, marginBottom: 2 },
-  eyebrow: { fontSize: 12, fontWeight: '800', color: C.primary, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 },
-  title: { fontSize: 30, fontWeight: '800', color: C.ink, letterSpacing: -0.8 },
-  subtitle: { fontSize: 15, color: C.sub, marginTop: 2, lineHeight: 21 },
-  section: { fontSize: 20, fontWeight: '800', color: C.ink, letterSpacing: -0.3 },
-  card: { borderRadius: R.lg, padding: 16, gap: 10 },
-  flat: { borderWidth: 1, borderColor: C.line },
-  hero: { borderRadius: R.lg, padding: 20, gap: 8, overflow: 'hidden' },
-  h: { fontSize: 17, fontWeight: '700', color: C.ink },
-  p: { fontSize: 15, color: C.ink, lineHeight: 21 },
-  label: { fontSize: 12, fontWeight: '700', color: C.sub, textTransform: 'uppercase', letterSpacing: 0.8 },
-  btn: { minHeight: 52, borderRadius: R.md, borderWidth: 1, paddingHorizontal: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
-  btnText: { fontSize: 16, fontWeight: '700' },
-  chip: { paddingHorizontal: 14, paddingVertical: 9, borderRadius: 999, borderWidth: 1, borderColor: C.line, backgroundColor: C.card },
-  chipText: { fontSize: 14, fontWeight: '600', color: C.ink },
-  field: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: C.line, borderRadius: R.md, backgroundColor: C.bg, paddingHorizontal: 14, minHeight: 50 },
-  prefix: { fontSize: 18, color: C.sub, marginRight: 6, fontWeight: '700' },
-  input: { flex: 1, fontSize: 18, color: C.ink, fontWeight: '700', paddingVertical: 10 },
-  bar: { backgroundColor: C.line, overflow: 'hidden' },
+  content: { padding: 20, paddingTop: 12, gap: 14 },
+  head: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 8, marginBottom: 6 },
+  topbar: {
+    position: 'absolute', top: 0, left: 0, right: 0, paddingVertical: 12, paddingHorizontal: 20, alignItems: 'center',
+    backgroundColor: C.bg, borderBottomWidth: 1, borderBottomColor: C.line,
+  },
+  card: { borderRadius: R.lg, padding: 18, gap: 10 },
+  border: { borderWidth: 1, borderColor: C.line },
+  hero: { borderRadius: R.lg + 4, padding: 22, gap: 8, overflow: 'hidden' },
+  orb: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.05)' },
+  btn: { minHeight: 56, borderRadius: R.pill, borderWidth: 1, paddingHorizontal: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: R.pill, borderWidth: 1, borderColor: C.line, backgroundColor: C.card },
+  segment: { flexDirection: 'row', padding: 4, borderRadius: R.pill, backgroundColor: C.sunk },
+  segPill: { position: 'absolute', top: 4, bottom: 4, left: 4, borderRadius: R.pill },
+  field: { flexDirection: 'row', alignItems: 'center', borderWidth: 1.5, borderColor: 'transparent', borderRadius: R.md, backgroundColor: C.sunk, paddingHorizontal: 16, minHeight: 52 },
+  input: { flex: 1, fontSize: 17, color: C.ink, fontFamily: FONT.bold, paddingVertical: 10 },
+  bar: { overflow: 'hidden' },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  track: { alignSelf: 'center', width: TRACK, height: 4, borderRadius: 2, backgroundColor: C.line, overflow: 'hidden' },
+  track: { alignSelf: 'center', width: TRACK, height: 4, borderRadius: 2, backgroundColor: C.sunk, overflow: 'hidden' },
   thumb: { height: 4, borderRadius: 2, backgroundColor: C.faint },
-  footer: { paddingHorizontal: 16, paddingTop: 10, paddingBottom: 14, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
-  explain: { backgroundColor: C.card, borderRadius: R.md, borderWidth: 1, borderColor: C.line, padding: 14, gap: 8 },
+  footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
+  explain: { backgroundColor: C.card, borderRadius: R.md + 2, borderWidth: 1, borderColor: C.line, padding: 16 },
 });

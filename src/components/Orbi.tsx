@@ -6,6 +6,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { bump, tap } from '../lib/motion';
+import { FONT } from '../lib/theme';
 
 // Orbi: o mascote da assistente. Um planeta branco num pedacinho de espaço, com dois olhos
 // em pílula, anel e uma luazinha. Flutua e pisca sozinho, fica pensativo enquanto a IA
@@ -23,7 +24,7 @@ const LINES = ['Oi! Bora economizar? 💸', 'Câmbio é comigo!', 'Pergunta qual
 const TWINKLES: [number, number, number][] = [[14, 18, 0], [84, 14, 700], [86, 80, 1400], [12, 76, 2100]];
 const STARS: [number, number][] = [[-34, -26], [34, -24], [-30, 22], [32, 26]];
 
-export function Orbi({ size = 120, mood = 'idle', talk = false }: { size?: number; mood?: OrbiMood; talk?: boolean }) {
+export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = true }: { size?: number; mood?: OrbiMood; talk?: boolean; interactive?: boolean }) {
   const k = size / VB;
   const reduce = useReducedMotion();
   const float = useSharedValue(0);
@@ -40,6 +41,7 @@ export function Orbi({ size = 120, mood = 'idle', talk = false }: { size?: numbe
   const [joy, setJoy] = useState(false);
   const [line, setLine] = useState<string | null>(null);
   const happy = mood === 'happy' || joy;
+  const Wrap = (interactive ? Pressable : View) as React.ComponentType<React.ComponentProps<typeof Pressable>>;
 
   // Flutuar + piscar (param com "reduzir movimento" do celular).
   useEffect(() => {
@@ -141,14 +143,13 @@ export function Orbi({ size = 120, mood = 'idle', talk = false }: { size?: numbe
           pointerEvents="none"
           style={{ position: 'absolute', top: -30, zIndex: 2, backgroundColor: SPACE, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 }}
         >
-          <Text numberOfLines={1} style={{ color: PLANET, fontWeight: '700', fontSize: 13 }}>{line}</Text>
+          <Text numberOfLines={1} style={{ color: PLANET, fontFamily: FONT.bold, fontSize: 13 }}>{line}</Text>
         </Animated.View>
       ) : null}
-      <Pressable
-        onPress={poke}
-        onPressIn={() => tap()}
-        accessibilityRole="button"
-        accessibilityLabel="Orbi, o mascote da assistente. Toque para brincar."
+      <Wrap
+        {...(interactive
+          ? { onPress: poke, onPressIn: () => tap(), accessibilityRole: 'button' as const, accessibilityLabel: 'Orbi, o mascote da assistente. Toque para brincar.' }
+          : { 'aria-hidden': true })}
         style={{ width: size, height: size, borderRadius: size * 0.26, backgroundColor: SPACE, overflow: 'hidden' }}
       >
         {TWINKLES.map(([x, y, d]) => <Twinkle key={`${x}-${y}`} x={x} y={y} delay={d} k={k} reduce={reduce} />)}
@@ -173,7 +174,7 @@ export function Orbi({ size = 120, mood = 'idle', talk = false }: { size?: numbe
           <Animated.View style={[{ position: 'absolute', left: 47 * k, top: 52 * k, width: 6 * k, height: 6 * k, borderRadius: 3 * k, backgroundColor: RING }, moonStyle]} />
         </Animated.View>
         {STARS.map(([dx, dy], i) => <Star key={i} dx={dx} dy={dy} k={k} burst={burst} />)}
-      </Pressable>
+      </Wrap>
     </View>
   );
 }

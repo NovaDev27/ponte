@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Text, View } from 'react-native';
-import { Badge, Card, Chip, H, IconBox, IconName, Label, P, Screen } from '../components/ui';
+import { View } from 'react-native';
+import { Badge, Card, Chip, H, IconBox, IconName, Label, P, Screen, Txt } from '../components/ui';
 import { getCountry } from '../data/countries';
 import { quote } from '../data/methods';
 import { brl, num } from '../lib/format';
@@ -75,7 +75,7 @@ export default function GuiaCartoes() {
       <P muted>Não existe cartão sem custo nenhum: o IOF é imposto e sempre tem conversão de moeda. Mas a diferença entre eles é grande.</P>
 
       <Card tone="night">
-        <Text style={{ color: '#9FB4CC', fontSize: 13, fontWeight: '700', letterSpacing: 0.6 }}>GASTANDO POR MÊS NO CARTÃO</Text>
+        <Txt w="mono" size={11} color={C.creamSub} style={{ letterSpacing: 1.2 }}>GASTANDO POR MÊS NO CARTÃO</Txt>
         <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
           {SPEND.map((v) => (
             <Chip key={v} label={brl(v, 0)} active={spend === v} color={F.cambio.color} onPress={() => setSpend(v)} />
@@ -85,9 +85,9 @@ export default function GuiaCartoes() {
           <Line label="Cartão do banco brasileiro" value={`−${brl(bank.lostBRL)}`} />
           <Line label="Cartão de conta global" value={`−${brl(global.lostBRL)}`} />
         </View>
-        <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 16, marginTop: 4 }}>
+        <Txt w="display" size={16} color={'#FFFFFF'} style={{ marginTop: 4 }}>
           Diferença: {brl(bank.lostBRL - global.lostBRL)} por mês · {brl((bank.lostBRL - global.lostBRL) * state.profile.months, 0)} em {state.profile.months} meses
-        </Text>
+        </Txt>
       </Card>
 
       {TYPES.map((t) => (
@@ -138,8 +138,8 @@ export default function GuiaCartoes() {
 function Line({ label, value }: { label: string; value: string }) {
   return (
     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-      <Text style={{ color: '#C8D6E5', fontSize: 14 }}>{label}</Text>
-      <Text style={{ color: '#FFFFFF', fontSize: 14, fontWeight: '700', fontVariant: ['tabular-nums'] }}>{value}</Text>
+      <Txt size={14} color={C.creamSub}>{label}</Txt>
+      <Txt w="bold" size={14} color={'#FFFFFF'} style={{ fontVariant: ['tabular-nums'] }}>{value}</Txt>
     </View>
   );
 }

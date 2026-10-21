@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import { PixelRatio, Platform, Share, Text, View } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
+import { C, FONT } from '../lib/theme';
 import { Logo } from './Logo';
 import { Btn } from './ui';
 
@@ -62,18 +63,18 @@ export function ShareResult({ data, label = 'Compartilhar resultado', color }: {
 
 function ShareCard({ data }: { data: ShareData }) {
   return (
-    <LinearGradient colors={['#0F2338', '#1D4E7E']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 28, justifyContent: 'space-between' }}>
+    <LinearGradient colors={[C.night, C.night2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 28, justifyContent: 'space-between' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Logo size={44} color="#FFFFFF" />
-        <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '800' }}>ponte</Text>
+        <Logo size={40} color={C.cream} />
+        <Text style={{ color: C.cream, fontSize: 24, fontFamily: FONT.heavy, letterSpacing: -0.8 }}>ponte</Text>
       </View>
       <View style={{ gap: 6 }}>
-        <Text style={{ color: '#9FB4CC', fontSize: 13, fontWeight: '800', letterSpacing: 1 }}>{data.kicker.toUpperCase()}</Text>
-        <Text style={{ color: '#FFFFFF', fontSize: 22, fontWeight: '700', lineHeight: 28 }}>{data.line}</Text>
-        <Text style={{ color: '#FF7A45', fontSize: 52, fontWeight: '800', letterSpacing: -1.5 }}>{data.big}</Text>
-        <Text style={{ color: '#C8D6E5', fontSize: 15, lineHeight: 21 }}>{data.detail}</Text>
+        <Text style={{ color: C.creamSub, fontSize: 11, fontFamily: FONT.mono, letterSpacing: 1.4 }}>{data.kicker.toUpperCase()}</Text>
+        <Text style={{ color: C.cream, fontSize: 22, fontFamily: FONT.display, lineHeight: 28 }}>{data.line}</Text>
+        <Text style={{ color: C.accent, fontSize: 56, fontFamily: FONT.heavy, letterSpacing: -1.5 }}>{data.big}</Text>
+        <Text style={{ color: C.creamSub, fontSize: 15, fontFamily: FONT.regular, lineHeight: 21 }}>{data.detail}</Text>
       </View>
-      <Text style={{ color: '#9FB4CC', fontSize: 12 }}>Calculado no app Ponte · estimativa com taxas médias de mercado</Text>
+      <Text style={{ color: C.creamSub, fontSize: 11, fontFamily: FONT.mono }}>Calculado no app Ponte · estimativa com taxas médias de mercado</Text>
     </LinearGradient>
   );
 }

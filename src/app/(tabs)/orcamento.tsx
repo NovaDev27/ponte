@@ -1,68 +1,75 @@
-import React, { useState } from 'react';
-import { Text, View } from 'react-native';
+import Feather from '@expo/vector-icons/Feather';
+import React, { useEffect, useState } from 'react';
+import { View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withDelay, withTiming, ZoomIn } from 'react-native-reanimated';
 import { PlanButton } from '../../components/PlanButton';
-import { Card, Chip, ChipRow, Field, Hero, Label, P, Ring, Row, Screen, Section, Tap } from '../../components/ui';
+import { Card, Chip, ChipRow, CountUp, Field, Hero, Label, P, Ring, Row, Screen, Section, Stepper, Tap, Txt } from '../../components/ui';
 import { COST_LABELS, CostKey, STYLE_LABEL } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
 import { brl, money, num, parseNum } from '../../lib/format';
+import { EASE_OUT } from '../../lib/motion';
 import { Style, useApp } from '../../lib/store';
-import { C, CAT, F } from '../../lib/theme';
+import { C, CAT, F, FONT, R } from '../../lib/theme';
 
+const COLOR = F.orcamento.color;
 const KEYS = Object.keys(COST_LABELS) as CostKey[];
 const STYLE_HINT: Record<Style, string> = {
   eco: 'Quarto dividido, cozinha em casa',
   mod: 'Quarto compartilhado, sai às vezes',
   conf: 'Quarto individual, mais passeios',
 };
+const STYLE_EMOJI: Record<Style, string> = { eco: '🎒', mod: '☕', conf: '🛋️' };
 
 export default function Orcamento() {
   const { state, setProfile, update, rates } = useApp();
   const p = state.profile;
   const { country, city, rate, cur, keyOf, valueOf, monthly, monthlyBRL, totalBRL, coverage, monthsCovered } = budgetOf(state, rates);
 
-  const parts = [...KEYS.map((k) => ({ key: k as string, label: COST_LABELS[k], value: valueOf(k), color: CAT[k] })), { key: 'seguro', label: 'Seguro saúde', value: country.seguro, color: CAT.seguro }];
+  const parts = [...KEYS.map((k) => ({ key: k as string, label: COST_LABELS[k], value: valueOf(k), color: CAT[k] })), { key: 'seguro', label: 'Seguro', value: country.seguro, color: CAT.seguro }];
+  const sum = parts.reduce((a, x) => a + x.value, 0) || 1;
 
   const setOverride = (k: CostKey, v: number) => update({ overrides: { ...state.overrides, [keyOf(k)]: v } });
 
   return (
-    <Screen title="Orçamento" eyebrow="Passo 1 · Orçamento" eyebrowColor={F.orcamento.color} subtitle={`${country.flag} ${city.name}, ${country.name}`}>
-      <Hero colors={['#1A4FA8', '#2F6FD6']}>
-        <Text style={{ color: '#CFE0FA', fontWeight: '700', fontSize: 13, letterSpacing: 0.6 }}>TOTAL DA VIAGEM · {p.months} MESES</Text>
-        <Text style={{ color: '#FFFFFF', fontSize: 38, fontWeight: '800', letterSpacing: -1, fontVariant: ['tabular-nums'] }}>{brl(totalBRL, 0)}</Text>
-        <Text style={{ color: '#E2ECFB', fontSize: 15 }}>
-          {money(monthly, cur, 0)} por mês ≈ {brl(monthlyBRL, 0)}
-        </Text>
-        <View style={{ flexDirection: 'row', height: 14, borderRadius: 7, overflow: 'hidden', marginTop: 10, backgroundColor: 'rgba(255,255,255,0.2)' }}>
-          {parts.map((x) => <View key={x.key} style={{ flex: Math.max(0.0001, x.value), backgroundColor: x.color, borderRightWidth: 2, borderRightColor: '#2F6FD6' }} />)}
+    <Screen title="Orçamento" eyebrow="Passo 1 · Orçamento" eyebrowColor={COLOR} subtitle={`${country.flag} ${city.name}, ${country.name}`}>
+      <Hero>
+        <Txt w="mono" size={11} color={C.creamSub} style={{ letterSpacing: 1.2 }}>TOTAL DA VIAGEM · {p.months} MESES</Txt>
+        <CountUp value={totalBRL} fromZero format={(v) => brl(v, 0)} style={{ color: C.cream, fontSize: 42, fontFamily: FONT.heavy, letterSpacing: -1 }} />
+        <Txt size={15} color={C.cream}>{money(monthly, cur, 0)} por mês ≈ {brl(monthlyBRL, 0)}</Txt>
+        <View style={{ flexDirection: 'row', height: 14, borderRadius: 7, overflow: 'hidden', marginTop: 12, backgroundColor: 'rgba(245,241,234,0.1)', gap: 2 }}>
+          {parts.map((x, i) => <Slice key={x.key} share={x.value / sum} color={x.color} delay={200 + i * 70} />)}
         </View>
-        <Text style={{ color: '#CFE0FA', fontSize: 12 }}>Para onde vai o dinheiro de cada mês</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', columnGap: 12, rowGap: 4, marginTop: 4 }}>
+          {parts.map((x) => (
+            <View key={x.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
+              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: x.color, }} />
+              <Txt size={12} color={C.creamSub}>{x.label}</Txt>
+            </View>
+          ))}
+        </View>
       </Hero>
 
       <Card>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-          <Ring value={coverage} size={88} stroke={10} color={coverage >= 1 ? C.good : F.orcamento.color} track={F.orcamento.soft}>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: C.ink }}>{num(Math.min(coverage, 9.99) * 100, 0)}%</Text>
+          <Ring value={coverage} size={92} stroke={10} color={coverage >= 1 ? C.good : COLOR} track={F.orcamento.soft}>
+            <Txt w="heavy" size={21}>{num(Math.min(coverage, 9.99) * 100, 0)}%</Txt>
           </Ring>
           <View style={{ flex: 1, gap: 4 }}>
-            <Text style={{ fontSize: 16, fontWeight: '800', color: C.ink }}>
-              {coverage >= 1 ? 'Seu dinheiro já cobre tudo!' : `Faltam ${brl(totalBRL - p.savings, 0)}`}
-            </Text>
-            <Text style={{ color: C.sub, fontSize: 14 }}>
-              {coverage >= 1
-                ? `Sobram ${brl(p.savings - totalBRL, 0)} de folga.`
-                : `Com o que você tem, dá para cerca de ${num(monthsCovered, 1)} meses lá.`}
-            </Text>
+            <Txt w="display" size={18}>{coverage >= 1 ? 'Seu dinheiro já cobre tudo! 🎉' : `Faltam ${brl(totalBRL - p.savings, 0)}`}</Txt>
+            <Txt size={14} color={C.sub}>
+              {coverage >= 1 ? `Sobram ${brl(p.savings - totalBRL, 0)} de folga.` : `Com o que você tem, dá para cerca de ${num(monthsCovered, 1)} meses lá.`}
+            </Txt>
           </View>
         </View>
-        <Label>Quanto você já juntou</Label>
+        <Label style={{ marginTop: 4 }}>Quanto você já juntou</Label>
         <NumField value={p.savings} prefix="R$" onChange={(v) => setProfile({ savings: v })} />
       </Card>
 
       <Section title="Seu perfil" />
-      <Card>
+      <Card style={{ gap: 12 }}>
         <Label>Cidade</Label>
         <ChipRow>
-          {country.cities.map((c, i) => <Chip key={c.name} label={c.name} active={i === p.city} color={F.orcamento.color} onPress={() => setProfile({ city: i })} />)}
+          {country.cities.map((c, i) => <Chip key={c.name} label={c.name} active={i === p.city} color={COLOR} onPress={() => setProfile({ city: i })} />)}
         </ChipRow>
         <Label style={{ marginTop: 6 }}>Estilo de vida</Label>
         <View style={{ gap: 8 }}>
@@ -74,25 +81,27 @@ export default function Orcamento() {
                 onPress={() => setProfile({ style: st })}
                 accessibilityRole="radio"
                 accessibilityState={{ checked: on }}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 12, borderRadius: 14, borderWidth: 2, borderColor: on ? F.orcamento.color : C.line, backgroundColor: on ? F.orcamento.soft : C.card }}
+                scaleTo={0.97}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14, borderRadius: R.md, borderWidth: 1.5, borderColor: on ? COLOR : C.line, backgroundColor: on ? F.orcamento.soft : C.card }}
               >
-                <View style={{ width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: on ? F.orcamento.color : C.faint, alignItems: 'center', justifyContent: 'center' }}>
-                  {on ? <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: F.orcamento.color }} /> : null}
-                </View>
+                <Txt size={24} style={{ lineHeight: 30 }}>{STYLE_EMOJI[st]}</Txt>
                 <View style={{ flex: 1 }}>
-                  <Text style={{ fontWeight: '800', color: C.ink }}>{STYLE_LABEL[st]}</Text>
-                  <Text style={{ color: C.sub, fontSize: 13 }}>{STYLE_HINT[st]}</Text>
+                  <Txt w="bold">{STYLE_LABEL[st]}</Txt>
+                  <Txt size={13} color={C.sub}>{STYLE_HINT[st]}</Txt>
+                </View>
+                <View style={{ width: 22, height: 22, borderRadius: 11, borderWidth: 1.5, borderColor: on ? COLOR : C.faint, backgroundColor: on ? COLOR : 'transparent', alignItems: 'center', justifyContent: 'center' }}>
+                  {on ? (
+                    <Animated.View entering={ZoomIn.springify().damping(12)}>
+                      <Feather name="check" size={13} color="#FFFFFF" />
+                    </Animated.View>
+                  ) : null}
                 </View>
               </Tap>
             );
           })}
         </View>
         <Label style={{ marginTop: 6 }}>Duração</Label>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Step label="−" onPress={() => setProfile({ months: Math.max(1, p.months - 1) })} />
-          <Text style={{ fontSize: 22, fontWeight: '800', color: C.ink, minWidth: 100, textAlign: 'center' }}>{p.months} meses</Text>
-          <Step label="+" onPress={() => setProfile({ months: Math.min(36, p.months + 1) })} />
-        </View>
+        <Stepper value={p.months} onChange={(v) => setProfile({ months: v })} format={(v) => `${v} ${v === 1 ? 'mês' : 'meses'}`} color={COLOR} soft={F.orcamento.soft} />
       </Card>
 
       <Section title="Gastos por mês" hint="Estimativas. Toque num valor para trocar pelo seu." />
@@ -116,17 +125,19 @@ export default function Orcamento() {
       <P muted style={{ fontSize: 13 }}>
         Convertido pela cotação comercial ({brl(1 / rate)} por {cur}). Na prática, some de 1% a 8% de custo de câmbio, conforme o caminho escolhido na aba Câmbio.
       </P>
-      <PlanButton color={F.orcamento.color} />
+      <PlanButton color={COLOR} />
     </Screen>
   );
 }
 
-function Step({ label, onPress }: { label: string; onPress: () => void }) {
-  return (
-    <Tap onPress={onPress} accessibilityRole="button" style={{ width: 48, height: 48, borderRadius: 14, backgroundColor: F.orcamento.soft, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 24, fontWeight: '700', color: F.orcamento.color }}>{label}</Text>
-    </Tap>
-  );
+// Fatia da barra do mês: cresce do zero até a sua parte.
+function Slice({ share, color, delay }: { share: number; color: string; delay: number }) {
+  const v = useSharedValue(0);
+  useEffect(() => {
+    v.set(withDelay(delay, withTiming(share, { duration: 700, easing: EASE_OUT })));
+  }, [share, delay, v]);
+  const st = useAnimatedStyle(() => ({ width: `${v.get() * 100}%` as `${number}%` }));
+  return <Animated.View style={[{ height: '100%', backgroundColor: color, borderRadius: 3 }, st]} />;
 }
 
 function NumField({ value, prefix, onChange }: { value: number; prefix: string; onChange: (v: number) => void }) {
@@ -141,8 +152,8 @@ function CostRow({ label, color, cur, value, rate, onChange }: { label: string; 
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
       <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: color }} />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 15, color: C.ink, fontWeight: '700' }}>{label}</Text>
-        <Text style={{ fontSize: 12, color: C.sub }}>≈ {brl(value / rate, 0)}</Text>
+        <Txt w="bold">{label}</Txt>
+        <Txt size={12} color={C.sub}>≈ {brl(value / rate, 0)}</Txt>
       </View>
       <View style={{ width: 140 }}>
         <NumField value={value} prefix={cur} onChange={onChange} />

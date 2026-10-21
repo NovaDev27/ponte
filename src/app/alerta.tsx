@@ -1,15 +1,15 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { CompletoLock } from '../components/CompletoLock';
-import { Btn, Card, Chip, ChipRow, Field, H, Hero, Label, P, Screen } from '../components/ui';
+import { Btn, Card, Chip, ChipRow, Field, H, Hero, Label, P, Screen, Txt } from '../components/ui';
 import { CURRENCIES, getCountry } from '../data/countries';
 import { alertFired, priceOf } from '../lib/alerts';
 import { hasCompleto } from '../lib/completo';
 import { brl, money, num, parseNum, quoteUnit } from '../lib/format';
 import { ensurePermission, notifySupported } from '../lib/notify';
 import { useApp } from '../lib/store';
-import { C, F } from '../lib/theme';
+import { C, F, FONT } from '../lib/theme';
 
 const DROPS = [1, 2, 3, 5]; // % abaixo da cotação de hoje
 
@@ -76,15 +76,15 @@ export default function Alerta() {
       <P muted>A Ponte confere a cotação de tempos em tempos e te avisa uma vez quando ela chegar no valor escolhido. Não é previsão: ninguém sabe se a moeda vai cair.</P>
 
       {active ? (
-        <Hero colors={fired ? ['#145C3D', '#1F8A5B'] : undefined}>
+        <Hero colors={fired ? ['#1F5A40', F.cambio.color] : undefined}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Feather name={fired ? 'check-circle' : 'bell'} size={18} color="#FFFFFF" />
-            <Text style={{ color: '#FFFFFF', fontWeight: '800', fontSize: 13, letterSpacing: 0.6 }}>{fired ? 'ALERTA ATINGIDO' : 'ALERTA ATIVO'}</Text>
+            <Txt w="mono" size={11} color={'#FFFFFF'} style={{ letterSpacing: 1.2 }}>{fired ? 'ALERTA ATINGIDO' : 'ALERTA ATIVO'}</Txt>
           </View>
-          <Text style={{ color: '#FFFFFF', fontSize: 24, fontWeight: '800' }}>{activeLabel} ≤ {brl(active.target * activeUnit)}</Text>
-          <Text style={{ color: '#C8D6E5', fontSize: 14 }}>
+          <Txt w="heavy" size={28} color={'#FFFFFF'}>{activeLabel} ≤ {brl(active.target * activeUnit)}</Txt>
+          <Txt size={14} color={C.creamSub}>
             Hoje: {activeNow ? brl(activeNow * activeUnit) : '...'} {rates.live ? '' : '(sem internet)'}
-          </Text>
+          </Txt>
         </Hero>
       ) : null}
 
@@ -93,7 +93,7 @@ export default function Alerta() {
         <ChipRow>
           {CURRENCIES.map((c) => <Chip key={c} label={c} active={c === cur} color={F.cambio.color} onPress={() => pickCur(c)} />)}
         </ChipRow>
-        <Text style={{ color: C.sub, fontSize: 14 }}>Hoje: {unitLabel} = {now ? brl(now * unit) : '...'}</Text>
+        <Txt size={14} color={C.sub}>Hoje: {unitLabel} = {now ? brl(now * unit) : '...'}</Txt>
 
         <Label style={{ marginTop: 6 }}>Me avise quando {unitLabel} custar até</Label>
         <Field value={text} onChangeText={setText} prefix="R$" big />
@@ -106,7 +106,7 @@ export default function Alerta() {
         ) : null}
         <Btn label={active ? 'Atualizar alerta' : 'Criar alerta'} icon="bell" onPress={save} />
         {active ? <Btn label="Desligar alerta" kind="ghost" onPress={() => { update({ rateAlert: null }); setMsg('Alerta desligado.'); }} /> : null}
-        {msg ? <P style={{ fontWeight: '700' }}>{msg}</P> : null}
+        {msg ? <P style={{ fontFamily: FONT.bold }}>{msg}</P> : null}
       </Card>
 
       <Card tone="accent">

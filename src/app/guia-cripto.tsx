@@ -1,7 +1,7 @@
 import React from 'react';
-import { Text, View } from 'react-native';
-import { Card, H, Label, P, Screen } from '../components/ui';
-import { C } from '../lib/theme';
+import { View } from 'react-native';
+import { Card, H, Label, P, Screen, Txt } from '../components/ui';
+import { F } from '../lib/theme';
 
 const STEPS = [
   ['Compre USDC', 'Numa exchange brasileira autorizada, pagando com Pix. USDC é uma stablecoin: cada unidade vale cerca de 1 dólar.'],
@@ -30,8 +30,8 @@ export default function GuiaCripto() {
       <Label>Como funciona</Label>
       {STEPS.map(([t, d], i) => (
         <View key={t} style={{ flexDirection: 'row', gap: 12 }}>
-          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: C.primary, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: '#FFFFFF', fontWeight: '800' }}>{i + 1}</Text>
+          <View style={{ width: 30, height: 30, borderRadius: 15, backgroundColor: F.cripto.color, alignItems: 'center', justifyContent: 'center' }}>
+            <Txt w="display" color={'#FFFFFF'}>{i + 1}</Txt>
           </View>
           <View style={{ flex: 1, gap: 2 }}>
             <H>{t}</H>

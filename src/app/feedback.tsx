@@ -2,11 +2,12 @@ import Feather from '@expo/vector-icons/Feather';
 import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { Btn, Card, H, Label, P, Screen, Tap } from '../components/ui';
+import { TextInput, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
+import { Btn, Card, H, Label, P, Screen, Tap, Txt } from '../components/ui';
 import { apiHeaders } from '../lib/api';
 import { serverOf, useApp } from '../lib/store';
-import { C, R } from '../lib/theme';
+import { C, FONT, R } from '../lib/theme';
 
 const QUESTIONS = [
   { key: 'gostou', label: 'O que você mais gostou?', placeholder: 'Ex.: ver quanto eu perco em cada caminho' },
@@ -65,7 +66,7 @@ export default function Feedback() {
         <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'center', paddingVertical: 4 }}>
           {[1, 2, 3, 4, 5].map((n) => (
             <Tap key={n} onPress={() => setNota(n)} accessibilityRole="button" accessibilityLabel={`Nota ${n}`} accessibilityState={{ selected: nota === n }} hitSlop={6}>
-              <Text style={{ fontSize: 36, color: n <= nota ? '#F5B301' : C.line }}>★</Text>
+              <Star on={n <= nota} />
             </Tap>
           ))}
         </View>
@@ -81,7 +82,7 @@ export default function Feedback() {
             placeholderTextColor={C.faint}
             multiline
             maxLength={1000}
-            style={{ minHeight: 84, borderWidth: 1, borderColor: C.line, borderRadius: R.md, backgroundColor: C.bg, padding: 12, fontSize: 15, color: C.ink, textAlignVertical: 'top' }}
+            style={{ minHeight: 96, borderRadius: R.md, backgroundColor: C.sunk, padding: 14, fontSize: 15, fontFamily: FONT.regular, color: C.ink, textAlignVertical: 'top' }}
           />
         </Card>
       ))}
@@ -89,5 +90,16 @@ export default function Feedback() {
       {error ? <P style={{ color: C.bad }}>{error}</P> : null}
       <Btn label={status === 'sending' ? 'Enviando...' : 'Enviar opinião'} icon="send" onPress={send} disabled={empty || status === 'sending'} />
     </Screen>
+  );
+}
+
+// Estrela que dá um pulinho quando acende.
+function Star({ on }: { on: boolean }) {
+  return on ? (
+    <Animated.View key="on" entering={ZoomIn.springify().damping(8).stiffness(260)}>
+      <Txt size={38} color="#F2B01E" style={{ lineHeight: 46 }}>★</Txt>
+    </Animated.View>
+  ) : (
+    <Txt size={38} color={C.line} style={{ lineHeight: 46 }}>★</Txt>
   );
 }

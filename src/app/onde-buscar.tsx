@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useState } from 'react';
-import { Linking, Text, View } from 'react-native';
-import { Card, Chip, ChipRow, H, IconBox, Label, P, Screen, Tap } from '../components/ui';
+import { Linking, View } from 'react-native';
+import { Card, Chip, ChipRow, H, IconBox, Label, P, Screen, Tap, Txt } from '../components/ui';
 import { COUNTRIES, getCountry } from '../data/countries';
 import { GENERAL_LINKS, LINK_KINDS, LinkKind, OFFICIAL_LINKS, OfficialLink } from '../data/links';
 import { useApp } from '../lib/store';
@@ -62,10 +62,10 @@ function LinkRow({ link }: { link: OfficialLink }) {
       style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 8 }}
     >
       <View style={{ flex: 1, gap: 1 }}>
-        <Text style={{ color: C.ink, fontWeight: '700', fontSize: 15 }}>{link.label}</Text>
-        <Text style={{ color: C.sub, fontSize: 12 }}>{host}</Text>
+        <Txt w="bold" size={15} color={C.ink}>{link.label}</Txt>
+        <Txt size={12} color={C.sub}>{host}</Txt>
       </View>
-      <Feather name="external-link" size={18} color={C.primary} />
+      <Feather name="arrow-up-right" size={18} color={C.faint} />
     </Tap>
   );
 }
