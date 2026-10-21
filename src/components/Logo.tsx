@@ -1,32 +1,21 @@
 import React from 'react';
 import { Text, View } from 'react-native';
-import Svg, { G, Line, Path } from 'react-native-svg';
+import Svg, { Circle, Path } from 'react-native-svg';
 import { C, FONT } from '../lib/theme';
 
 type Props = { size?: number; color?: string; accent?: string };
 
-// Ponte pênsil minimalista com um avião ao fundo.
+// Ponte pênsil em traço grosso com o sol se pondo entre as torres.
+// Mesma geometria do ícone do app (gerado a partir destas medidas).
 export function Logo({ size = 120, color = C.ink, accent = C.accent }: Props) {
-  const hangers = [44, 52, 60, 68, 76];
+  const line = { stroke: color, strokeWidth: 7, strokeLinecap: 'round' as const, fill: 'none' };
   return (
-    <Svg width={size} height={size * 0.7} viewBox="0 0 120 84">
-      <Path d="M8 40 Q48 4 104 18" stroke={accent} strokeWidth={1.6} strokeDasharray="3 4" fill="none" strokeLinecap="round" opacity={0.7} />
-      <G transform="translate(104 17) rotate(-14) scale(0.95)">
-        <Path d="M-10 0 L6 -1.3 Q10 -1.1 10 0 Q10 1.1 6 1.3 Z" fill={accent} />
-        <Path d="M-1 -0.9 L-5 -8 L-2 -8 L4 -0.9 Z" fill={accent} />
-        <Path d="M-1 0.9 L-5 8 L-2 8 L4 0.9 Z" fill={accent} />
-        <Path d="M-9 -0.3 L-11 -3.6 L-9.4 -3.6 L-6.5 -0.4 Z" fill={accent} />
-        <Path d="M-9 0.3 L-11 3.6 L-9.4 3.6 L-6.5 0.4 Z" fill={accent} />
-      </G>
-      <Line x1={4} y1={66} x2={116} y2={66} stroke={color} strokeWidth={4} strokeLinecap="round" />
-      <Line x1={36} y1={30} x2={36} y2={76} stroke={color} strokeWidth={4} strokeLinecap="round" />
-      <Line x1={84} y1={30} x2={84} y2={76} stroke={color} strokeWidth={4} strokeLinecap="round" />
-      <Path d="M6 58 Q22 52 36 30 Q60 70 84 30 Q98 52 114 58" stroke={color} strokeWidth={2.4} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      {hangers.map((x) => {
-        const t = (x - 36) / 48;
-        const y = 30 + 2 * t * (1 - t) * 40 + 0;
-        return <Line key={x} x1={x} y1={y} x2={x} y2={66} stroke={color} strokeWidth={1.4} opacity={0.6} />;
-      })}
+    <Svg width={size} height={(size * 70) / 92} viewBox="4 18 92 70">
+      <Circle cx={50} cy={43} r={12} fill={accent} />
+      <Path d="M32 28 Q50 76 68 28" {...line} />
+      <Path d="M32 28 Q22 56 11 64" {...line} />
+      <Path d="M68 28 Q78 56 89 64" {...line} />
+      <Path d="M32 26 L32 80 M68 26 L68 80 M10 68 L90 68" {...line} />
     </Svg>
   );
 }
