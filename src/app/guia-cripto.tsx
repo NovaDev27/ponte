@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import React, { useEffect, useState } from 'react';
 import { View } from 'react-native';
 import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import { CryptoIcon, type CryptoName } from '../components/CryptoIcon';
 import { Badge, Card, Explain, Hero, P, Section, Screen, Tap, Txt } from '../components/ui';
 import { getCountry } from '../data/countries';
 import { useApp } from '../lib/store';
@@ -24,7 +25,7 @@ const AVOID = [
   ['Stablecoin pouco conhecida', 'Se a exchange do destino não aceita, você fica preso nela e paga para converter de novo.'],
 ];
 
-const NETWORKS: { name: string; fee: string; level: 1 | 2 | 3; note: string }[] = [
+const NETWORKS: { name: CryptoName; fee: string; level: 1 | 2 | 3; note: string }[] = [
   { name: 'Polygon', fee: 'centavos', level: 1, note: 'Barata e aceita em muitas exchanges.' },
   { name: 'Solana', fee: 'centavos', level: 1, note: 'Rápida e barata.' },
   { name: 'Base', fee: 'centavos', level: 1, note: 'Barata; aceita em menos lugares.' },
@@ -67,7 +68,7 @@ export default function GuiaCripto() {
       <View style={{ flexDirection: 'row', gap: 10 }}>
         {COINS.map((c, i) => (
           <View key={c.sym} style={{ flex: 1 }}>
-            <Coin sym={c.sym} name={c.name} on={coin === i} onPress={() => setCoin(i)} />
+            <Coin sym={c.sym as CryptoName} name={c.name} on={coin === i} onPress={() => setCoin(i)} />
           </View>
         ))}
       </View>
@@ -101,14 +102,19 @@ export default function GuiaCripto() {
       <Card style={{ gap: 0, paddingVertical: 6 }}>
         {NETWORKS.map((n, i) => (
           <View key={n.name} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: C.line }}>
-            <View style={{ flexDirection: 'row', gap: 3 }}>
-              {[1, 2, 3].map((k) => <View key={k} style={{ width: 6, height: 18, borderRadius: 3, backgroundColor: k <= n.level ? C.navy : C.sunk }} />)}
+            <View style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.navySoft, alignItems: 'center', justifyContent: 'center' }}>
+              <CryptoIcon name={n.name} size={22} color={C.navy} />
             </View>
             <View style={{ flex: 1 }}>
               <Txt w="bold">{n.name}</Txt>
               <Txt size={13} color={C.sub}>{n.note}</Txt>
             </View>
-            <Txt w="mono" size={11} color={C.sub}>{n.fee.toUpperCase()}</Txt>
+            <View style={{ alignItems: 'flex-end', gap: 5 }}>
+              <View style={{ flexDirection: 'row', gap: 3 }}>
+                {[1, 2, 3].map((k) => <View key={k} style={{ width: 5, height: 14, borderRadius: 3, backgroundColor: k <= n.level ? C.navy : C.sunk }} />)}
+              </View>
+              <Txt w="mono" size={11} color={C.sub}>{n.fee.toUpperCase()}</Txt>
+            </View>
           </View>
         ))}
       </Card>
@@ -198,7 +204,7 @@ function Flow({ to }: { to: string }) {
   );
 }
 
-function Coin({ sym, name, on, onPress }: { sym: string; name: string; on: boolean; onPress: () => void }) {
+function Coin({ sym, name, on, onPress }: { sym: CryptoName; name: string; on: boolean; onPress: () => void }) {
   return (
     <Tap
       onPress={onPress}
@@ -207,8 +213,8 @@ function Coin({ sym, name, on, onPress }: { sym: string; name: string; on: boole
       accessibilityState={{ selected: on }}
       style={{ alignItems: 'center', gap: 8, padding: 16, borderRadius: R.lg, backgroundColor: on ? C.navy : C.card, borderWidth: 1, borderColor: on ? C.navy : C.line }}
     >
-      <View style={{ width: 56, height: 56, borderRadius: 28, borderWidth: 3, borderColor: on ? C.cream : C.navy, alignItems: 'center', justifyContent: 'center' }}>
-        <Txt w="heavy" size={22} color={on ? C.cream : C.navy}>$</Txt>
+      <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: on ? C.navy2 : C.navySoft, alignItems: 'center', justifyContent: 'center' }}>
+        <CryptoIcon name={sym} size={34} color={on ? C.cream : C.navy} />
       </View>
       <Txt w="display" size={17} color={on ? C.cream : C.ink}>{sym}</Txt>
       <Txt size={12} color={on ? C.navyLight : C.sub}>{name}</Txt>
