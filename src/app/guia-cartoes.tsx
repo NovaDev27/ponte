@@ -16,7 +16,7 @@ const SPEND = [500, 1000, 2000];
 
 export default function GuiaCartoes() {
   const { state, update } = useApp();
-  const [editing, setEditing] = useState(!state.cardQuiz);
+  const [editing, setEditing] = useState(false);
   if (editing || !state.cardQuiz) {
     return (
       <Quiz
@@ -254,11 +254,11 @@ function Result({ quiz, onRedo }: { quiz: CardQuiz; onRedo: () => void }) {
                   ))}
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                     <Card tone="sunk" style={{ flex: 1, padding: 12, gap: 4 }}>
-                      <Txt w="mono" size={10} color={C.navy} style={{ letterSpacing: 1 }}>BOM PARA</Txt>
+                      <Txt w="mono" size={11} color={C.navy} style={{ letterSpacing: 1 }}>BOM PARA</Txt>
                       <Txt size={13}>{w.good}</Txt>
                     </Card>
                     <Card tone="sunk" style={{ flex: 1, padding: 12, gap: 4 }}>
-                      <Txt w="mono" size={10} color={C.ink} style={{ letterSpacing: 1 }}>ATENÇÃO</Txt>
+                      <Txt w="mono" size={11} color={C.ink} style={{ letterSpacing: 1 }}>ATENÇÃO</Txt>
                       <Txt size={13}>{w.watch}</Txt>
                     </Card>
                   </View>

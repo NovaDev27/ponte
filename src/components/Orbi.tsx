@@ -5,6 +5,7 @@ import Animated, {
   withRepeat, withSequence, withSpring, withTiming,
 } from 'react-native-reanimated';
 import Svg, { Circle, G, Path } from 'react-native-svg';
+import { useIsFocused } from 'expo-router';
 import { bump, tap } from '../lib/motion';
 import { FONT } from '../lib/theme';
 
@@ -27,6 +28,8 @@ const STARS: [number, number][] = [[-34, -26], [34, -24], [-30, 22], [32, 26]];
 export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = true }: { size?: number; mood?: OrbiMood; talk?: boolean; interactive?: boolean }) {
   const k = size / VB;
   const reduce = useReducedMotion();
+  const focused = useIsFocused();
+  const still = reduce || !focused; // parado com "reduzir movimento" ou quando a tela não está à vista
   const float = useSharedValue(0);
   const jump = useSharedValue(0);
   const rot = useSharedValue(0);
@@ -45,7 +48,12 @@ export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = tr
 
   // Flutuar + piscar (param com "reduzir movimento" do celular).
   useEffect(() => {
-    if (reduce) return;
+    if (still) {
+      float.set(0);
+      blinkL.set(1);
+      blinkR.set(1);
+      return;
+    }
     float.set(withRepeat(withSequence(
       withTiming(-3, { duration: 1400, easing: Easing.inOut(Easing.sin) }),
       withTiming(0, { duration: 1400, easing: Easing.inOut(Easing.sin) }),
@@ -56,10 +64,14 @@ export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = tr
     ), -1);
     blinkL.set(blink);
     blinkR.set(blink);
-  }, [reduce, float, blinkL, blinkR]);
+  }, [still, float, blinkL, blinkR]);
 
   useEffect(() => {
-    if (reduce) return;
+    if (still) {
+      moon.set(0);
+      lookX.set(0);
+      return;
+    }
     moon.set(0);
     moon.set(withRepeat(withTiming(Math.PI * 2, { duration: mood === 'thinking' ? 1400 : 6500, easing: Easing.linear }), -1));
     if (mood === 'thinking') {
@@ -73,7 +85,7 @@ export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = tr
     if (mood === 'happy') {
       jump.set(withSequence(withTiming(-8, { duration: 180, easing: Easing.out(Easing.quad) }), withSpring(0, { damping: 6, stiffness: 220 })));
     }
-  }, [mood, reduce, moon, lookX, lookY, jump]);
+  }, [mood, still, moon, lookX, lookY, jump]);
 
   // Some com o balão de fala e com os olhinhos felizes depois de um tempo.
   useEffect(() => {
@@ -152,7 +164,7 @@ export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = tr
           : { 'aria-hidden': true })}
         style={{ width: size, height: size, borderRadius: size * 0.26, backgroundColor: SPACE, overflow: 'hidden' }}
       >
-        {TWINKLES.map(([x, y, d]) => <Twinkle key={`${x}-${y}`} x={x} y={y} delay={d} k={k} reduce={reduce} />)}
+        {TWINKLES.map(([x, y, d]) => <Twinkle key={`${x}-${y}`} x={x} y={y} delay={d} k={k} reduce={still} />)}
         <Animated.View style={[{ position: 'absolute', left: 0, top: 0, width: size, height: size }, planet]}>
           <Svg width={size} height={size} viewBox={`0 0 ${VB} ${VB}`} style={{ position: 'absolute' }}>
             <G transform="rotate(-14 50 55)">
@@ -183,7 +195,10 @@ export function Orbi({ size = 120, mood = 'idle', talk = false, interactive = tr
 function Twinkle({ x, y, delay, k, reduce }: { x: number; y: number; delay: number; k: number; reduce: boolean }) {
   const o = useSharedValue(0.5);
   useEffect(() => {
-    if (reduce) return;
+    if (reduce) {
+      o.set(0.6);
+      return;
+    }
     o.set(withDelay(delay, withRepeat(withSequence(withTiming(1, { duration: 900 }), withTiming(0.25, { duration: 900 })), -1)));
   }, [o, delay, reduce]);
   const st = useAnimatedStyle(() => ({ opacity: o.get() }));

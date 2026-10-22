@@ -38,7 +38,7 @@ export default function Checklist() {
           <Txt w="heavy" size={22} color={C.cream}>{Math.round((done / all.length) * 100)}%</Txt>
         </Ring>
         <View style={{ flex: 1, gap: 4 }}>
-          <Txt w="mono" size={10} color={C.creamSub} style={{ letterSpacing: 1.3 }}>PASSAPORTE DE CARIMBOS</Txt>
+          <Txt w="mono" size={11} color={C.creamSub} style={{ letterSpacing: 1.3 }}>PASSAPORTE DE CARIMBOS</Txt>
           <Txt w="display" size={21} color={C.cream}>{done === all.length ? 'Tudo carimbado!' : `${done} de ${all.length} carimbos`}</Txt>
           <Txt size={13} color={C.creamSub} numberOfLines={2}>{next ? `Próximo: ${next.text}` : 'Boa viagem! ✈️'}</Txt>
         </View>
@@ -79,7 +79,7 @@ export default function Checklist() {
             <View style={{ flex: 1, gap: 10, paddingBottom: 14 }}>
               <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 8 }}>
                 <View style={{ flex: 1, gap: 2 }}>
-                  <Txt w="mono" size={10} color={current ? COLOR : C.sub} style={{ letterSpacing: 1.1 }}>{ph.when.toUpperCase()}</Txt>
+                  <Txt w="mono" size={11} color={current ? COLOR : C.sub} style={{ letterSpacing: 1.1 }}>{ph.when.toUpperCase()}</Txt>
                   <Txt w="display" size={19}>{ph.title}</Txt>
                   {due ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>

@@ -5,6 +5,7 @@ import Animated, {
   withSequence, withTiming,
 } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
+import { useIsFocused } from 'expo-router';
 import { cityCode } from '../data/airports';
 import { monthLabel } from '../lib/format';
 import { success } from '../lib/motion';
@@ -20,6 +21,7 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
   flag: string; city: string; month: string; months: number; days: number; notch?: string;
 }) {
   const reduce = useReducedMotion();
+  const focused = useIsFocused();
   const [w, setW] = useState(0);
   const [hello, setHello] = useState(false);
   const t = useSharedValue(reduce ? 0.5 : 0);
@@ -47,7 +49,10 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
   const d = `M ${x0} ${y0} Q ${cx} ${cy} ${x1} ${y0}`;
 
   function loop() {
-    if (reduce) return;
+    if (reduce || !focused) {
+      t.set(reduce ? 0.5 : 0); // parado: com "reduzir movimento" ou fora da tela (economiza bateria)
+      return;
+    }
     t.set(withRepeat(withSequence(
       withTiming(1, { duration: 4600, easing: Easing.inOut(Easing.cubic) }),
       withDelay(1400, withTiming(0, { duration: 0 })),
@@ -57,7 +62,7 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
   useEffect(() => {
     loop();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduce]);
+  }, [reduce, focused]);
 
   useEffect(() => {
     if (!hello) return;
@@ -99,7 +104,7 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
       <View style={{ backgroundColor: C.navy, borderRadius: 26, overflow: 'hidden' }}>
         <View style={{ padding: 20, paddingBottom: 18, gap: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Txt w="mono" size={10} color={C.navyLight} style={{ letterSpacing: 1.4 }}>PONTE · CARTÃO DE EMBARQUE</Txt>
+            <Txt w="mono" size={11} color={C.navyLight} style={{ letterSpacing: 1.4 }}>PONTE · CARTÃO DE EMBARQUE</Txt>
             <Txt size={20} style={{ lineHeight: 24 }}>{flag}</Txt>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
@@ -160,7 +165,7 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
 function Cell({ k, v, accent, end }: { k: string; v: string; accent?: boolean; end?: boolean }) {
   return (
     <View style={{ flex: 1, gap: 4, alignItems: end ? 'flex-end' : 'flex-start' }}>
-      <Txt w="mono" size={10} color={C.navyLight} style={{ letterSpacing: 1.2 }}>{k}</Txt>
+      <Txt w="mono" size={11} color={C.navyLight} style={{ letterSpacing: 1.2 }}>{k}</Txt>
       <Txt w="display" size={17} color={C.cream} style={accent ? { textDecorationLine: 'underline' } : null}>{v}</Txt>
     </View>
   );

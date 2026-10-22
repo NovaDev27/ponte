@@ -494,7 +494,7 @@ export function IconBox({ name, color, soft, size = 44 }: { name: IconName; colo
 export function Badge({ label, color, soft }: { label: string; color: string; soft: string }) {
   return (
     <View style={{ backgroundColor: soft, paddingHorizontal: 8, paddingVertical: 3, borderRadius: R.pill, alignSelf: 'flex-start' }}>
-      <Txt w="mono" size={10} color={color} style={{ letterSpacing: 0.8 }}>{label}</Txt>
+      <Txt w="mono" size={11} color={color} style={{ letterSpacing: 0.8 }}>{label}</Txt>
     </View>
   );
 }

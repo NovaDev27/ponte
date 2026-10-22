@@ -16,7 +16,7 @@ import { Background } from '../components/Background';
 import { Logo } from '../components/Logo';
 import { Btn, Txt } from '../components/ui';
 import { installGlobalErrorReporter, reportError } from '../lib/report';
-import { AppProvider } from '../lib/store';
+import { AppProvider, useApp } from '../lib/store';
 import { C, FONT } from '../lib/theme';
 
 installGlobalErrorReporter();
@@ -41,6 +41,14 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
   );
 }
 
+// Só mostra as telas depois que os dados salvos no celular carregaram.
+// Sem isso, uma tela aberta direto (link ou app recarregado) lia o estado vazio.
+function Ready({ children }: { children: React.ReactNode }) {
+  const { ready } = useApp();
+  if (!ready) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
+  return <>{children}</>;
+}
+
 export default function RootLayout() {
   const [loaded, failed] = useFonts({
     BricolageGrotesque_700Bold, BricolageGrotesque_800ExtraBold, DMSans_400Regular, DMSans_500Medium, DMSans_700Bold, DMMono_500Medium,
@@ -56,6 +64,7 @@ export default function RootLayout() {
       <AppProvider>
         <StatusBar style="dark" />
         <Background />
+        <Ready>
         <Stack
           screenOptions={{
             headerTintColor: C.ink,
@@ -79,7 +88,9 @@ export default function RootLayout() {
           <Stack.Screen name="simulacao" options={{ title: 'Envios mensais' }} />
           <Stack.Screen name="alerta" options={{ title: 'Alerta de cotação' }} />
           <Stack.Screen name="lugares" options={{ title: 'Lugares' }} />
+          <Stack.Screen name="ferramentas" options={{ title: 'Ferramentas' }} />
         </Stack>
+        </Ready>
       </AppProvider>
     </SafeAreaProvider>
   );

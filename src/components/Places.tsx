@@ -32,7 +32,7 @@ function Caption({ place, big }: { place: Place; big?: boolean }) {
     <>
       <LinearGradient colors={['transparent', 'rgba(10,12,16,0.85)']} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: '62%' }} pointerEvents="none" />
       <View style={{ position: 'absolute', left: 16, right: 16, bottom: 14, gap: 2 }} pointerEvents="none">
-        <Txt w="mono" size={10} color={C.navyLight} style={{ letterSpacing: 1.2 }}>{place.kind.toUpperCase()} · {place.city.toUpperCase()}</Txt>
+        <Txt w="mono" size={11} color={C.navyLight} style={{ letterSpacing: 1.2 }}>{place.kind.toUpperCase()} · {place.city.toUpperCase()}</Txt>
         <Txt w="display" size={big ? 24 : 19} color="#FFFFFF" numberOfLines={2}>{place.name}</Txt>
       </View>
     </>

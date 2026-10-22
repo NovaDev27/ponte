@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import { router, useIsFocused } from 'expo-router';
+import React, { useEffect } from 'react';
 import { View } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -11,13 +11,11 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { PlacesCarousel } from '../../components/Places';
 import { Ticket } from '../../components/Ticket';
-import { Badge, Bar, Card, IconName, ListRow, Screen, Section, Tap, Txt } from '../../components/ui';
+import { Bar, Card, IconName, ListRow, Screen, Section, Tap, Txt } from '../../components/ui';
 import { phasesFor } from '../../data/checklist';
 import { getCountry } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
-import { COMPLETO_GRATIS } from '../../lib/completo';
 import { daysUntil, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F, R } from '../../lib/theme';
@@ -30,8 +28,6 @@ function greeting() {
 export default function Home() {
   const { state, rates } = useApp();
   const p = state.profile;
-  const [allGuides, setAllGuides] = useState(false);
-  const shown = allGuides ? GUIDES : GUIDES.slice(0, 3);
   const country = getCountry(p.country);
   const city = country.cities[p.city] ?? country.cities[0];
   const rate = rateOf(rates, country.currency);
@@ -120,7 +116,7 @@ export default function Home() {
                 {s.ok ? '✓ ' : ''}{s.label}
               </Txt>
               {s.pct != null ? (
-                <Txt w="mono" size={10} color={s.ok ? C.navy : C.faint} style={{ marginTop: 2 }}>
+                <Txt w="mono" size={11} color={s.ok ? C.navy : C.faint} style={{ marginTop: 2 }}>
                   {Math.round(Math.min(1, s.pct) * 100)}%
                 </Txt>
               ) : null}
@@ -170,59 +166,34 @@ export default function Home() {
       {/* Dica do país — postcard mais leve */}
       <Postcard flag={country.flag} name={country.name} tip={country.tip} />
 
-      {/* Guias */}
-      <Section title="Guias" hint="Ferramentas para o embarque" />
+      {/* Atalhos: só os 4 mais usados. O resto fica em Ferramentas. */}
+      <Section title="Para o seu intercâmbio" />
       <Card style={{ paddingVertical: 2, gap: 0 }}>
-        {shown.map((g, i) => (
-          <ListRow
-            key={g.route}
-            icon={g.icon}
-            color={g.f.color}
-            soft={g.f.soft}
-            title={g.title}
-            hint={g.hint}
-            onPress={() => router.push(g.route)}
-            last={i === shown.length - 1 && allGuides}
-            right={g.completo && !COMPLETO_GRATIS ? <Badge label="COMPLETO" color={C.accent} soft={C.accentSoft} /> : null}
-          />
+        {GUIDES.map((g) => (
+          <ListRow key={g.route} icon={g.icon} color={g.f.color} soft={g.f.soft} title={g.title} hint={g.hint} onPress={() => router.push(g.route)} />
         ))}
-        {!allGuides ? (
-          <Tap
-            onPress={() => setAllGuides(true)}
-            scaleTo={0.97}
-            style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 }}
-          >
-            <Txt w="bold" size={14}>
-              Ver todos ({GUIDES.length})
-            </Txt>
-            <Feather name="chevron-down" size={16} color={C.ink} />
-          </Tap>
-        ) : null}
+        <Tap
+          onPress={() => router.push('/ferramentas')}
+          scaleTo={0.97}
+          accessibilityRole="button"
+          style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14 }}
+        >
+          <Txt w="bold" size={14}>Todas as ferramentas</Txt>
+          <Feather name="arrow-right" size={16} color={C.ink} />
+        </Tap>
       </Card>
-
-      {/* Lugares */}
-      <Section
-        title={`Lugares em ${country.name}`}
-        hint="Para conhecer quando chegar"
-        right={
-          <Tap onPress={() => router.push('/lugares')} hitSlop={10}>
-            <Txt w="bold" size={14} color={C.navy}>
-              Ver todos
-            </Txt>
-          </Tap>
-        }
-      />
-      <PlacesCarousel code={p.country} city={city.name} />
     </Screen>
   );
 }
 
 function Pulse({ on }: { on: boolean }) {
   const reduce = useReducedMotion();
+  const focused = useIsFocused();
   const v = useSharedValue(0);
   useEffect(() => {
-    if (on && !reduce) v.set(withRepeat(withTiming(1, { duration: 1800 }), -1));
-  }, [on, reduce, v]);
+    if (on && !reduce && focused) v.set(withRepeat(withTiming(1, { duration: 1800 }), -1));
+    else v.set(0);
+  }, [on, reduce, focused, v]);
   const ring = useAnimatedStyle(() => ({
     opacity: 0.45 * (1 - v.get()),
     transform: [{ scale: 1 + v.get() * 1.5 }],
@@ -295,22 +266,11 @@ function Postcard({ flag, name, tip }: { flag: string; name: string; tip: string
   );
 }
 
-type Guide = {
-  route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback' | '/simulacao' | '/alerta' | '/lugares' | '/completo';
-  icon: IconName;
-  title: string;
-  hint: string;
-  f: { color: string; soft: string };
-  completo?: boolean;
-};
+type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/feedback' | '/lugares'; icon: IconName; title: string; hint: string; f: { color: string; soft: string } };
 
 const GUIDES: Guide[] = [
-  { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Taxas e como pedir', f: F.cambio },
-  { route: '/alerta', icon: 'bell', title: 'Alerta de cotação', hint: 'Aviso quando a moeda baratear', f: F.orcamento, completo: true },
-  { route: '/feedback', icon: 'heart', title: 'Sua opinião', hint: 'Leva 2 minutos', f: F.assistente },
-  { route: '/simulacao', icon: 'trending-up', title: 'Envios mensais', hint: 'Quanto chega todo mês', f: F.cambio, completo: true },
-  { route: '/onde-buscar', icon: 'search', title: 'Onde buscar', hint: 'Visto, escolas e bolsas', f: F.checklist },
-  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins', hint: 'USDC, redes e riscos', f: F.cripto },
-  { route: '/lugares', icon: 'map', title: 'Lugares', hint: 'Pontos e bairros', f: F.orcamento },
-  { route: '/completo', icon: 'star', title: 'Ponte Completo', hint: 'PDF, alertas e prazos', f: F.assistente },
+  { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Seu cartão e quanto custa lá fora', f: F.cambio },
+  { route: '/lugares', icon: 'map', title: 'Lugares', hint: 'O que conhecer quando chegar', f: F.orcamento },
+  { route: '/onde-buscar', icon: 'search', title: 'Onde buscar', hint: 'Visto, escolas e bolsas oficiais', f: F.checklist },
+  { route: '/feedback', icon: 'heart', title: 'Sua opinião', hint: 'Leva 2 minutos e ajuda muito', f: F.assistente },
 ];

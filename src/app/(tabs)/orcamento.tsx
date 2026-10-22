@@ -43,7 +43,7 @@ export default function Orcamento() {
           {parts.map((x) => (
             <View key={x.key} style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}>
               <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: x.color, }} />
-              <Txt size={12} color={C.creamSub}>{x.label}</Txt>
+              <Txt size={12} color={C.creamSub}>{x.label} <Txt w="bold" size={12} color={C.cream}>{Math.round((x.value / sum) * 100)}%</Txt></Txt>
             </View>
           ))}
         </View>

@@ -1,9 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Image, Linking, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { PlacesCarousel } from '../components/Places';
 import { Card, Chip, ChipRow, P, Screen, Section, Tap, Txt } from '../components/ui';
 import { COUNTRIES, getCountry } from '../data/countries';
 import { GENERAL_LINKS, LINK_KINDS, LinkKind, OFFICIAL_LINKS, OfficialLink } from '../data/links';
@@ -28,16 +26,6 @@ export default function OndeBuscar() {
           <Chip key={c.code} label={`${c.flag} ${c.name}`} active={c.code === code} color={C.navy} onPress={() => setCode(c.code)} />
         ))}
       </ChipRow>
-
-      <Section
-        title={`Conheça ${country.name}`}
-        right={
-          <Tap onPress={() => router.push({ pathname: '/lugares', params: { code } })} hitSlop={10}>
-            <Txt w="bold" size={14} color={C.navy}>Ver todos</Txt>
-          </Tap>
-        }
-      />
-      <PlacesCarousel key={code} code={code} />
 
       <Section title="Sites oficiais" hint="Toque para abrir no navegador" />
       {ORDER.map((kind) => {

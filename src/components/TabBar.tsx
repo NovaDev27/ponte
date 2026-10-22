@@ -107,10 +107,10 @@ export function TabBar({ state, descriptors, navigation, insets }: BottomTabBarP
               <TabIcon name={ICONS[route.name] ?? 'circle'} focused={focused} />
               <Txt
                 w={focused ? 'bold' : 'medium'}
-                size={10}
+                size={11}
                 color={focused ? C.ink : C.creamSub}
                 numberOfLines={1}
-                style={{ lineHeight: 12 }}
+                style={{ lineHeight: 13 }}
               >
                 {label}
               </Txt>

@@ -15,8 +15,9 @@ export function CardArt({ colors, fg = '#FFFFFF', title, tag, width = 300, back,
   const k = width / 300; // escala do texto
   const turn = useSharedValue(0);
   const [flipped, setFlipped] = useState(false);
-  const front = useAnimatedStyle(() => ({ transform: [{ perspective: 1200 }, { rotateY: `${turn.get()}deg` }] }));
-  const rear = useAnimatedStyle(() => ({ transform: [{ perspective: 1200 }, { rotateY: `${turn.get() + 180}deg` }] }));
+  // Troca a face no meio do giro (90°): funciona igual em todo Android, sem depender de backfaceVisibility.
+  const front = useAnimatedStyle(() => ({ opacity: turn.get() < 90 ? 1 : 0, transform: [{ perspective: 1200 }, { rotateY: `${turn.get()}deg` }] }));
+  const rear = useAnimatedStyle(() => ({ opacity: turn.get() < 90 ? 0 : 1, transform: [{ perspective: 1200 }, { rotateY: `${turn.get() - 180}deg` }] }));
 
   const face = (
     <LinearGradient colors={colors} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[st.card, { width, height: h, borderRadius: 16 * k, padding: 18 * k }]}>
