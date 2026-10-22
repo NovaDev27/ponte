@@ -8,6 +8,12 @@ import { PLACES } from '../data/places';
 export type WikiInfo = { img?: string; text?: string; url: string };
 
 const KEY = 'ponte:lugares:v1:';
+
+// A Wikipédia bloqueia (erro 403) o identificador padrão do Android ("okhttp"), tanto na
+// consulta quanto nas fotos. Por isso o app se apresenta com nome e endereço próprios,
+// como pede a política deles. No navegador o próprio navegador cuida disso.
+const UA = 'PonteApp/1.0 (https://github.com/NovaDev27/ponte)';
+export const WIKI_HEADERS: Record<string, string> = Platform.OS === 'web' ? {} : { 'User-Agent': UA, 'Api-User-Agent': UA };
 const TTL = 30 * 86400000;
 const memory = new Map<string, Record<string, WikiInfo>>();
 
@@ -23,7 +29,7 @@ async function fetchCountry(code: string): Promise<Record<string, WikiInfo>> {
     exlimit: '20', piprop: 'thumbnail', pithumbsize: '800', format: 'json', redirects: '1', formatversion: '2', origin: '*',
   });
   const res = await fetch(`https://pt.wikipedia.org/w/api.php?${qs}`, {
-    headers: Platform.OS === 'web' ? {} : { 'Api-User-Agent': 'PonteApp/1.0 (app de intercambio)' },
+    headers: WIKI_HEADERS,
   });
   if (!res.ok) throw new Error(`wiki ${res.status}`);
   const j = await res.json();

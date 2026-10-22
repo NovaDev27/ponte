@@ -8,7 +8,7 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { type Place, PLACES } from '../data/places';
 import { C, R } from '../lib/theme';
-import { useWiki, type WikiInfo } from '../lib/wiki';
+import { useWiki, WIKI_HEADERS, type WikiInfo } from '../lib/wiki';
 import { Btn, Tap, Txt } from './ui';
 
 // Foto que aparece suave quando termina de carregar. Sem foto (ou sem internet): fundo azul com o emoji.
@@ -20,7 +20,7 @@ function Photo({ uri, emoji, style }: { uri?: string; emoji: string; style?: obj
       <Txt size={54} style={{ lineHeight: 64, opacity: 0.9 }}>{emoji}</Txt>
       {uri ? (
         <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, st]}>
-          <Image source={{ uri }} resizeMode="cover" style={{ width: '100%', height: '100%' }} onLoad={() => o.set(withTiming(1, { duration: 450 }))} />
+          <Image source={{ uri, headers: WIKI_HEADERS }} resizeMode="cover" style={{ width: '100%', height: '100%' }} onLoad={() => o.set(withTiming(1, { duration: 450 }))} />
         </Animated.View>
       ) : null}
     </View>
