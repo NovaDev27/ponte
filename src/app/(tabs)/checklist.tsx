@@ -34,7 +34,7 @@ export default function Checklist() {
   return (
     <Screen title="Checklist" eyebrow="Passo 3 · Checklist" eyebrowColor={COLOR} subtitle={`Do planejamento à primeira semana em ${country.name}`}>
       <Hero style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
-        <Ring value={done / all.length} size={92} stroke={9} color={C.accent} track="rgba(245,241,234,0.12)">
+        <Ring value={done / all.length} size={92} stroke={9} color={C.navyLight} track="rgba(244,242,238,0.12)">
           <Txt w="heavy" size={22} color={C.cream}>{Math.round((done / all.length) * 100)}%</Txt>
         </Ring>
         <View style={{ flex: 1, gap: 4 }}>
@@ -83,8 +83,8 @@ export default function Checklist() {
                   <Txt w="display" size={19}>{ph.title}</Txt>
                   {due ? (
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                      <Txt w="medium" size={13} color={late ? C.bad : C.sub}>até {dateLabel(due)}</Txt>
-                      {late ? <Badge label="ATRASADO" color={C.bad} soft={C.badSoft} /> : null}
+                      <Txt w="medium" size={13} color={late ? C.alert : C.sub}>até {dateLabel(due)}</Txt>
+                      {late ? <Badge label="ATRASADO" color={C.alert} soft={C.alertSoft} /> : null}
                     </View>
                   ) : null}
                 </View>
@@ -158,7 +158,7 @@ function TaskRow({ t, ok, first, onToggle }: { t: Task; ok: boolean; first: bool
       <View style={{ width: 30, height: 30, alignItems: 'center', justifyContent: 'center' }}>
         <Animated.View style={[{ position: 'absolute', width: 30, height: 30, borderRadius: 15, backgroundColor: COLOR }, splash]} />
         {ok ? (
-          <Animated.View style={[{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLOR, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#F7B98A' }, stamp]}>
+          <Animated.View style={[{ width: 30, height: 30, borderRadius: 15, backgroundColor: COLOR, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: C.navyLight }, stamp]}>
             <Feather name="check" size={15} color="#FFFFFF" />
           </Animated.View>
         ) : (

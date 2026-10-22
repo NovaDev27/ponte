@@ -1,6 +1,7 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import React from 'react';
 import { Linking, View } from 'react-native';
+import { PlacesCarousel } from '../../components/Places';
 import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap, Txt } from '../../components/ui';
 import { getCountry, STYLE_FACTOR } from '../../data/countries';
 import { brl, money, rateLabel } from '../../lib/format';
@@ -17,6 +18,7 @@ export default function Pais() {
   return (
     <Screen header title={`${country.flag} ${country.name}`} subtitle={`Moeda: ${country.currency} · ${rateLabel(country.currency, 1 / rate)}`}>
       <Stack.Screen options={{ title: country.name }} />
+      <PlacesCarousel code={country.code} />
 
       <Card>
         <H>Custo de vida por mês</H>
@@ -48,7 +50,7 @@ export default function Pais() {
       <Tap onPress={() => Linking.openURL(country.site.url)} accessibilityRole="link">
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <Icon name="external-link" />
+            <Icon name="external-link" color={C.navy} />
             <View style={{ flex: 1 }}>
               <Txt w="bold" color={C.ink}>Site oficial: {country.site.label}</Txt>
               <Txt size={13} color={C.sub}>Regras de imigração mudam. Confira sempre a fonte oficial.</Txt>

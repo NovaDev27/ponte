@@ -57,11 +57,11 @@ export default function Simulacao() {
       </Card>
 
       {monthly > 0 ? (
-        <Hero colors={['#1F5A40', COLOR]}>
-          <Txt w="mono" size={11} color="#CDEBD9" style={{ letterSpacing: 1.2 }}>EM {months} MESES, PELO MELHOR CAMINHO</Txt>
-          <Txt size={15} color="#E6F4EC">{best.m.name} entrega no total</Txt>
+        <Hero colors={[C.navy, C.navy2]}>
+          <Txt w="mono" size={11} color={C.navyLight} style={{ letterSpacing: 1.2 }}>EM {months} MESES, PELO MELHOR CAMINHO</Txt>
+          <Txt size={15} color={C.cream}>{best.m.name} entrega no total</Txt>
           <CountUp value={best.q.received * months} format={(v) => money(v, cur)} style={{ color: '#FFFFFF', fontSize: 38, fontFamily: FONT.heavy, letterSpacing: -1 }} />
-          <Txt size={14} color="#D7F3E3">
+          <Txt size={14} color={C.navyLight}>
             {brl(monthly * months, 0)} enviados · {saving > 1 ? `${brl(saving, 0)} a menos de perda que ${worst.m.name.toLowerCase()}` : 'diferença pequena entre os caminhos'}
           </Txt>
         </Hero>

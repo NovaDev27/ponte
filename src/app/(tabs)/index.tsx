@@ -1,15 +1,16 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import Animated, { FadeInDown, useAnimatedStyle, useReducedMotion, useSharedValue, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated';
 import { Orbi } from '../../components/Orbi';
+import { PlacesCarousel } from '../../components/Places';
 import { Ticket } from '../../components/Ticket';
 import { Badge, Bar, Card, IconBox, IconName, ListRow, Screen, Section, Tap, Txt } from '../../components/ui';
 import { phasesFor } from '../../data/checklist';
-import { COUNTRIES, getCountry } from '../../data/countries';
+import { getCountry } from '../../data/countries';
 import { budgetOf } from '../../lib/budget';
-import { COMPLETO_GRATIS, hasCompleto } from '../../lib/completo';
+import { COMPLETO_GRATIS } from '../../lib/completo';
 import { brl, daysUntil, num, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C, F, R } from '../../lib/theme';
@@ -91,21 +92,6 @@ export default function Home() {
         ))}
       </View>
 
-      <Tap onPress={() => router.push('/completo')} accessibilityRole="button" scaleTo={0.98}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: C.night, borderRadius: R.lg, padding: 16 }}>
-          <View style={{ width: 44, height: 44, borderRadius: 16, backgroundColor: C.accent, alignItems: 'center', justifyContent: 'center' }}>
-            <Feather name="star" size={20} color="#FFFFFF" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Txt w="display" size={17} color={C.cream}>Ponte Completo</Txt>
-            <Txt size={13} color={C.creamSub}>
-              {hasCompleto(state) ? (state.premium ? 'Liberado. Obrigado por apoiar!' : 'Liberado grátis durante o teste') : 'Plano em PDF, alertas, prazos e mais'}
-            </Txt>
-          </View>
-          <Feather name="arrow-up-right" size={20} color={C.creamSub} />
-        </View>
-      </Tap>
-
       <Postcard flag={country.flag} name={country.name} tip={country.tip} />
 
       <Section title="Guias e ferramentas" />
@@ -131,26 +117,16 @@ export default function Home() {
         )}
       </Card>
 
-      <Section title="Explorar destinos" hint="Custo, visto e regras de cada país" />
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20 }} contentContainerStyle={{ gap: 10, paddingHorizontal: 20, paddingBottom: 4 }}>
-        {COUNTRIES.map((c) => {
-          const r = rateOf(rates, c.currency);
-          const mid = c.cities[0];
-          const m = (Object.values(mid.costs).reduce((a, b) => a + b, 0) + c.seguro) / r;
-          const mine = c.code === p.country;
-          return (
-            <Tap key={c.code} onPress={() => router.push(`/pais/${c.code}`)} scaleTo={0.95} accessibilityRole="button" accessibilityLabel={`${c.name}, cerca de ${brl(m, 0)} por mês`}>
-              <View style={{ width: 150, padding: 16, borderRadius: R.lg, backgroundColor: mine ? C.night : C.card, borderWidth: 1, borderColor: mine ? C.night : C.line, gap: 2 }}>
-                <Txt size={34} style={{ lineHeight: 42 }}>{c.flag}</Txt>
-                <Txt w="display" size={16} color={mine ? C.cream : C.ink} numberOfLines={1}>{c.name}</Txt>
-                <Txt size={12} color={mine ? C.creamSub : C.sub}>{rateLabel(c.currency, 1 / r)}</Txt>
-                <Txt w="bold" size={14} color={mine ? C.cream : C.ink} style={{ marginTop: 8 }}>≈ {brl(m, 0)}/mês</Txt>
-                <Txt size={11} color={mine ? C.creamSub : C.faint}>em {mid.name}</Txt>
-              </View>
-            </Tap>
-          );
-        })}
-      </ScrollView>
+      <Section
+        title={`Lugares em ${country.name}`}
+        hint="Para conhecer quando chegar"
+        right={
+          <Tap onPress={() => router.push('/lugares')} hitSlop={10}>
+            <Txt w="bold" size={14} color={C.navy}>Ver todos</Txt>
+          </Tap>
+        }
+      />
+      <PlacesCarousel code={p.country} city={city.name} />
     </Screen>
   );
 }
@@ -195,16 +171,18 @@ function Postcard({ flag, name, tip }: { flag: string; name: string; tip: string
   );
 }
 
-type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback' | '/simulacao' | '/alerta'; icon: IconName; title: string; hint: string; f: { color: string; soft: string }; completo?: boolean };
+type Guide = { route: '/guia-cartoes' | '/onde-buscar' | '/guia-cripto' | '/feedback' | '/simulacao' | '/alerta' | '/lugares' | '/completo'; icon: IconName; title: string; hint: string; f: { color: string; soft: string }; completo?: boolean };
 
 const GUIDES: Guide[] = [
   // Os 3 primeiros aparecem direto; o resto fica em "Ver todos".
   { route: '/guia-cartoes', icon: 'credit-card', title: 'Qual cartão levar', hint: 'Taxas de cada cartão lá fora e como pedir', f: F.cambio },
   { route: '/alerta', icon: 'bell', title: 'Alerta de cotação', hint: 'Aviso quando a moeda ficar mais barata', f: F.orcamento, completo: true },
-  { route: '/feedback', icon: 'heart', title: 'Dê sua opinião', hint: 'Leva 2 minutos e ajuda a melhorar a Ponte', f: { color: C.accent, soft: C.accentSoft } },
+  { route: '/feedback', icon: 'heart', title: 'Dê sua opinião', hint: 'Leva 2 minutos e ajuda a melhorar a Ponte', f: F.assistente },
   { route: '/simulacao', icon: 'trending-up', title: 'Envios mensais', hint: 'Quanto chega quando alguém manda dinheiro todo mês', f: F.cambio, completo: true },
   { route: '/onde-buscar', icon: 'search', title: 'Onde buscar o seu intercâmbio', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
-  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins com segurança', hint: 'Como usar USDC para mandar dinheiro, e os riscos', f: F.cripto },
+  { route: '/guia-cripto', icon: 'shield', title: 'Stablecoins', hint: 'Qual cripto usar para enviar, as redes e os riscos', f: F.cripto },
+  { route: '/lugares', icon: 'map', title: 'Lugares', hint: 'Pontos turísticos, bairros e passeios de cada país', f: F.orcamento },
+  { route: '/completo', icon: 'star', title: 'Ponte Completo', hint: 'Plano em PDF, alertas, prazos e mais', f: F.assistente },
 ];
 
 type Step = {
@@ -213,33 +191,35 @@ type Step = {
 };
 
 function StepTile({ st }: { st: Step }) {
+  const bg = st.n === 1 || st.n === 4 ? C.ink : C.navy;
   return (
     <Tap onPress={() => router.push(st.route)} accessibilityRole="button" accessibilityLabel={`Passo ${st.n}: ${st.title}. ${st.status}`} scaleTo={0.95}>
-      <View style={{ backgroundColor: st.f.soft, borderRadius: R.lg, padding: 16, minHeight: 168, justifyContent: 'space-between', gap: 10 }}>
+      <View style={{ backgroundColor: bg, borderRadius: R.lg, padding: 16, minHeight: 168, justifyContent: 'space-between', gap: 10, overflow: 'hidden' }}>
+        <View pointerEvents="none" style={{ position: 'absolute', right: -40, bottom: -40, width: 120, height: 120, borderRadius: 60, backgroundColor: 'rgba(255,255,255,0.05)' }} />
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           {st.orbi ? (
             <Orbi size={44} interactive={false} />
           ) : (
-            <IconBox name={st.icon} color="#FFFFFF" soft={st.f.color} size={44} />
+            <IconBox name={st.icon} color={C.cream} soft="rgba(255,255,255,0.1)" size={44} />
           )}
           {st.done ? (
-            <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: C.good, alignItems: 'center', justifyContent: 'center' }}>
-              <Feather name="check" size={14} color="#FFFFFF" />
+            <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: C.cream, alignItems: 'center', justifyContent: 'center' }}>
+              <Feather name="check" size={14} color={bg} />
             </View>
           ) : (
-            <Txt w="mono" size={11} color={st.f.color} style={{ letterSpacing: 1 }}>0{st.n}</Txt>
+            <Txt w="mono" size={11} color={C.navyLight} style={{ letterSpacing: 1 }}>0{st.n}</Txt>
           )}
         </View>
         <View style={{ gap: 2 }}>
-          <Txt w="display" size={18}>{st.title}</Txt>
-          <Txt size={13} color={C.sub} numberOfLines={2}>{st.status}</Txt>
+          <Txt w="display" size={18} color={C.cream}>{st.title}</Txt>
+          <Txt size={13} color={C.creamSub} numberOfLines={2}>{st.status}</Txt>
         </View>
         {st.progress != null ? (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <View style={{ flex: 1 }}>
-              <Bar value={st.progress} color={st.f.color} height={5} track="rgba(23,27,33,0.08)" delay={300} />
+              <Bar value={st.progress} color={C.cream} height={5} track="rgba(255,255,255,0.12)" delay={300} />
             </View>
-            <Txt w="mono" size={11} color={C.sub}>{num(st.progress * 100, 0)}%</Txt>
+            <Txt w="mono" size={11} color={C.creamSub}>{num(st.progress * 100, 0)}%</Txt>
           </View>
         ) : null}
       </View>

@@ -96,23 +96,23 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
   const code = cityCode(city);
   return (
     <Tap onPress={takeoff} haptic={false} scaleTo={0.98} accessibilityRole="button" accessibilityLabel={`Cartão de embarque: Brasil para ${city}, embarque em ${monthLabel(month)}`}>
-      <View style={{ backgroundColor: C.night, borderRadius: 26, overflow: 'hidden' }}>
+      <View style={{ backgroundColor: C.navy, borderRadius: 26, overflow: 'hidden' }}>
         <View style={{ padding: 20, paddingBottom: 18, gap: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Txt w="mono" size={10} color={C.creamSub} style={{ letterSpacing: 1.4 }}>PONTE · CARTÃO DE EMBARQUE</Txt>
+            <Txt w="mono" size={10} color={C.navyLight} style={{ letterSpacing: 1.4 }}>PONTE · CARTÃO DE EMBARQUE</Txt>
             <Txt size={20} style={{ lineHeight: 24 }}>{flag}</Txt>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 10 }}>
             <View>
               <Txt w="heavy" size={38} color={C.cream} style={{ lineHeight: 40 }}>BRA</Txt>
-              <Txt size={12} color={C.creamSub}>Brasil</Txt>
+              <Txt size={12} color={C.navyLight}>Brasil</Txt>
             </View>
             <View style={{ flex: 1, height: PATH_H, marginBottom: 14 }} onLayout={(e) => setW(e.nativeEvent.layout.width)}>
               {w > 0 ? (
                 <>
                   <Svg width={w} height={PATH_H} style={{ position: 'absolute' }}>
-                    <Path d={d} stroke={C.creamSub} strokeOpacity={0.45} strokeWidth={1.5} strokeDasharray="2 5" strokeLinecap="round" fill="none" />
-                    <APath d={d} stroke={C.accent} strokeWidth={2} strokeLinecap="round" fill="none" strokeDasharray={`${len} ${len}`} animatedProps={trail} />
+                    <Path d={d} stroke={C.navyLight} strokeOpacity={0.6} strokeWidth={1.5} strokeDasharray="2 5" strokeLinecap="round" fill="none" />
+                    <APath d={d} stroke={C.cream} strokeWidth={2} strokeLinecap="round" fill="none" strokeDasharray={`${len} ${len}`} animatedProps={trail} />
                   </Svg>
                   <Animated.View style={[{ position: 'absolute', width: 18, height: 18 }, plane]}>
                     <Svg width={18} height={18} viewBox="-11 -9 22 18">
@@ -126,14 +126,14 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
                 </>
               ) : null}
               {hello ? (
-                <Animated.View entering={FadeInUp.springify().damping(14)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: -14, alignSelf: 'center', backgroundColor: C.accent, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 }}>
-                  <Txt w="bold" size={12} color="#FFFFFF" style={{ lineHeight: 16 }}>Boa viagem! ✨</Txt>
+                <Animated.View entering={FadeInUp.springify().damping(14)} exiting={FadeOut.duration(200)} style={{ position: 'absolute', top: -14, alignSelf: 'center', backgroundColor: C.cream, borderRadius: 999, paddingHorizontal: 10, paddingVertical: 3 }}>
+                  <Txt w="bold" size={12} color={C.navy} style={{ lineHeight: 16 }}>Boa viagem! ✨</Txt>
                 </Animated.View>
               ) : null}
             </View>
             <View style={{ alignItems: 'flex-end', maxWidth: 120 }}>
               <Txt w="heavy" size={38} color={C.cream} style={{ lineHeight: 40 }}>{code}</Txt>
-              <Txt size={12} color={C.creamSub} numberOfLines={1}>{city}</Txt>
+              <Txt size={12} color={C.navyLight} numberOfLines={1}>{city}</Txt>
             </View>
           </View>
         </View>
@@ -141,7 +141,7 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
         {/* Picote do canhoto, com os recortes nas laterais */}
         <View style={{ height: 20, justifyContent: 'center' }}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 20, overflow: 'hidden' }}>
-            {Array.from({ length: 26 }, (_, i) => <View key={i} style={{ width: 6, height: 1.5, borderRadius: 1, backgroundColor: 'rgba(245,241,234,0.22)' }} />)}
+            {Array.from({ length: 26 }, (_, i) => <View key={i} style={{ width: 6, height: 1.5, borderRadius: 1, backgroundColor: 'rgba(244,242,238,0.3)' }} />)}
           </View>
           <View style={{ position: 'absolute', left: -12, width: 24, height: 24, borderRadius: 12, backgroundColor: notch }} />
           <View style={{ position: 'absolute', right: -12, width: 24, height: 24, borderRadius: 12, backgroundColor: notch }} />
@@ -160,8 +160,8 @@ export function Ticket({ flag, city, month, months, days, notch = C.bg }: {
 function Cell({ k, v, accent, end }: { k: string; v: string; accent?: boolean; end?: boolean }) {
   return (
     <View style={{ flex: 1, gap: 4, alignItems: end ? 'flex-end' : 'flex-start' }}>
-      <Txt w="mono" size={10} color={C.creamSub} style={{ letterSpacing: 1.2 }}>{k}</Txt>
-      <Txt w="display" size={17} color={accent ? C.accent : C.cream}>{v}</Txt>
+      <Txt w="mono" size={10} color={C.navyLight} style={{ letterSpacing: 1.2 }}>{k}</Txt>
+      <Txt w="display" size={17} color={C.cream} style={accent ? { textDecorationLine: 'underline' } : null}>{v}</Txt>
     </View>
   );
 }

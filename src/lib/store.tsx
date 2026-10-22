@@ -29,7 +29,11 @@ export type AppState = {
   premium: boolean; // comprou o Ponte Completo
   rateAlert: RateAlert | null; // alerta de cotação ativo
   reminders: boolean; // lembretes de prazo do checklist
+  cardQuiz: CardQuiz | null; // respostas do "Qual cartão levar"
 };
+
+// O que a pessoa usa hoje no Brasil (questionário do guia de cartões).
+export type CardQuiz = { bank: string; kind: 'credito' | 'debito' | 'ambos'; intl: 'sim' | 'nao' | 'naosei' };
 
 // Avisar quando 1 unidade de `cur` custar `target` reais ou menos.
 export type RateAlert = { cur: string; target: number; createdAt: number };
@@ -66,6 +70,7 @@ export const initialState: AppState = {
   premium: false,
   rateAlert: null,
   reminders: false,
+  cardQuiz: null,
 };
 
 

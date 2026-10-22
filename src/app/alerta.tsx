@@ -76,7 +76,7 @@ export default function Alerta() {
       <P muted>A Ponte confere a cotação de tempos em tempos e te avisa uma vez quando ela chegar no valor escolhido. Não é previsão: ninguém sabe se a moeda vai cair.</P>
 
       {active ? (
-        <Hero colors={fired ? ['#1F5A40', F.cambio.color] : undefined}>
+        <Hero colors={fired ? [C.navy, C.navy2] : undefined}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <Feather name={fired ? 'check-circle' : 'bell'} size={18} color="#FFFFFF" />
             <Txt w="mono" size={11} color={'#FFFFFF'} style={{ letterSpacing: 1.2 }}>{fired ? 'ALERTA ATINGIDO' : 'ALERTA ATIVO'}</Txt>

@@ -66,7 +66,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false, animation: 'fade' }} />
           <Stack.Screen name="pais/[code]" options={{ title: '' }} />
-          <Stack.Screen name="guia-cripto" options={{ title: 'Stablecoins com segurança' }} />
+          <Stack.Screen name="guia-cripto" options={{ title: 'Stablecoins' }} />
           <Stack.Screen name="ajustes" options={{ title: 'Ajustes' }} />
           <Stack.Screen name="feedback" options={{ title: 'Sua opinião' }} />
           <Stack.Screen name="guia-cartoes" options={{ title: 'Qual cartão levar' }} />
@@ -74,6 +74,7 @@ export default function RootLayout() {
           <Stack.Screen name="completo" options={{ title: 'Ponte Completo' }} />
           <Stack.Screen name="simulacao" options={{ title: 'Envios mensais' }} />
           <Stack.Screen name="alerta" options={{ title: 'Alerta de cotação' }} />
+          <Stack.Screen name="lugares" options={{ title: 'Lugares' }} />
         </Stack>
       </AppProvider>
     </SafeAreaProvider>

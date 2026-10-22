@@ -1,0 +1,112 @@
+// Lugares para conhecer em cada destino. `wiki` é o título do artigo na Wikipédia em
+// português, de onde vêm a foto e o resumo (com crédito na tela).
+export type Place = { wiki: string; name: string; city: string; kind: string; emoji: string };
+
+const p = (wiki: string, name: string, city: string, kind: string, emoji: string): Place => ({ wiki, name, city, kind, emoji });
+
+export const PLACES: Record<string, Place[]> = {
+  IE: [
+    p('Trinity College (Dublin)', 'Trinity College', 'Dublin', 'Universidade', '📚'),
+    p('Temple Bar', 'Temple Bar', 'Dublin', 'Bairro', '🍀'),
+    p('Falésias de Moher', 'Falésias de Moher', 'Galway', 'Natureza', '🌊'),
+    p('Catedral de São Patrício', 'Catedral de São Patrício', 'Dublin', 'Ponto turístico', '⛪'),
+    p('Cork', 'Centro de Cork', 'Cork', 'Cidade', '🏙️'),
+    p('Galway', 'Centro de Galway', 'Galway', 'Cidade', '🎻'),
+  ],
+  CA: [
+    p('CN Tower', 'CN Tower', 'Toronto', 'Ponto turístico', '🗼'),
+    p('Cataratas do Niágara', 'Cataratas do Niágara', 'Toronto', 'Natureza', '💦'),
+    p('Stanley Park', 'Stanley Park', 'Vancouver', 'Parque', '🌲'),
+    p('Parque de Monte Royal', 'Monte Royal', 'Montreal', 'Parque', '⛰️'),
+    p('Parque Nacional de Banff', 'Parque Nacional de Banff', 'Vancouver', 'Natureza', '🏔️'),
+    p('Basílica de Notre-Dame (Montreal)', 'Basílica de Notre-Dame', 'Montreal', 'Ponto turístico', '⛪'),
+  ],
+  PT: [
+    p('Torre de Belém', 'Torre de Belém', 'Lisboa', 'Ponto turístico', '🏰'),
+    p('Mosteiro dos Jerónimos', 'Mosteiro dos Jerónimos', 'Lisboa', 'Ponto turístico', '⛪'),
+    p('Ponte de D. Luís (Porto)', 'Ponte D. Luís', 'Porto', 'Ponto turístico', '🌉'),
+    p('Ribeira (Porto)', 'Ribeira', 'Porto', 'Bairro', '🏘️'),
+    p('Universidade de Coimbra', 'Universidade de Coimbra', 'Coimbra', 'Universidade', '🎓'),
+    p('Palácio Nacional da Pena', 'Palácio da Pena', 'Lisboa', 'Passeio', '🏯'),
+  ],
+  AU: [
+    p('Sydney Opera House', 'Ópera de Sydney', 'Sydney', 'Ponto turístico', '🎭'),
+    p('Ponte da Baía de Sydney', 'Ponte da Baía', 'Sydney', 'Ponto turístico', '🌉'),
+    p('Bondi', 'Bondi Beach', 'Sydney', 'Praia', '🏄'),
+    p('Great Ocean Road', 'Great Ocean Road', 'Melbourne', 'Passeio', '🚗'),
+    p('Federation Square', 'Federation Square', 'Melbourne', 'Ponto turístico', '🏙️'),
+    p('Grande Barreira de Coral', 'Grande Barreira de Coral', 'Brisbane', 'Natureza', '🐠'),
+  ],
+  GB: [
+    p('Big Ben', 'Big Ben', 'Londres', 'Ponto turístico', '🕰️'),
+    p('Tower Bridge', 'Tower Bridge', 'Londres', 'Ponto turístico', '🌉'),
+    p('Museu Britânico', 'Museu Britânico', 'Londres', 'Museu', '🏛️'),
+    p('London Eye', 'London Eye', 'Londres', 'Ponto turístico', '🎡'),
+    p('Castelo de Edimburgo', 'Castelo de Edimburgo', 'Edimburgo', 'Ponto turístico', '🏰'),
+    p('Camden Town', 'Camden Town', 'Londres', 'Bairro', '🎸'),
+  ],
+  US: [
+    p('Estátua da Liberdade', 'Estátua da Liberdade', 'Nova York', 'Ponto turístico', '🗽'),
+    p('Central Park', 'Central Park', 'Nova York', 'Parque', '🌳'),
+    p('Times Square', 'Times Square', 'Nova York', 'Ponto turístico', '🌃'),
+    p('Ponte do Brooklyn', 'Ponte do Brooklyn', 'Nova York', 'Ponto turístico', '🌉'),
+    p('Universidade Harvard', 'Universidade Harvard', 'Boston', 'Universidade', '🎓'),
+    p('South Beach', 'South Beach', 'Miami', 'Praia', '🏖️'),
+  ],
+  NZ: [
+    p('Sky Tower', 'Sky Tower', 'Auckland', 'Ponto turístico', '🗼'),
+    p('Museu da Nova Zelândia Te Papa Tongarewa', 'Museu Te Papa', 'Wellington', 'Museu', '🏛️'),
+    p('Milford Sound', 'Milford Sound', 'Auckland', 'Natureza', '🏞️'),
+    p('Cenário de filmagem de Hobbiton', 'Hobbiton', 'Auckland', 'Passeio', '🧙'),
+    p('Rotorua', 'Rotorua', 'Auckland', 'Natureza', '♨️'),
+    p('Wellington', 'Centro de Wellington', 'Wellington', 'Cidade', '🚡'),
+  ],
+  MT: [
+    p('Valletta', 'Valletta', 'Valletta', 'Cidade', '🏰'),
+    p('Comino', 'Comino e a Lagoa Azul', "St. Julian's / Sliema", 'Praia', '🌊'),
+    p('Mdina', 'Mdina', 'Valletta', 'Passeio', '🏯'),
+    p('Sliema', 'Sliema', "St. Julian's / Sliema", 'Bairro', '🌅'),
+    p("St. Julian's", "St. Julian's", "St. Julian's / Sliema", 'Bairro', '🌅'),
+    p('Gozo (ilha)', 'Ilha de Gozo', "St. Julian's / Sliema", 'Passeio', '⛴️'),
+  ],
+  ES: [
+    p('Sagrada Família', 'Sagrada Família', 'Barcelona', 'Ponto turístico', '⛪'),
+    p('Parque Güell', 'Parque Güell', 'Barcelona', 'Parque', '🦎'),
+    p('Museu do Prado', 'Museu do Prado', 'Madri', 'Museu', '🖼️'),
+    p('Palácio Real de Madrid', 'Palácio Real', 'Madri', 'Ponto turístico', '👑'),
+    p('Cidade das Artes e das Ciências', 'Cidade das Artes e das Ciências', 'Valência', 'Ponto turístico', '🔭'),
+    p('La Rambla (Barcelona)', 'La Rambla', 'Barcelona', 'Passeio', '🚶'),
+  ],
+  DE: [
+    p('Portão de Brandemburgo', 'Portão de Brandemburgo', 'Berlim', 'Ponto turístico', '🏛️'),
+    p('Muro de Berlim', 'Muro de Berlim', 'Berlim', 'História', '🧱'),
+    p('Ilha dos Museus', 'Ilha dos Museus', 'Berlim', 'Museu', '🏛️'),
+    p('Marienplatz', 'Marienplatz', 'Munique', 'Ponto turístico', '🕰️'),
+    p('Castelo de Neuschwanstein', 'Castelo de Neuschwanstein', 'Munique', 'Passeio', '🏰'),
+    p('Englischer Garten', 'Englischer Garten', 'Munique', 'Parque', '🌳'),
+  ],
+  FR: [
+    p('Torre Eiffel', 'Torre Eiffel', 'Paris', 'Ponto turístico', '🗼'),
+    p('Museu do Louvre', 'Museu do Louvre', 'Paris', 'Museu', '🖼️'),
+    p('Montmartre', 'Montmartre', 'Paris', 'Bairro', '🎨'),
+    p('Arco do Triunfo (França)', 'Arco do Triunfo', 'Paris', 'Ponto turístico', '🏛️'),
+    p('Catedral de Lyon', 'Catedral de Lyon', 'Lyon', 'Ponto turístico', '⛪'),
+    p('Basílica de Notre-Dame de Fourvière', 'Basílica de Fourvière', 'Lyon', 'Ponto turístico', '⛪'),
+  ],
+  JP: [
+    p('Shibuya', 'Shibuya', 'Tóquio', 'Bairro', '🚦'),
+    p('Sensō-ji', 'Templo Sensō-ji', 'Tóquio', 'Ponto turístico', '⛩️'),
+    p('Monte Fuji', 'Monte Fuji', 'Tóquio', 'Natureza', '🗻'),
+    p('Castelo de Osaka', 'Castelo de Osaka', 'Osaka', 'Ponto turístico', '🏯'),
+    p('Osaka', 'Centro de Osaka', 'Osaka', 'Cidade', '🦀'),
+    p('Kiyomizu-dera', 'Kiyomizu-dera (Quioto)', 'Osaka', 'Passeio', '⛩️'),
+  ],
+  ZA: [
+    p('Table Mountain', 'Table Mountain', 'Cidade do Cabo', 'Natureza', '⛰️'),
+    p('Cabo da Boa Esperança', 'Cabo da Boa Esperança', 'Cidade do Cabo', 'Natureza', '🌊'),
+    p('Robben Island', 'Robben Island', 'Cidade do Cabo', 'História', '🏝️'),
+    p('Cidade do Cabo', 'Centro da Cidade do Cabo', 'Cidade do Cabo', 'Cidade', '⚓'),
+    p('Soweto', 'Soweto', 'Joanesburgo', 'Bairro', '🏘️'),
+    p('Parque Nacional Kruger', 'Parque Kruger', 'Joanesburgo', 'Natureza', '🦁'),
+  ],
+};

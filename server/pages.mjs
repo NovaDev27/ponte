@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '16/10/2026';
+const UPDATED = '22/10/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -69,6 +69,9 @@ export function privacyPage(email) {
 
 <h2>4.1 Cotações de moedas</h2>
 <p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>
+
+<h2>4.2 Fotos de lugares e ícones de sites</h2>
+<p>As fotos e os resumos da tela <strong>Lugares</strong> vêm da Wikipédia (pt.wikipedia.org), e os ícones dos sites oficiais em <strong>Onde buscar</strong> vêm do serviço de ícones do Google. Para carregar essas imagens, o celular se conecta diretamente a esses serviços, que recebem o endereço IP do aparelho e o nome do lugar ou site pedido. Nenhum dado do seu planejamento é enviado.</p>
 
 <h2>5. Onde os dados são processados</h2>
 <p>O servidor da Ponte fica na Render e o modelo de IA na Groq, ambos com servidores nos Estados Unidos. Ao usar o Assistente, as mensagens são transferidas para lá apenas para gerar a resposta.</p>

@@ -87,7 +87,7 @@ export default function Feedback() {
         </Card>
       ))}
 
-      {error ? <P style={{ color: C.bad }}>{error}</P> : null}
+      {error ? <P style={{ color: C.alert }}>{error}</P> : null}
       <Btn label={status === 'sending' ? 'Enviando...' : 'Enviar opinião'} icon="send" onPress={send} disabled={empty || status === 'sending'} />
     </Screen>
   );
@@ -97,7 +97,7 @@ export default function Feedback() {
 function Star({ on }: { on: boolean }) {
   return on ? (
     <Animated.View key="on" entering={ZoomIn.springify().damping(8).stiffness(260)}>
-      <Txt size={38} color="#F2B01E" style={{ lineHeight: 46 }}>★</Txt>
+      <Txt size={38} color={C.navy} style={{ lineHeight: 46 }}>★</Txt>
     </Animated.View>
   ) : (
     <Txt size={38} color={C.line} style={{ lineHeight: 46 }}>★</Txt>
