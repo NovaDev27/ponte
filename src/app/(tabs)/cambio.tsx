@@ -67,7 +67,7 @@ export default function Cambio() {
           {saving > 0.5 ? (
             <View style={{ backgroundColor: 'rgba(255,255,255,0.13)', borderRadius: R.md, padding: 14, marginTop: 6, gap: 2 }}>
               <Txt w="display" size={17} color="#FFFFFF">Você economiza {brl(saving)}</Txt>
-              <Txt size={14} color={C.navyLight}>comparado com {worst.m.name.toLowerCase()}. Em 6 envios, são {brl(saving * 6, 0)}.</Txt>
+              <Txt size={14} color={C.navyLight}>comparado com {worst.m.name.toLowerCase()}. Mandando isso todo mês por {state.profile.months} meses, são {brl(saving * state.profile.months, 0)}.</Txt>
             </View>
           ) : null}
         </Hero>

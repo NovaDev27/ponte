@@ -40,8 +40,10 @@ export default function Home() {
   const { coverage } = budgetOf(state, rates);
   const tasks = phasesFor(country).flatMap((ph) => ph.tasks);
   const doneCount = tasks.filter((t) => state.done[t.id]).length;
-  // Orçamento coberto conta 35%, checklist 45% e ter montado o plano já vale 20%.
-  const journeyProgress = Math.min(1, coverage) * 0.35 + (doneCount / Math.max(1, tasks.length)) * 0.45 + 0.2;
+  // Só o que dá para medir de verdade: dinheiro juntado (40%) e tarefas do checklist (60%).
+  const budgetPart = Math.min(1, coverage);
+  const tasksPart = doneCount / Math.max(1, tasks.length);
+  const journeyProgress = budgetPart * 0.4 + tasksPart * 0.6;
 
   return (
     <Screen>
@@ -86,7 +88,7 @@ export default function Home() {
               SUA JORNADA
             </Txt>
             <Txt w="display" size={18}>
-              {Math.round(Math.min(1, journeyProgress) * 100)}% no caminho
+              {Math.round(Math.min(1, journeyProgress) * 100)}% pronto para embarcar
             </Txt>
           </View>
           <Txt size={13} color={C.sub}>
@@ -96,10 +98,10 @@ export default function Home() {
         <Bar value={Math.min(1, journeyProgress)} color={C.navy} height={6} track={C.sunk} delay={200} />
         <View style={{ flexDirection: 'row', gap: 8 }}>
           {[
-            { label: 'Orçamento', route: '/orcamento' as const, ok: coverage >= 1 },
-            { label: 'Câmbio', route: '/cambio' as const, ok: false },
-            { label: 'Checklist', route: '/checklist' as const, ok: doneCount === tasks.length && tasks.length > 0 },
-            { label: 'Orbi', route: '/assistente' as const, ok: false },
+            { label: 'Orçamento', route: '/orcamento' as const, ok: budgetPart >= 1, pct: budgetPart },
+            { label: 'Checklist', route: '/checklist' as const, ok: tasksPart >= 1, pct: tasksPart },
+            { label: 'Câmbio', route: '/cambio' as const, ok: false, pct: null },
+            { label: 'Orbi', route: '/assistente' as const, ok: false, pct: null },
           ].map((s) => (
             <Tap
               key={s.label}
@@ -115,8 +117,13 @@ export default function Home() {
               }}
             >
               <Txt w="medium" size={12} color={s.ok ? C.navy : C.sub} numberOfLines={1}>
-                {s.label}
+                {s.ok ? '✓ ' : ''}{s.label}
               </Txt>
+              {s.pct != null ? (
+                <Txt w="mono" size={10} color={s.ok ? C.navy : C.faint} style={{ marginTop: 2 }}>
+                  {Math.round(Math.min(1, s.pct) * 100)}%
+                </Txt>
+              ) : null}
             </Tap>
           ))}
         </View>

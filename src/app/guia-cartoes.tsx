@@ -144,7 +144,7 @@ function Result({ quiz, onRedo }: { quiz: CardQuiz; onRedo: () => void }) {
 
   const mine = quote('cartao', spend, rate, usd, f, true);
   const global = quote('global', spend, rate, usd, f, true);
-  const diff = mine.lostBRL - global.lostBRL;
+  const diff = Math.max(0, mine.lostBRL - global.lostBRL);
   const kindLabel = quiz.kind === 'credito' ? 'CRÉDITO' : quiz.kind === 'debito' ? 'DÉBITO' : 'MÚLTIPLO';
 
   const WALLET: { id: WalletId; role: string; colors: [string, string]; fg: string; title: string; tag: string; what: string; cost: string; how: string[]; good: string; watch: string }[] = [
