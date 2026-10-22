@@ -104,8 +104,8 @@ export function PlacesCarousel({ code, city }: { code: string; city?: string }) 
         decelerationRate="fast"
         onScroll={onScroll}
         scrollEventThrottle={16}
-        style={{ marginHorizontal: -20 }}
-        contentContainerStyle={{ paddingHorizontal: 20, gap: GAP }}
+        style={{ marginHorizontal: -22 }}
+        contentContainerStyle={{ paddingHorizontal: 22, gap: GAP }}
       >
         {list.map((pl, i) => (
           <CarouselCard key={pl.wiki} place={pl} i={i} x={x} img={data?.[pl.wiki]?.img} onPress={() => setOpen(pl)} />

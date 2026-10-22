@@ -1,58 +1,59 @@
-// Visual da Ponte: papel claro, preto e azul-escuro. Nada de outras cores:
-// o que muda entre as funções é o tom (azul, preto ou o azul bem clarinho).
-const NAVY = '#1A3263';
+// Ponte — visual minimalista de intercâmbio
+// Papel quente, navy vivo, um accent de "céu" e tipografia de viagem.
+
+const NAVY = '#1B3A6B';
+const SKY = '#4A7AB5';
 
 export const C = {
-  bg: '#F4F2EE', // papel
+  bg: '#F6F4F0',
   card: '#FFFFFF',
-  sunk: '#EAE7E1', // fundo de campos e trilhos
+  sunk: '#ECEAE4',
   ink: '#121418',
-  ink2: '#262A31',
-  sub: '#666B73',
-  faint: '#A4A6AA',
-  line: '#E4E1DA',
+  ink2: '#2A2E36',
+  sub: '#6B7078',
+  faint: '#A8ABB2',
+  line: '#E6E3DC',
   night: '#121418',
-  night2: '#262A31',
+  night2: '#1E2229',
   navy: NAVY,
-  navy2: '#28457E',
-  navyLight: '#9DB3DA', // azul para texto sobre fundo escuro
-  navySoft: '#E3E8F1',
+  navy2: '#2A5080',
+  navyLight: '#A8BDD9',
+  navySoft: '#E8EEF6',
+  sky: SKY,
+  skySoft: '#EAF1F8',
   primary: '#121418',
-  primarySoft: '#E9E6E0',
+  primarySoft: '#EDEBE6',
   accent: NAVY,
-  accentSoft: '#E3E8F1',
+  accentSoft: '#E8EEF6',
   good: NAVY,
-  goodSoft: '#E3E8F1',
+  goodSoft: '#E8EEF6',
   bad: '#121418',
-  badSoft: '#E9E6E0',
-  warn: '#28457E',
-  warnSoft: '#E3E8F1',
-  alert: '#B3261E', // só para "atrasado" e erros
-  alertSoft: '#F6E2E0',
-  cream: '#F4F2EE', // texto claro sobre fundo escuro
-  creamSub: '#A9ACB2',
+  badSoft: '#EDEBE6',
+  warn: '#2A5080',
+  warnSoft: '#E8EEF6',
+  alert: '#B3261E',
+  alertSoft: '#F7E6E4',
+  cream: '#F6F4F0',
+  creamSub: '#A8ABB2',
 };
 
-// Cada função alterna entre azul-escuro e preto.
 export const F = {
-  cambio: { color: NAVY, soft: '#E3E8F1' },
-  orcamento: { color: '#121418', soft: '#E9E6E0' },
-  checklist: { color: NAVY, soft: '#E3E8F1' },
-  assistente: { color: '#121418', soft: '#E9E6E0' },
-  cripto: { color: NAVY, soft: '#E3E8F1' },
+  cambio: { color: NAVY, soft: '#E8EEF6' },
+  orcamento: { color: '#121418', soft: '#EDEBE6' },
+  checklist: { color: NAVY, soft: '#E8EEF6' },
+  assistente: { color: '#121418', soft: '#EDEBE6' },
+  cripto: { color: NAVY, soft: '#E8EEF6' },
 };
 
-// Cores das categorias do orçamento: degradê do azul ao cinza (aparecem sobre o fundo escuro).
 export const CAT = {
-  moradia: '#F4F2EE',
-  transporte: '#C3D0E6',
-  alimentacao: '#8BA4CF',
-  celular: '#5677AE',
-  lazer: '#34528A',
-  seguro: '#6B6F77',
+  moradia: '#F6F4F0',
+  transporte: '#C5D4EA',
+  alimentacao: '#8FA8D0',
+  celular: '#5A7BB0',
+  lazer: '#3A5A8C',
+  seguro: '#6E727A',
 };
 
-// Tipografia: Bricolage Grotesque nos títulos, DM Sans no texto e DM Mono nos "códigos" de viagem.
 export const FONT = {
   regular: 'DMSans_400Regular',
   medium: 'DMSans_500Medium',
@@ -62,7 +63,7 @@ export const FONT = {
   mono: 'DMMono_500Medium',
 };
 
-export const R = { sm: 12, md: 16, lg: 24, pill: 999 };
+export const R = { sm: 12, md: 16, lg: 22, xl: 28, pill: 999 };
 
-export const shadow = { boxShadow: '0px 10px 30px rgba(18, 20, 24, 0.07)' } as const;
-export const lift = { boxShadow: '0px 18px 40px rgba(18, 20, 24, 0.16)' } as const;
+export const shadow = { boxShadow: '0px 8px 24px rgba(18, 20, 24, 0.06)' } as const;
+export const lift = { boxShadow: '0px 14px 36px rgba(18, 20, 24, 0.12)' } as const;

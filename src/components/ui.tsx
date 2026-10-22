@@ -73,7 +73,7 @@ function Stagger({ children }: { children: React.ReactNode }) {
       {React.Children.toArray(children).map((child, i) => (
         <Animated.View
           key={React.isValidElement(child) && child.key != null ? child.key : i}
-          entering={FadeInDown.duration(480).delay(opening ? Math.min(i, 8) * 50 : 0).easing(EASE_OUT)}
+          entering={FadeInDown.duration(420).delay(opening ? Math.min(i, 7) * 45 : 0).easing(EASE_OUT)}
         >
           {child}
         </Animated.View>
@@ -553,17 +553,17 @@ export function ListRow({ icon, color, soft, title, hint, onPress, last, right }
 
 export const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.bg },
-  content: { padding: 20, paddingTop: 12, gap: 14 },
-  head: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 8, marginBottom: 6 },
+  content: { padding: 22, paddingTop: 10, gap: 16 },
+  head: { flexDirection: 'row', alignItems: 'flex-end', gap: 12, marginTop: 6, marginBottom: 4 },
   topbar: {
-    position: 'absolute', top: 0, left: 0, right: 0, paddingVertical: 12, paddingHorizontal: 20, alignItems: 'center',
+    position: 'absolute', top: 0, left: 0, right: 0, paddingVertical: 12, paddingHorizontal: 22, alignItems: 'center',
     backgroundColor: C.bg, borderBottomWidth: 1, borderBottomColor: C.line,
   },
   card: { borderRadius: R.lg, padding: 18, gap: 10 },
   border: { borderWidth: 1, borderColor: C.line },
   hero: { borderRadius: R.lg + 4, padding: 22, gap: 8, overflow: 'hidden' },
   orb: { position: 'absolute', borderRadius: 999, backgroundColor: 'rgba(255,255,255,0.05)' },
-  btn: { minHeight: 56, borderRadius: R.pill, borderWidth: 1, paddingHorizontal: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
+  btn: { minHeight: 52, borderRadius: R.pill, borderWidth: 1, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 10 },
   chip: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: R.pill, borderWidth: 1, borderColor: C.line, backgroundColor: C.card },
   segment: { flexDirection: 'row', padding: 4, borderRadius: R.pill, backgroundColor: C.sunk },
   segPill: { position: 'absolute', top: 4, bottom: 4, left: 4, borderRadius: R.pill },
@@ -573,6 +573,6 @@ export const s = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   track: { alignSelf: 'center', width: TRACK, height: 4, borderRadius: 2, backgroundColor: C.sunk, overflow: 'hidden' },
   thumb: { height: 4, borderRadius: 2, backgroundColor: C.faint },
-  footer: { paddingHorizontal: 20, paddingTop: 12, paddingBottom: 16, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
+  footer: { paddingHorizontal: 22, paddingTop: 12, paddingBottom: 16, backgroundColor: C.bg, borderTopWidth: 1, borderTopColor: C.line },
   explain: { backgroundColor: C.card, borderRadius: R.md + 2, borderWidth: 1, borderColor: C.line, padding: 16 },
 });
