@@ -9,7 +9,7 @@
 //   PORT                porta (padrão 8787)
 //   LIMIT_HOUR / LIMIT_DAY / LIMIT_GLOBAL_DAY   limites de perguntas
 import http from 'node:http';
-import { privacyPage, termsPage } from './pages.mjs';
+import { deletionPage, privacyPage, termsPage } from './pages.mjs';
 
 const PORT = Number(process.env.PORT ?? 8787);
 const APP_TOKEN = process.env.PONTE_APP_TOKEN ?? '';
@@ -286,9 +286,13 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/health') {
     return send(res, 200, { ok: true, perguntasHoje: global.count, limiteHoje: LIMIT_GLOBAL_DAY });
   }
-  if (req.method === 'GET' && (req.url === '/privacidade' || req.url === '/termos')) {
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=3600' });
-    return res.end(req.url === '/termos' ? termsPage(CONTACT_EMAIL) : privacyPage(CONTACT_EMAIL));
+  // Páginas públicas. Aceita HEAD e parâmetros no endereço: o verificador de links do Google Play usa os dois.
+  const path = (req.url ?? '/').split('?')[0].replace(/\/+$/, '') || '/';
+  const PAGES = { '/privacidade': privacyPage, '/termos': termsPage, '/excluir-dados': deletionPage };
+  if ((req.method === 'GET' || req.method === 'HEAD') && PAGES[path]) {
+    const html = PAGES[path](CONTACT_EMAIL);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': Buffer.byteLength(html), 'Cache-Control': 'public, max-age=3600' });
+    return res.end(req.method === 'HEAD' ? undefined : html);
   }
   if (req.method === 'POST' && req.url === '/erro') return reportError(req, res);
   if (req.method === 'POST' && req.url === '/feedback') return receiveFeedback(req, res);

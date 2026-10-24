@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '22/10/2026';
+const UPDATED = '24/10/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -84,12 +84,44 @@ export function privacyPage(email) {
 
 <h2>7. Seus direitos</h2>
 <p>Você pode pedir informações sobre os seus dados, correção ou exclusão, entre outros direitos do art. 18 da LGPD, pelo e-mail abaixo. Como não guardamos conversas nem cadastro, na prática os dados ficam no seu aparelho, e você mesmo pode apagá-los em Ajustes.</p>
+<p>O passo a passo para excluir seus dados, e o que é apagado ou mantido, está em <a href="/excluir-dados">Como excluir seus dados</a>.</p>
 
 <h2>8. Menores de idade</h2>
 <p>A Ponte é feita para estudantes que planejam intercâmbio. Se você tem menos de 18 anos, use o app com o conhecimento dos seus pais ou responsáveis.</p>
 
 <h2>9. Mudanças nesta política</h2>
 <p>Se esta política mudar, a data no topo será atualizada e, se a mudança for importante, avisaremos no app.</p>
+`, email);
+}
+
+// Página de exclusão de dados exigida pelo Google Play ("Segurança dos dados").
+// Precisa citar o nome do app, o passo a passo e o que é apagado ou mantido, com prazos.
+export function deletionPage(email) {
+  const mail = email ? `<a href="mailto:${email}?subject=Excluir%20meus%20dados%20-%20Ponte">${email}</a>` : 'o e-mail de contato abaixo';
+  return page('Como excluir seus dados da Ponte', `
+<p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
+
+<h2>1. Dados guardados no seu celular</h2>
+<p>O seu planejamento (destino, datas, orçamento, checklist, respostas do guia de cartões e taxas ajustadas) fica apenas no aparelho. Para apagar:</p>
+<ol>
+  <li>Abra a Ponte e toque no botão de ajustes, no início do app.</li>
+  <li>Toque em <strong>Apagar meus dados</strong>.</li>
+  <li>Confirme em <strong>Sim, apagar tudo</strong>.</li>
+</ol>
+<p>Os dados são apagados na hora e não podem ser recuperados. Desinstalar o app também apaga tudo.</p>
+
+<h2>2. Dados que chegam ao nosso servidor</h2>
+<p>Para pedir a exclusão do que foi enviado ao servidor, mande um e-mail para ${mail} com o assunto <strong>"Excluir meus dados - Ponte"</strong>. Como o app não pede nome nem e-mail, informe a data aproximada e, se for uma opinião, um trecho do que você escreveu, para encontrarmos o registro. Respondemos e concluímos a exclusão em até <strong>15 dias</strong>.</p>
+
+<h2>3. O que é apagado, o que é mantido e por quanto tempo</h2>
+<ul>
+  <li><strong>Conversas com o assistente Orbi:</strong> não são guardadas pelo nosso servidor. São repassadas à Groq só para gerar a resposta.</li>
+  <li><strong>Código anônimo do aparelho e endereço IP:</strong> ficam só na memória do servidor, para contar o limite de perguntas, e são descartados automaticamente em até 1 dia.</li>
+  <li><strong>Relatórios de erro</strong> (mensagem técnica, tela, sistema e versão do app, sem dados pessoais): ficam no registro do servidor e são apagados automaticamente em até 30 dias.</li>
+  <li><strong>Opiniões enviadas em "Sua opinião":</strong> ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
+  <li><strong>Compra do Ponte Completo:</strong> é processada e registrada pelo Google Play, conforme a política do Google. A Ponte não guarda dados de pagamento.</li>
+</ul>
+<p>Mais detalhes na <a href="/privacidade">Política de Privacidade</a>.</p>
 `, email);
 }
 
