@@ -6,7 +6,7 @@ Os nomes dos botões podem mudar um pouco: se não achar, procure algo parecido 
 
 ---
 
-## ETAPA 1 · Criar a conta de desenvolvedor (você, ~30 min + espera)
+## ETAPA 1 · Criar a conta de desenvolvedor ✅ FEITO (conta validada em 23/10/2026)
 
 - [ ] 1. Entre em **play.google.com/console/signup** com o **e-mail da Ponte** (ponteappworkflow@gmail.com).
 - [ ] 2. Escolha **"Para você mesmo" / conta pessoal**.
@@ -63,7 +63,7 @@ No **Painel** do app aparece a lista **"Configurar o app"**. Faça cada item. To
   - Nome, descrição curta e descrição completa: copie de `textos-da-loja.md`
   - **Ícone:** `loja/icone-512.png`
   - **Recurso gráfico (destaque):** `loja/destaque-1024x500.png`
-  - **Capturas de tela do telefone:** as 6 de `loja/prints/`
+  - **Capturas de tela do telefone:** as 8 de `loja/prints/` (visual novo, de 23/10/2026)
   - Salve.
 
 ---
@@ -81,12 +81,12 @@ No **Painel** do app aparece a lista **"Configurar o app"**. Faça cada item. To
   - Copie o **"Link para participar"**. É ele que vai na mensagem do WhatsApp.
 - [ ] 5. **Criar nova versão:**
   - Se pedir, aceite a **Assinatura de apps do Google Play** (Play App Signing). É o padrão.
-  - Em **"Pacotes de apps"**, envie o arquivo **.aab** (o link para baixar eu te mando quando o build terminar).
-  - **Nome da versão:** `1.0.0 (2)`
+  - Em **"Pacotes de apps"**, envie o arquivo **.aab** novo (`loja/build/`, eu gero com o visual e o ícone novos). Não use o `ponte-1.0.0-versao2.aab`: ele é antigo.
+  - **Nome da versão:** o Play Console preenche sozinho com o número do build (ex.: `3 (1.0.0)`). Pode deixar.
   - **Notas da versão:**
     ```
     <pt-BR>
-    Primeira versão de teste da Ponte: comparador de câmbio, orçamento por cidade, checklist do intercâmbio e assistente.
+    Primeira versão de teste da Ponte: comparador de câmbio, cartão de embarque, qual cartão levar, orçamento por cidade, checklist com prazos, lugares do destino, guia de stablecoins e o Orbi, assistente com IA.
     </pt-BR>
     ```
   - Clique em **Próxima → Salvar**.

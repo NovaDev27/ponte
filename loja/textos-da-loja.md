@@ -21,20 +21,32 @@ Vai fazer intercâmbio? A Ponte mostra quanto dinheiro você perde em cada forma
 QUANTO CHEGA DE VERDADE
 Digite quanto quer levar e compare, lado a lado, conta global, remessa, cartão internacional, dinheiro em espécie e stablecoins. A Ponte calcula o IOF, o spread e as tarifas de cada caminho e mostra quanto chega lá fora e quanto você economiza escolhendo o melhor.
 
+SEU CARTÃO DE EMBARQUE
+Seu intercâmbio vira um cartão de embarque, com os dias que faltam para a viagem e o quanto você já está pronto para embarcar.
+
+QUAL CARTÃO LEVAR
+Diga qual é o seu banco e veja o seu cartão, quanto ele custa lá fora e uma carteira sugerida para a viagem: conta global, cartão de reserva e banco local.
+
 ORÇAMENTO DA VIAGEM
 Escolha o país, a cidade e o seu estilo de vida e veja o custo mensal estimado de moradia, transporte, alimentação, celular e lazer. Acompanhe quanto já juntou e quanto falta.
 
 CHECKLIST DO INTERCÂMBIO
-Da escolha da escola até a primeira semana no destino: passaporte, visto, seguro, documentos e as tarefas de chegada de cada país, numa linha do tempo simples.
+Da escolha da escola até a primeira semana no destino: passaporte, visto, seguro, documentos e as tarefas de chegada de cada país, com prazos e lembretes.
 
-ASSISTENTE COM IA
+LUGARES DO SEU DESTINO
+Pontos turísticos, bairros e passeios de cada país, com fotos e resumos da Wikipédia.
+
+STABLECOINS EXPLICADAS
+Um guia do zero: qual stablecoin usar para enviar, qual rede escolher, quanto custa e quais são os riscos. Sem recomendação de investimento.
+
+ORBI, O ASSISTENTE COM IA
 Tire dúvidas sobre câmbio, documentos e vida lá fora, em português, com respostas curtas e com os riscos explicados.
 
 13 DESTINOS
-Irlanda, Canadá, Portugal, Austrália, Reino Unido, Estados Unidos, Nova Zelândia, Malta, Espanha, Alemanha, França, Japão e África do Sul, com 33 cidades.
+Irlanda, Canadá, Portugal, Austrália, Reino Unido, Estados Unidos, Nova Zelândia, Malta, Espanha, Alemanha, França, Japão e África do Sul, com 33 cidades. E links oficiais de visto, escolas e bolsas de cada um.
 
-GRÁTIS E SEM CADASTRO
-Seu planejamento fica salvo só no seu celular. Sem anúncios.
+SEM CADASTRO E SEM ANÚNCIOS
+Seu planejamento fica salvo só no seu celular. O Ponte Completo (plano em PDF, alerta de cotação e mais perguntas ao Orbi) é uma compra única opcional.
 
 IMPORTANTE
 A Ponte é uma ferramenta de informação e planejamento. Ela não movimenta dinheiro, não é banco nem casa de câmbio e não faz recomendação de investimento. Cotações e taxas são estimativas: confirme sempre o valor final no serviço que você usar.
@@ -53,7 +65,7 @@ A Ponte é uma ferramenta de informação e planejamento. Ela não movimenta din
 |---|---|---|
 | Ícone | `icone-512.png` | 512 × 512 |
 | Imagem de destaque | `destaque-1024x500.png` | 1024 × 500 |
-| Capturas de tela do celular | `prints/01-inicio.png` até `prints/06-pais.png` | mín. 2, aqui 6 de 1080 × 1920 |
+| Capturas de tela do celular | `prints/01-inicio.png` até `prints/08-assistente.png` | mín. 2, aqui 8 de 1080 × 1920 (visual novo) |
 
 ## Respostas para os formulários do Play Console
 

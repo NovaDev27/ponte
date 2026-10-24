@@ -65,7 +65,7 @@ function ShareCard({ data }: { data: ShareData }) {
   return (
     <LinearGradient colors={[C.night, C.night2]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, padding: 28, justifyContent: 'space-between' }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <Logo size={40} color={C.cream} />
+        <Logo size={40} color={C.cream} accent={C.navyLight} />
         <Text style={{ color: C.cream, fontSize: 24, fontFamily: FONT.heavy, letterSpacing: -0.8 }}>ponte</Text>
       </View>
       <View style={{ gap: 6 }}>
