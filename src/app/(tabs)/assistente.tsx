@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, ScrollView, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, FadeInLeft, FadeInRight, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
@@ -27,12 +27,10 @@ const SUGGESTIONS = [
 export default function Assistente() {
   const { state } = useApp();
   const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
+  const [slow, setSlow] = useState(false); // a resposta está demorando (servidor acordando)
   const [cheer, setCheer] = useState(false); // o Orbi comemora quando a resposta chega
   const scroll = useRef<ScrollView>(null);
-  const tabSpace = useContext(TabSpace);
-  const kb = useKeyboardOpen();
   const country = getCountry(state.profile.country);
   const city = country.cities[state.profile.city] ?? country.cities[0];
   const server = serverOf(state);
@@ -49,6 +47,12 @@ export default function Assistente() {
     return () => clearTimeout(t);
   }, [cheer]);
 
+  useEffect(() => {
+    if (!busy) return;
+    const t = setTimeout(() => setSlow(true), 6000);
+    return () => clearTimeout(t);
+  }, [busy]);
+
   const mood = busy ? 'thinking' : cheer ? 'happy' : 'idle';
 
   async function send(content: string) {
@@ -56,7 +60,6 @@ export default function Assistente() {
     if (!q || busy) return;
     const next: Msg[] = [...msgs, { role: 'user', content: q }];
     setMsgs(next);
-    setText('');
     setBusy(true);
     try {
       const res = await fetch(`${server}/chat`, {
@@ -84,14 +87,14 @@ export default function Assistente() {
       }]);
     } finally {
       setBusy(false);
-      setTimeout(() => scroll.current?.scrollToEnd({ animated: true }), 50);
+      setSlow(false);
     }
   }
 
-
   return (
     <SafeAreaView style={ui.safe} edges={['top']}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* No Android o app é edge-to-edge e a janela não encolhe com o teclado, então o padding vale para as duas plataformas. */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
           {msgs.length > 0 ? <Orbi size={52} mood={mood} /> : null}
           <View style={{ flex: 1, gap: 2 }}>
@@ -107,7 +110,12 @@ export default function Assistente() {
             </Tap>
           ) : null}
         </View>
-        <ScrollView ref={scroll} contentContainerStyle={{ padding: 20, paddingTop: 6, gap: 10 }} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          ref={scroll}
+          contentContainerStyle={{ padding: 20, paddingTop: 6, gap: 10 }}
+          keyboardShouldPersistTaps="handled"
+          onContentSizeChange={() => { if (msgs.length > 0) scroll.current?.scrollToEnd({ animated: true }); }}
+        >
           {msgs.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingTop: 40, paddingBottom: 12 }}>
               <Orbi size={150} mood={mood} talk />
@@ -152,32 +160,56 @@ export default function Assistente() {
             );
           })}
           {busy ? <Typing /> : null}
+          {slow ? (
+            <Txt size={12} color={C.sub} style={{ marginLeft: 4 }}>
+              O Orbi está acordando. A primeira resposta do dia pode levar até 1 minuto.
+            </Txt>
+          ) : null}
         </ScrollView>
-        <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: kb ? 10 : tabSpace + 4 }}>
-          <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', backgroundColor: C.card, borderRadius: 26, borderWidth: 1, borderColor: C.line, paddingLeft: 18, paddingRight: 5, paddingVertical: 5, minHeight: 52 }}>
-            <TextInput
-              value={text}
-              onChangeText={setText}
-              placeholder="Escreva sua dúvida"
-              placeholderTextColor={C.faint}
-              style={{ flex: 1, maxHeight: 120, paddingVertical: 10, fontSize: 15, color: C.ink, fontFamily: FONT.regular }}
-              multiline
-              numberOfLines={1}
-              onSubmitEditing={() => send(text)}
-            />
-            <Tap
-              accessibilityLabel="Enviar"
-              onPress={() => send(text)}
-              disabled={busy || !text.trim()}
-              scaleTo={0.85}
-              style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: text.trim() && !busy ? C.accent : C.sunk, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Feather name="arrow-up" size={20} color={text.trim() && !busy ? '#FFFFFF' : C.faint} />
-            </Tap>
-          </View>
-        </View>
+        <Composer busy={busy} onSend={send} />
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+// O texto digitado mora aqui dentro: assim cada letra redesenha só a caixa de texto,
+// e não a conversa inteira com o Orbi animado.
+function Composer({ busy, onSend }: { busy: boolean; onSend: (text: string) => void }) {
+  const [text, setText] = useState('');
+  const tabSpace = useContext(TabSpace);
+  const kb = useKeyboardOpen();
+  const ready = !!text.trim() && !busy;
+
+  function submit() {
+    if (!ready) return;
+    onSend(text);
+    setText('');
+  }
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 8, paddingHorizontal: 16, paddingTop: 10, paddingBottom: kb ? 10 : tabSpace + 4 }}>
+      <View style={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', backgroundColor: C.card, borderRadius: 26, borderWidth: 1, borderColor: C.line, paddingLeft: 18, paddingRight: 5, paddingVertical: 5, minHeight: 52 }}>
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="Escreva sua dúvida"
+          placeholderTextColor={C.faint}
+          style={{ flex: 1, maxHeight: 120, paddingVertical: 10, fontSize: 15, color: C.ink, fontFamily: FONT.regular }}
+          multiline
+          numberOfLines={1}
+          onSubmitEditing={submit}
+        />
+        <Tap
+          accessibilityLabel="Enviar"
+          onPress={submit}
+          disabled={!ready}
+          scaleTo={0.85}
+          style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: ready ? C.accent : C.sunk, alignItems: 'center', justifyContent: 'center' }}
+        >
+          <Feather name="arrow-up" size={20} color={ready ? '#FFFFFF' : C.faint} />
+        </Tap>
+      </View>
+    </View>
   );
 }
 
