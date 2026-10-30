@@ -9,9 +9,10 @@ import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
 export default function Ajustes() {
-  const { state, update, reset, rates, refreshRates } = useApp();
+  const { state, update, setProfile, reset, rates, refreshRates } = useApp();
   const [confirm, setConfirm] = useState(false);
   const [url, setUrl] = useState(state.serverUrl);
+  const [home, setHome] = useState(state.profile.homeAddress);
   const [version, setVersion] = useState(0);
 
   const setFee = (k: keyof Fees, t: string) => update({ fees: { ...state.fees, [k]: parseNum(t) } });
@@ -22,6 +23,15 @@ export default function Ajustes() {
         <H>Destino</H>
         <P muted>Troque o país, a cidade, a data ou a duração.</P>
         <Btn label="Mudar destino" kind="ghost" icon="map-pin" onPress={() => router.push('/onboarding')} />
+      </Card>
+
+      <Card>
+        <H>Endereço da acomodação</H>
+        <P muted style={{ fontSize: 13 }}>
+          Usado no botão &quot;Voltar pra casa&quot; do relógio. Fica só no seu celular e no seu relógio.
+        </P>
+        <Field value={home} onChangeText={setHome} placeholder="Ex.: Rathmines Road Lower, Dublin" />
+        <Btn label="Salvar endereço" kind="ghost" icon="home" onPress={() => setProfile({ homeAddress: home.trim() })} />
       </Card>
 
       <Card>

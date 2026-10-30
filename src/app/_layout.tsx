@@ -17,6 +17,7 @@ import { Logo } from '../components/Logo';
 import { Btn, Txt } from '../components/ui';
 import { installGlobalErrorReporter, reportError } from '../lib/report';
 import { AppProvider, useApp } from '../lib/store';
+import { useWatchSync } from '../lib/watch';
 import { C, FONT } from '../lib/theme';
 
 installGlobalErrorReporter();
@@ -45,6 +46,7 @@ export function ErrorBoundary({ error, retry }: ErrorBoundaryProps) {
 // Sem isso, uma tela aberta direto (link ou app recarregado) lia o estado vazio.
 function Ready({ children }: { children: React.ReactNode }) {
   const { ready } = useApp();
+  useWatchSync();
   if (!ready) return <View style={{ flex: 1, backgroundColor: C.bg }} />;
   return <>{children}</>;
 }

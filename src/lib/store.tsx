@@ -16,6 +16,7 @@ export type Profile = {
   savings: number;
   ticketBRL: number;
   courseLocal: number;
+  homeAddress: string; // acomodação no destino, para o "Voltar pra casa" do relógio
 };
 
 export type AppState = {
@@ -60,7 +61,7 @@ export const initialState: AppState = {
   onboarded: false,
   profile: {
     country: 'IE', city: 0, tripMonth: nextMonths(7)[6], months: 6, style: 'mod',
-    savings: 25000, ticketBRL: 5000, courseLocal: 0,
+    savings: 25000, ticketBRL: 5000, courseLocal: 0, homeAddress: '',
   },
   done: {},
   fees: DEFAULT_FEES,
