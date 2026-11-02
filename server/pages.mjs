@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '24/10/2026';
+const UPDATED = '02/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -47,7 +47,7 @@ export function privacyPage(email) {
 </ul>
 
 <h2>1. Dados que ficam só no seu celular</h2>
-<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas e taxas que você ajustar. Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
+<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar e o endereço da acomodação, se você salvar. Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
 <p>Para responder, o app envia ao nosso servidor:</p>
@@ -63,9 +63,10 @@ export function privacyPage(email) {
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
 <p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
-<h2>4. Ponte Completo, alertas e lembretes</h2>
+<h2>4. Ponte Completo, alertas, lembretes e resumo diário</h2>
 <p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
-<p>O alerta de cotação e os lembretes de prazo são <strong>notificações do próprio celular</strong>: o valor do alerta e as datas ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
+<p>O alerta de cotação, os lembretes de prazo e o resumo diário são <strong>notificações do próprio celular</strong>: esses dados ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
+<p>O resumo diário vem desligado e pode ser desligado em Ajustes. Ele mostra a cotação, o orçamento do dia e a próxima tarefa. Se o seu relógio espelhar as notificações do celular, esse texto também aparece nele, e o app do relógio trata a notificação conforme as regras do fabricante. O endereço da acomodação não aparece no texto das notificações. Ao tocar em <strong>Voltar pra casa</strong>, o celular abre o mapa e envia o endereço de destino ao serviço de mapas para traçar a rota.</p>
 
 <h2>4.1 Cotações de moedas</h2>
 <p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>
@@ -102,7 +103,7 @@ export function deletionPage(email) {
 <p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
 
 <h2>1. Dados guardados no seu celular</h2>
-<p>O seu planejamento (destino, datas, orçamento, checklist, respostas do guia de cartões e taxas ajustadas) fica apenas no aparelho. Para apagar:</p>
+<p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões e taxas ajustadas) fica apenas no aparelho. Para apagar:</p>
 <ol>
   <li>Abra a Ponte e toque no botão de ajustes, no início do app.</li>
   <li>Toque em <strong>Apagar meus dados</strong>.</li>
