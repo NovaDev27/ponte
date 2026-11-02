@@ -2,9 +2,10 @@ import Constants from 'expo-constants';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { Linking, View } from 'react-native';
-import { Btn, Card, Field, H, Label, P, Screen, Txt } from '../components/ui';
+import { Btn, Card, Field, H, Label, P, Screen, Segment, Txt } from '../components/ui';
 import { DEFAULT_FEES, FEE_FIELDS, FEES_CHECKED, Fees } from '../data/methods';
 import { num, parseNum } from '../lib/format';
+import { ensurePermission, notifySupported } from '../lib/notify';
 import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
@@ -14,8 +15,15 @@ export default function Ajustes() {
   const [url, setUrl] = useState(state.serverUrl);
   const [home, setHome] = useState(state.profile.homeAddress);
   const [version, setVersion] = useState(0);
+  const [dailyMsg, setDailyMsg] = useState('');
 
   const setFee = (k: keyof Fees, t: string) => update({ fees: { ...state.fees, [k]: parseNum(t) } });
+
+  async function setDaily(on: boolean) {
+    const allowed = on ? await ensurePermission() : true;
+    update({ daily: on });
+    setDailyMsg(allowed ? '' : notifySupported ? 'As notificações estão desligadas. Ative nas configurações do celular.' : 'Os avisos aparecem no app de celular.');
+  }
 
   return (
     <Screen header>
@@ -26,9 +34,23 @@ export default function Ajustes() {
       </Card>
 
       <Card>
+        <H>Resumo no celular e no relógio</H>
+        <P muted style={{ fontSize: 13 }}>
+          Todo dia às 9h: cotação, orçamento do dia e próxima tarefa. Aparece no relógio se ele mostrar as notificações do celular.
+        </P>
+        <Segment
+          options={[{ value: true, label: 'Ligado' }, { value: false, label: 'Desligado' }]}
+          value={state.daily}
+          onChange={setDaily}
+          color={C.navy}
+        />
+        {dailyMsg ? <P muted style={{ fontSize: 13 }}>{dailyMsg}</P> : null}
+      </Card>
+
+      <Card>
         <H>Endereço da acomodação</H>
         <P muted style={{ fontSize: 13 }}>
-          Usado no botão &quot;Voltar pra casa&quot; do relógio. Fica só no seu celular e no seu relógio.
+          Com o resumo ligado e depois do embarque, às 19h chega o aviso &quot;Voltar pra casa&quot;. Ao tocar no celular, a rota abre no mapa. O endereço fica só no seu aparelho.
         </P>
         <Field value={home} onChangeText={setHome} placeholder="Ex.: Rathmines Road Lower, Dublin" />
         <Btn label="Salvar endereço" kind="ghost" icon="home" onPress={() => setProfile({ homeAddress: home.trim() })} />

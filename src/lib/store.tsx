@@ -16,7 +16,7 @@ export type Profile = {
   savings: number;
   ticketBRL: number;
   courseLocal: number;
-  homeAddress: string; // acomodação no destino, para o "Voltar pra casa" do relógio
+  homeAddress: string; // acomodação no destino, para o aviso "Voltar pra casa"
 };
 
 export type AppState = {
@@ -30,6 +30,7 @@ export type AppState = {
   premium: boolean; // comprou o Ponte Completo
   rateAlert: RateAlert | null; // alerta de cotação ativo
   reminders: boolean; // lembretes de prazo do checklist
+  daily: boolean; // resumo diário e aviso "Voltar pra casa"
   cardQuiz: CardQuiz | null; // respostas do "Qual cartão levar"
 };
 
@@ -71,6 +72,7 @@ export const initialState: AppState = {
   premium: false,
   rateAlert: null,
   reminders: false,
+  daily: false,
   cardQuiz: null,
 };
 

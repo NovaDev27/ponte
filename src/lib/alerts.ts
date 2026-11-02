@@ -3,8 +3,8 @@ import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { Platform } from 'react-native';
 import { brl } from './format';
-import { notifyNow } from './notify';
-import { fetchRates, KEY, type AppState, type RateAlert, type Rates } from './store';
+import { notifyNow, syncDaily } from './notify';
+import { fetchRates, initialState, KEY, type AppState, type RateAlert, type Rates } from './store';
 
 // Alerta de cotação: confere a cotação de tempos em tempos (em segundo plano no celular
 // e toda vez que o app abre) e avisa uma vez quando 1 unidade da moeda fica no valor escolhido ou abaixo.
@@ -41,7 +41,12 @@ if (Platform.OS !== 'web') {
     try {
       const raw = await AsyncStorage.getItem(KEY);
       const state = raw ? (JSON.parse(raw) as Partial<AppState>) : null;
-      await checkAlert(state?.rateAlert ?? null, await fetchRates());
+      const rates = await fetchRates();
+      await checkAlert(state?.rateAlert ?? null, rates);
+      // Mantém o resumo com a cotação nova, mesmo sem abrir o app.
+      if (state?.daily && rates?.live) {
+        await syncDaily({ ...initialState, ...state, profile: { ...initialState.profile, ...state.profile } }, rates, true);
+      }
       return BackgroundTask.BackgroundTaskResult.Success;
     } catch {
       return BackgroundTask.BackgroundTaskResult.Failed;

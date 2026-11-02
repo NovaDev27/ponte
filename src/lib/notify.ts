@@ -1,8 +1,9 @@
 import * as Notifications from 'expo-notifications';
-import { Platform } from 'react-native';
-import { phaseDue, phasesFor } from '../data/checklist';
+import { Linking, Platform } from 'react-native';
+import { phaseDue, phasesFor, tripDate } from '../data/checklist';
 import { getCountry } from '../data/countries';
-import type { AppState } from './store';
+import { dailySummary, isRouteUrl, routeUrl } from './daily';
+import type { AppState, Rates } from './store';
 
 // Notificações locais (sem servidor de push). Na web não existem.
 export const notifySupported = Platform.OS !== 'web';
@@ -43,21 +44,21 @@ export async function notifyNow(title: string, body: string) {
   await Notifications.scheduleNotificationAsync({ content: { title, body }, trigger: null });
 }
 
+async function cancelScheduled(prefix: string) {
+  const all = await Notifications.getAllScheduledNotificationsAsync();
+  await Promise.all(
+    all.filter((n) => n.identifier.startsWith(prefix)).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
+  );
+}
+
 /* ---------- lembretes de prazo do checklist ---------- */
 const REMINDER_PREFIX = 'lembrete-';
 const REMIND_DAYS_BEFORE = 7;
 
-async function cancelReminders() {
-  const all = await Notifications.getAllScheduledNotificationsAsync();
-  await Promise.all(
-    all.filter((n) => n.identifier.startsWith(REMINDER_PREFIX)).map((n) => Notifications.cancelScheduledNotificationAsync(n.identifier)),
-  );
-}
-
 // Reagenda tudo do zero: um lembrete por fase que ainda tem tarefas, 7 dias antes do prazo, às 10h.
 export async function syncReminders(state: AppState, enabled: boolean) {
   if (!notifySupported) return;
-  await cancelReminders();
+  await cancelScheduled(REMINDER_PREFIX);
   if (!enabled) return;
   await ensureChannel();
   const now = Date.now();
@@ -79,4 +80,60 @@ export async function syncReminders(state: AppState, enabled: boolean) {
       trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: at },
     });
   }
+}
+
+/* ---------- resumo diário e "Voltar pra casa" ---------- */
+const DAILY_PREFIX = 'resumo-';
+const DAILY_DAYS = 3; // poucos dias: sem abrir o app por mais tempo, a cotação ficaria velha
+const SUMMARY_HOUR = 9;
+const HOME_HOUR = 19;
+
+// Reagenda os próximos dias com os dados de agora. O aviso de casa só vale depois do embarque.
+export async function syncDaily(state: AppState, rates: Rates, enabled: boolean) {
+  if (!notifySupported) return;
+  await cancelScheduled(DAILY_PREFIX);
+  if (!enabled || !state.onboarded) return;
+  await ensureChannel();
+  const now = Date.now();
+  const body = dailySummary(state, rates);
+  const home = state.profile.homeAddress;
+  const trip = tripDate(state.profile.tripMonth).getTime();
+
+  for (let day = 0; day < DAILY_DAYS; day++) {
+    const summaryAt = new Date();
+    summaryAt.setDate(summaryAt.getDate() + day);
+    summaryAt.setHours(SUMMARY_HOUR, 0, 0, 0);
+    if (summaryAt.getTime() > now) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${DAILY_PREFIX}${day}`,
+        content: { title: 'Ponte hoje', body },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: summaryAt },
+      });
+    }
+
+    const homeAt = new Date(summaryAt);
+    homeAt.setHours(HOME_HOUR, 0, 0, 0);
+    if (home && homeAt.getTime() > now && homeAt.getTime() >= trip) {
+      await Notifications.scheduleNotificationAsync({
+        identifier: `${DAILY_PREFIX}casa-${day}`,
+        content: { title: 'Voltar pra casa', body: 'Toque no celular para abrir a rota.', data: { url: routeUrl(home) } },
+        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: homeAt },
+      });
+    }
+  }
+}
+
+// Abre a rota ao tocar no aviso, com o app aberto ou fechado.
+export function listenRouteTaps(): () => void {
+  if (!notifySupported) return () => {};
+  let handled = '';
+  const open = (r: Notifications.NotificationResponse | null) => {
+    if (!r || r.notification.request.identifier === handled) return;
+    handled = r.notification.request.identifier;
+    const url = r.notification.request.content.data?.url;
+    if (isRouteUrl(url)) Linking.openURL(url).catch(() => {});
+  };
+  Notifications.getLastNotificationResponseAsync().then(open).catch(() => {});
+  const sub = Notifications.addNotificationResponseReceivedListener(open);
+  return () => sub.remove();
 }
