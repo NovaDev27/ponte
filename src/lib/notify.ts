@@ -123,6 +123,20 @@ export async function syncDaily(state: AppState, rates: Rates, enabled: boolean)
   }
 }
 
+// Manda os avisos na hora, para conferir no celular e no relógio sem esperar o horário.
+export async function sendDailyTest(state: AppState, rates: Rates) {
+  if (!notifySupported) return;
+  await ensureChannel();
+  await notifyNow('Ponte hoje', dailySummary(state, rates));
+  const home = state.profile.homeAddress;
+  if (home) {
+    await Notifications.scheduleNotificationAsync({
+      content: { title: 'Voltar pra casa', body: 'Toque no celular para abrir a rota.', data: { url: routeUrl(home) } },
+      trigger: null,
+    });
+  }
+}
+
 // Abre a rota ao tocar no aviso, com o app aberto ou fechado.
 export function listenRouteTaps(): () => void {
   if (!notifySupported) return () => {};

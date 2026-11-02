@@ -5,7 +5,7 @@ import { Linking, View } from 'react-native';
 import { Btn, Card, Field, H, Label, P, Screen, Segment, Txt } from '../components/ui';
 import { DEFAULT_FEES, FEE_FIELDS, FEES_CHECKED, Fees } from '../data/methods';
 import { num, parseNum } from '../lib/format';
-import { ensurePermission, notifySupported } from '../lib/notify';
+import { ensurePermission, notifySupported, sendDailyTest } from '../lib/notify';
 import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
@@ -23,6 +23,15 @@ export default function Ajustes() {
     const allowed = on ? await ensurePermission() : true;
     update({ daily: on });
     setDailyMsg(allowed ? '' : notifySupported ? 'As notificações estão desligadas. Ative nas configurações do celular.' : 'Os avisos aparecem no app de celular.');
+  }
+
+  async function testDaily() {
+    if (!(await ensurePermission())) {
+      setDailyMsg(notifySupported ? 'As notificações estão desligadas. Ative nas configurações do celular.' : 'Os avisos aparecem no app de celular.');
+      return;
+    }
+    await sendDailyTest(state, rates);
+    setDailyMsg('Aviso enviado. Se não aparecer no relógio, ligue a Ponte nas notificações do app do relógio.');
   }
 
   return (
@@ -44,6 +53,7 @@ export default function Ajustes() {
           onChange={setDaily}
           color={C.navy}
         />
+        <Btn label="Enviar aviso de teste" kind="ghost" icon="bell" onPress={testDaily} />
         {dailyMsg ? <P muted style={{ fontSize: 13 }}>{dailyMsg}</P> : null}
       </Card>
 
