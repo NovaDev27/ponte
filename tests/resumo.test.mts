@@ -25,6 +25,12 @@ describe('resumo diário', () => {
     assert.equal(lines[2], `Falta: ${phasesFor(country)[0].tasks[0].text}`);
   });
 
+  test('com o cadastro feito, não pede para definir o destino', () => {
+    const text = dailySummary({ ...(state as object), onboarded: true } as never, rates as never);
+    assert.ok(!text.includes(phasesFor(country)[0].tasks[0].text));
+    assert.ok(text.includes(`Falta: ${phasesFor(country)[0].tasks[1].text}`));
+  });
+
   test('sem tarefas abertas, não fala de tarefa', () => {
     const done = Object.fromEntries(phasesFor(country).flatMap((p) => p.tasks).map((t) => [t.id, true]));
     const text = dailySummary({ ...(state as object), done } as never, rates as never);
