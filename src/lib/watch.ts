@@ -31,6 +31,9 @@ export function useWatchSync() {
       budgetPerDay: Math.round(b.monthly / 30),
     };
     if (taskDueAt) data.taskDueAt = taskDueAt;
+    // Reserva para o relógio sem internet, e a hora que ele mostra como "Atualizado há".
+    if (rates.live) data.rateBrl = 1 / b.rate;
+    data.syncedAt = Date.now();
 
     // Espera o usuário parar de mexer antes de mandar.
     const t = setTimeout(() => { PonteWear?.sync(data).catch(() => {}); }, 1500);

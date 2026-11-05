@@ -1,5 +1,6 @@
 package app.ponte.wearsync
 
+import android.util.Log
 import com.google.android.gms.tasks.Tasks
 import com.google.android.gms.wearable.PutDataMapRequest
 import com.google.android.gms.wearable.Wearable
@@ -28,7 +29,8 @@ class PonteWearModule : Module() {
         }
         Tasks.await(Wearable.getDataClient(context).putDataItem(request.asPutDataRequest().setUrgent()))
         true
-      } catch (_: Exception) {
+      } catch (e: Exception) {
+        Log.w("PonteWear", "Não deu para mandar os dados ao relógio", e)
         false
       }
     }
