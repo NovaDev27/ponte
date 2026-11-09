@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '02/11/2026';
+const UPDATED = '09/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -36,7 +36,7 @@ ${body}
 
 export function privacyPage(email) {
   return page('Política de Privacidade', `
-<p>A Ponte é um aplicativo gratuito que ajuda estudantes brasileiros a planejar o intercâmbio e a entender o custo de cada forma de levar dinheiro. Esta política explica, em linguagem simples, quais dados o app usa e por quê, conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).</p>
+<p>A Ponte é um aplicativo grátis que ajuda estudantes brasileiros a planejar o intercâmbio e a entender o custo de cada forma de levar dinheiro. Ela tem uma compra opcional, o Ponte Completo. Esta política explica, em linguagem simples, quais dados o app usa e por quê, conforme a Lei Geral de Proteção de Dados (LGPD, Lei 13.709/2018).</p>
 
 <h2>Resumo</h2>
 <ul>
@@ -61,12 +61,12 @@ export function privacyPage(email) {
 
 <h2>3. Relatórios de erro e opiniões</h2>
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
-<p>Se você usar a tela <strong>Dê sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
+<p>Se você usar a tela <strong>Sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
 
 <h2>4. Ponte Completo, alertas, lembretes e resumo diário</h2>
 <p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
 <p>O alerta de cotação, os lembretes de prazo e o resumo diário são <strong>notificações do próprio celular</strong>: esses dados ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
-<p>O resumo diário vem desligado e pode ser desligado em Ajustes. Ele mostra a cotação, o orçamento do dia e a próxima tarefa. Se o seu relógio espelhar as notificações do celular, esse texto também aparece nele, e o app do relógio trata a notificação conforme as regras do fabricante. O endereço da acomodação não aparece no texto das notificações. Ao tocar em <strong>Voltar pra casa</strong>, o celular abre o mapa e envia o endereço de destino ao serviço de mapas para traçar a rota.</p>
+<p>O resumo diário vem desligado e pode ser ligado ou desligado em Ajustes. Ele mostra a cotação, o orçamento do dia e a próxima tarefa. Se o seu relógio espelhar as notificações do celular, esse texto também aparece nele, e o app do relógio trata a notificação conforme as regras do fabricante. O endereço da acomodação não aparece no texto das notificações. Ao tocar em <strong>Voltar pra casa</strong>, o celular abre o mapa e envia o endereço de destino ao serviço de mapas para traçar a rota.</p>
 
 <h2>4.1 Cotações de moedas</h2>
 <p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>
@@ -75,7 +75,7 @@ export function privacyPage(email) {
 <p>As fotos e os resumos da tela <strong>Lugares</strong> vêm da Wikipédia (pt.wikipedia.org), e os ícones dos sites oficiais em <strong>Onde buscar</strong> vêm do serviço de ícones do Google. Para carregar essas imagens, o celular se conecta diretamente a esses serviços, que recebem o endereço IP do aparelho e o nome do lugar ou site pedido. Nenhum dado do seu planejamento é enviado.</p>
 
 <h2>5. Onde os dados são processados</h2>
-<p>O servidor da Ponte fica na Render e o modelo de IA na Groq, ambos com servidores nos Estados Unidos. Ao usar o Assistente, as mensagens são transferidas para lá apenas para gerar a resposta.</p>
+<p>O servidor da Ponte fica na Render e o modelo de IA na Groq, duas empresas dos Estados Unidos, e os dados podem ser processados em servidores fora do Brasil. Ao usar o Assistente, as mensagens são transferidas para esses servidores apenas para gerar a resposta.</p>
 
 <h2>6. Bases legais (LGPD)</h2>
 <ul>
@@ -131,7 +131,7 @@ export function termsPage(email) {
 <p>Ao usar a Ponte, você concorda com estes termos. Eles são curtos, mas leia, por favor.</p>
 
 <h2>1. O que a Ponte é</h2>
-<p>Um aplicativo gratuito de <strong>informação e planejamento</strong> para intercâmbio: compara o custo estimado de cada forma de levar dinheiro, monta um orçamento por cidade, organiza um checklist de preparação e tem um assistente com inteligência artificial.</p>
+<p>Um aplicativo grátis de <strong>informação e planejamento</strong> para intercâmbio, com uma compra opcional (o Ponte Completo). Ele compara o custo estimado de cada forma de levar dinheiro, monta um orçamento por cidade, organiza um checklist de preparação e tem um assistente com inteligência artificial.</p>
 
 <h2>2. O que a Ponte não é</h2>
 <ul>
@@ -144,7 +144,7 @@ export function termsPage(email) {
 <p>Cotações, IOF, spreads, tarifas, custos de vida e regras de visto mudam com frequência. Os valores do app são <strong>médias e estimativas</strong>, e podem estar desatualizados ou não valer para o seu caso. Antes de qualquer decisão, confirme a cotação final no serviço que você for usar e as regras nos sites oficiais (governo do país de destino, Receita Federal, consulados).</p>
 
 <h2>4. O Assistente pode errar</h2>
-<p>As respostas são geradas por inteligência artificial e podem conter erros ou informações incompletas. Use como ponto de partida, não como resposta final. O Assistente tem limite de perguntas por hora e por dia para manter o serviço gratuito.</p>
+<p>As respostas são geradas por inteligência artificial e podem conter erros ou informações incompletas. Use como ponto de partida, não como resposta final. O Assistente tem limite de perguntas por hora e por dia (maior no Ponte Completo), para o serviço continuar funcionando.</p>
 
 <h2>4.1 Ponte Completo</h2>
 <p>O Ponte Completo é uma compra opcional, de <strong>pagamento único</strong>, feita pelo Google Play, que mostra o preço final antes de você confirmar. Pedidos de reembolso seguem as regras do Google Play. A compra fica ligada à sua conta Google e pode ser recuperada em outro celular pela opção "Já comprei". As funções grátis continuam grátis.</p>
