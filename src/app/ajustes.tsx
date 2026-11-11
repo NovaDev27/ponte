@@ -63,7 +63,7 @@ export default function Ajustes() {
       <Card>
         <H>Endereço da acomodação</H>
         <P muted style={{ fontSize: 13 }}>
-          Com o resumo ligado e depois do embarque, às 19h chega o aviso &quot;Voltar pra casa&quot;. Ao tocar no celular, a rota abre no mapa. O endereço fica só no seu aparelho.
+          Com o resumo ligado, quando o celular já estiver no fuso do destino, chega todo dia às 19h (no horário de lá) o aviso &quot;Voltar pra casa&quot;. Ao tocar no celular, a rota abre no mapa. O endereço fica só no seu aparelho.
         </P>
         <Field value={home} onChangeText={setHome} placeholder="Ex.: Rathmines Road Lower, Dublin" />
         <Btn label="Salvar endereço" kind="ghost" icon="home" onPress={() => setProfile({ homeAddress: home.trim() })} />

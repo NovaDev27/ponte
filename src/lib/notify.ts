@@ -1,8 +1,9 @@
+import { getCalendars } from 'expo-localization';
 import * as Notifications from 'expo-notifications';
 import { Linking, Platform } from 'react-native';
-import { phaseDue, phasesFor, tripDate } from '../data/checklist';
+import { phaseDue, phasesFor } from '../data/checklist';
 import { getCountry } from '../data/countries';
-import { dailySummary, isRouteUrl, routeUrl } from './daily';
+import { dailySummary, homeAlertActive, isRouteUrl, routeUrl } from './daily';
 import type { AppState, Rates } from './store';
 
 // Notificações locais (sem servidor de push). Na web não existem.
@@ -84,11 +85,11 @@ export async function syncReminders(state: AppState, enabled: boolean) {
 
 /* ---------- resumo diário e "Voltar pra casa" ---------- */
 const DAILY_PREFIX = 'resumo-';
-const DAILY_DAYS = 3; // poucos dias: sem abrir o app por mais tempo, a cotação ficaria velha
+const DAILY_DAYS = 3; // resumo: poucos dias, porque sem abrir o app por mais tempo a cotação ficaria velha
 const SUMMARY_HOUR = 9;
 const HOME_HOUR = 19;
 
-// Reagenda os próximos dias com os dados de agora. O aviso de casa só vale depois do embarque.
+// Reagenda o resumo dos próximos dias com os dados de agora e o aviso de casa (só depois do embarque).
 export async function syncDaily(state: AppState, rates: Rates, enabled: boolean) {
   if (!notifySupported) return;
   await cancelScheduled(DAILY_PREFIX);
@@ -96,8 +97,17 @@ export async function syncDaily(state: AppState, rates: Rates, enabled: boolean)
   await ensureChannel();
   const now = Date.now();
   const body = dailySummary(state, rates);
+
+  // "Voltar pra casa": repete todo dia às 19h no fuso em que o celular está (o Android recalcula
+  // o horário a cada disparo), sem depender de abrir o app. Só liga com o celular fora do Brasil.
   const home = state.profile.homeAddress;
-  const trip = tripDate(state.profile.tripMonth).getTime();
+  if (home && homeAlertActive(state.profile.tripMonth, now, currentTimeZone())) {
+    await Notifications.scheduleNotificationAsync({
+      identifier: `${DAILY_PREFIX}casa`,
+      content: { title: 'Voltar pra casa', body: 'Toque no celular para abrir a rota.', data: { url: routeUrl(home) } },
+      trigger: { type: Notifications.SchedulableTriggerInputTypes.DAILY, hour: HOME_HOUR, minute: 0 },
+    });
+  }
 
   for (let day = 0; day < DAILY_DAYS; day++) {
     const summaryAt = new Date();
@@ -110,16 +120,15 @@ export async function syncDaily(state: AppState, rates: Rates, enabled: boolean)
         trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: summaryAt },
       });
     }
+  }
+}
 
-    const homeAt = new Date(summaryAt);
-    homeAt.setHours(HOME_HOUR, 0, 0, 0);
-    if (home && homeAt.getTime() > now && homeAt.getTime() >= trip) {
-      await Notifications.scheduleNotificationAsync({
-        identifier: `${DAILY_PREFIX}casa-${day}`,
-        content: { title: 'Voltar pra casa', body: 'Toque no celular para abrir a rota.', data: { url: routeUrl(home) } },
-        trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date: homeAt },
-      });
-    }
+// Fuso atual do celular (ex.: "Europe/Dublin"). Lido na hora, porque muda quando a pessoa chega no destino.
+export function currentTimeZone(): string | null {
+  try {
+    return getCalendars()[0]?.timeZone ?? null;
+  } catch {
+    return null;
   }
 }
 

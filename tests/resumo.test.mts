@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
 import { phasesFor } from '../src/data/checklist.ts';
 import { COUNTRIES } from '../src/data/countries.ts';
-import { dailySummary, isRouteUrl, routeUrl } from '../src/lib/daily.ts';
+import { dailySummary, homeAlertActive, inBrazilTz, isRouteUrl, routeUrl } from '../src/lib/daily.ts';
 import { budgetOf } from '../src/lib/budget.ts';
 import { money } from '../src/lib/format.ts';
 
@@ -44,5 +44,40 @@ describe('resumo diário', () => {
     assert.ok(isRouteUrl(url));
     assert.ok(!isRouteUrl('https://exemplo.com'));
     assert.ok(!isRouteUrl(undefined));
+  });
+});
+
+describe('Voltar pra casa: quando o aviso vale', () => {
+  const day = (y: number, m: number, d: number) => new Date(y, m - 1, d, 12).getTime();
+
+  test('antes do mês do embarque não avisa, mesmo fora do Brasil', () => {
+    assert.equal(homeAlertActive('2027-02', day(2027, 1, 31), 'Europe/Dublin'), false);
+  });
+
+  test('no mês do embarque, só avisa com o celular fora do fuso do Brasil', () => {
+    assert.equal(homeAlertActive('2027-02', day(2027, 2, 1), 'America/Sao_Paulo'), false);
+    assert.equal(homeAlertActive('2027-02', day(2027, 2, 1), 'Europe/Dublin'), true);
+    assert.equal(homeAlertActive('2027-02', day(2027, 2, 20), 'America/Toronto'), true);
+  });
+
+  test('de volta ao Brasil, para de avisar', () => {
+    assert.equal(homeAlertActive('2027-02', day(2027, 9, 1), 'America/Manaus'), false);
+    assert.equal(homeAlertActive('2027-02', day(2027, 9, 1), 'Brazil/East'), false);
+  });
+
+  test('sem fuso conhecido, vale só o mês', () => {
+    assert.equal(homeAlertActive('2027-02', day(2027, 2, 1), null), true);
+    assert.equal(homeAlertActive('2027-02', day(2027, 1, 31), null), false);
+  });
+
+  test('mês inválido não liga o aviso', () => {
+    assert.equal(homeAlertActive('', day(2027, 2, 1), 'Europe/Dublin'), false);
+    assert.equal(homeAlertActive('abc', day(2027, 2, 1), 'Europe/Dublin'), false);
+    assert.equal(homeAlertActive('2027-13', day(2028, 2, 1), 'Europe/Dublin'), false);
+  });
+
+  test('fusos do Brasil reconhecidos', () => {
+    for (const tz of ['America/Sao_Paulo', 'America/Recife', 'America/Noronha', 'America/Rio_Branco', 'America/Porto_Acre']) assert.equal(inBrazilTz(tz), true);
+    for (const tz of ['America/Argentina/Buenos_Aires', 'America/New_York', 'Europe/Lisbon', 'UTC']) assert.equal(inBrazilTz(tz), false);
   });
 });

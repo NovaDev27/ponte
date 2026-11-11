@@ -52,3 +52,6 @@ loja/build/
 loja/antigos/
 loja/prints-antigos/
 loja/prints-sheet.png
+
+# Chave de assinatura local (perfil relogio do eas.json)
+credentials.json

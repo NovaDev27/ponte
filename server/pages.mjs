@@ -2,7 +2,7 @@
 // O Google Play exige um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '09/11/2026';
+const UPDATED = '11/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>

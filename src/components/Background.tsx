@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AppState } from 'react-native';
 import { checkAlert, syncAlertTask } from '../lib/alerts';
 import { listenPurchases, ownsCompleto } from '../lib/billing';
 import { hasCompleto, nextPremium } from '../lib/completo';
@@ -53,11 +54,20 @@ export function Background() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, remind, state.done, state.profile.tripMonth, state.profile.country]);
 
-  // Resumo diário e "Voltar pra casa": reagenda quando mudam os dados que aparecem no aviso.
+  // Resumo diário e "Voltar pra casa": reagenda quando mudam os dados que aparecem no aviso
+  // e toda vez que o app volta para a tela. A troca de fuso (chegou no destino ou voltou) não gera
+  // evento no Android, então o syncDaily lê o fuso na hora; a tarefa em segundo plano cobre o app fechado.
+  const [awake, setAwake] = useState(0);
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (s) => {
+      if (s === 'active') setAwake((n) => n + 1);
+    });
+    return () => sub.remove();
+  }, []);
   useEffect(() => {
     if (ready) syncDaily(state, rates, state.daily).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, state.daily, state.onboarded, state.done, state.overrides, state.profile, rates.updated]);
+  }, [ready, state.daily, state.onboarded, state.done, state.overrides, state.profile, rates.updated, awake]);
 
   useEffect(() => listenRouteTaps(), []);
 

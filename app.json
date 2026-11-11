@@ -2,7 +2,7 @@
   "expo": {
     "name": "Ponte",
     "slug": "ponte",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -37,7 +37,8 @@
       ],
       "expo-sharing",
       "expo-background-task",
-      "expo-iap"
+      "expo-iap",
+      "expo-localization"
     ],
     "scheme": "ponte",
     "extra": {
