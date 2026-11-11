@@ -50,10 +50,12 @@ export async function buyCompleto(): Promise<boolean> {
   return true;
 }
 
-// Confere se a conta Google do aparelho já comprou (reinstalação, outro celular).
-export async function ownsCompleto(): Promise<boolean> {
+// Confere se a conta Google do aparelho tem a compra (reinstalação, outro celular, reembolso).
+// true = tem; false = a loja respondeu e não tem (nunca comprou ou foi reembolsada);
+// null = não deu para conferir (sem loja, sem internet). Com null, não mude nada.
+export async function ownsCompleto(): Promise<boolean | null> {
   const m = await iap();
-  if (!m) return false;
+  if (!m) return null;
   try {
     const purchases = await m.getAvailablePurchases();
     const owned = purchases.find((p) => p.productId === COMPLETO_SKU && p.purchaseState === 'purchased');
@@ -61,7 +63,7 @@ export async function ownsCompleto(): Promise<boolean> {
     if (owned) await m.finishTransaction({ purchase: owned, isConsumable: false }).catch(() => {});
     return !!owned;
   } catch {
-    return false;
+    return null;
   }
 }
 

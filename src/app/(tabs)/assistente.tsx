@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import Constants from 'expo-constants';
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { KeyboardAvoidingView, ScrollView, TextInput, View } from 'react-native';
 import Animated, {
@@ -15,7 +16,9 @@ import { monthLabel } from '../../lib/format';
 import { serverOf, useApp } from '../../lib/store';
 import { C, FONT, R } from '../../lib/theme';
 
-type Msg = { role: 'user' | 'assistant'; content: string };
+// `ok` marca uma resposta de verdade do Orbi (não um aviso de erro): só ela pode ser reportada.
+type Msg = { role: 'user' | 'assistant'; content: string; ok?: boolean };
+type ReportState = 'sending' | 'sent' | 'fail';
 
 const SUGGESTIONS = [
   'Qual o jeito mais barato de levar dinheiro?',
@@ -30,6 +33,7 @@ export default function Assistente() {
   const [busy, setBusy] = useState(false);
   const [slow, setSlow] = useState(false); // a resposta está demorando (servidor acordando)
   const [cheer, setCheer] = useState(false); // o Orbi comemora quando a resposta chega
+  const [reports, setReports] = useState<Record<number, ReportState>>({}); // respostas reportadas, por posição
   const scroll = useRef<ScrollView>(null);
   const country = getCountry(state.profile.country);
   const city = country.cities[state.profile.city] ?? country.cities[0];
@@ -77,18 +81,42 @@ export default function Assistente() {
         }),
       });
       const json = await res.json();
-      const reply = typeof json.reply === 'string' ? json.reply : json.error ?? 'Não consegui responder agora.';
-      setMsgs((m) => [...m, { role: 'assistant', content: reply }]);
+      const real = typeof json.reply === 'string';
+      const reply = real ? json.reply : json.error ?? 'Não consegui responder agora.';
+      setMsgs((m) => [...m, { role: 'assistant', content: reply, ok: real && res.ok }]);
       if (res.ok) setCheer(true);
     } catch {
       setMsgs((m) => [...m, {
         role: 'assistant',
-        content: 'Não consegui falar com o servidor do assistente. Confira se ele está rodando e se o endereço em Ajustes está certo.',
+        content: 'Não consegui falar com o Orbi agora. Confira a internet e tente de novo em instantes.',
       }]);
     } finally {
       setBusy(false);
       setSlow(false);
     }
+  }
+
+  // Reportar resposta: manda só o texto da resposta do Orbi (sem a pergunta, que pode ter dado pessoal).
+  // Exigência da Google Play para apps com IA: a pessoa sinaliza conteúdo ofensivo sem sair do app.
+  async function report(i: number, content: string) {
+    if (reports[i] === 'sending' || reports[i] === 'sent') return;
+    setReports((r) => ({ ...r, [i]: 'sending' }));
+    try {
+      const res = await fetch(`${server}/report`, {
+        method: 'POST',
+        headers: apiHeaders(state.deviceId),
+        body: JSON.stringify({ resposta: content, version: Constants.expoConfig?.version ?? '?' }),
+      });
+      // 429 = já mandou muitas hoje: agradece igual, para o botão não ficar pedindo para tentar de novo.
+      setReports((r) => ({ ...r, [i]: res.ok || res.status === 429 ? 'sent' : 'fail' }));
+    } catch {
+      setReports((r) => ({ ...r, [i]: 'fail' }));
+    }
+  }
+
+  function newChat() {
+    setMsgs([]);
+    setReports({});
   }
 
   return (
@@ -101,11 +129,11 @@ export default function Assistente() {
             <Txt w="mono" size={11} color={C.sub} style={{ letterSpacing: 1.2 }}>PASSO 4 · ASSISTENTE</Txt>
             <Txt w="heavy" size={msgs.length > 0 ? 24 : 34} style={{ lineHeight: msgs.length > 0 ? 28 : 38 }}>Orbi</Txt>
             {msgs.length > 0 ? (
-              <Txt size={13} color={busy ? C.accent : C.sub}>{busy ? 'digitando…' : 'online · responde em segundos'}</Txt>
+              <Txt size={13} color={busy ? C.accent : C.sub}>{busy ? 'digitando…' : 'assistente da Ponte'}</Txt>
             ) : null}
           </View>
           {msgs.length > 0 ? (
-            <Tap onPress={() => setMsgs([])} disabled={busy} accessibilityLabel="Nova conversa" scaleTo={0.9} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
+            <Tap onPress={newChat} disabled={busy} accessibilityLabel="Nova conversa" scaleTo={0.9} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
               <Feather name="edit-3" size={17} color={C.ink} />
             </Tap>
           ) : null}
@@ -139,24 +167,24 @@ export default function Assistente() {
           {msgs.map((m, i) => {
             const me = m.role === 'user';
             return (
-              <Animated.View
-                key={i}
-                entering={(me ? FadeInRight : FadeInLeft).springify().damping(18).stiffness(220)}
-                style={{
-                  alignSelf: me ? 'flex-end' : 'flex-start',
-                  maxWidth: '86%',
-                  backgroundColor: me ? C.ink : C.card,
-                  borderWidth: me ? 0 : 1,
-                  borderColor: C.line,
-                  paddingHorizontal: 15,
-                  paddingVertical: 11,
-                  borderRadius: 20,
-                  borderBottomRightRadius: me ? 6 : 20,
-                  borderBottomLeftRadius: me ? 20 : 6,
-                }}
-              >
-                <Txt color={me ? C.cream : C.ink}>{m.content}</Txt>
-              </Animated.View>
+              <View key={i} style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%' }}>
+                <Animated.View
+                  entering={(me ? FadeInRight : FadeInLeft).springify().damping(18).stiffness(220)}
+                  style={{
+                    backgroundColor: me ? C.ink : C.card,
+                    borderWidth: me ? 0 : 1,
+                    borderColor: C.line,
+                    paddingHorizontal: 15,
+                    paddingVertical: 11,
+                    borderRadius: 20,
+                    borderBottomRightRadius: me ? 6 : 20,
+                    borderBottomLeftRadius: me ? 20 : 6,
+                  }}
+                >
+                  <Txt color={me ? C.cream : C.ink}>{m.content}</Txt>
+                </Animated.View>
+                {m.ok ? <ReportLink status={reports[i]} onPress={() => report(i, m.content)} /> : null}
+              </View>
             );
           })}
           {busy ? <Typing /> : null}
@@ -210,6 +238,36 @@ function Composer({ busy, onSend }: { busy: boolean; onSend: (text: string) => v
         </Tap>
       </View>
     </View>
+  );
+}
+
+// Link discreto embaixo de cada resposta do Orbi. Área de toque de 44 px de altura no próprio botão
+// (no Android o hitSlop não vale fora da View pai).
+function ReportLink({ status, onPress }: { status?: ReportState; onPress: () => void }) {
+  if (status === 'sent') {
+    return (
+      <Txt size={12} color={C.sub} accessibilityLiveRegion="polite" style={{ marginTop: 6, marginLeft: 6 }}>
+        Valeu! A gente vai olhar essa resposta.
+      </Txt>
+    );
+  }
+  const sending = status === 'sending';
+  return (
+    <Tap
+      onPress={onPress}
+      disabled={sending}
+      haptic={false}
+      scaleTo={0.97}
+      accessibilityRole="button"
+      accessibilityState={{ disabled: sending, busy: sending }}
+      hitSlop={{ top: 4, left: 8, right: 8 }}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 5, alignSelf: 'flex-start', minHeight: 44, paddingVertical: 8, paddingHorizontal: 6 }}
+    >
+      <Feather name="flag" size={12} color={C.sub} />
+      <Txt size={12} color={C.sub}>
+        {sending ? 'Enviando…' : status === 'fail' ? 'Não deu para enviar. Toque para tentar de novo' : 'Reportar resposta'}
+      </Txt>
+    </Tap>
   );
 }
 

@@ -64,10 +64,12 @@ export default function Completo() {
     const owned = await ownsCompleto();
     setBusy(false);
     if (owned) {
-      update({ premium: true });
+      update({ premium: true, premiumMissAt: null });
       setMsg('Compra recuperada! O Ponte Completo está liberado.');
+    } else if (owned === null) {
+      setMsg('Não consegui falar com o Google Play agora. Confira a internet e tente de novo.');
     } else {
-      setMsg('Não encontramos uma compra nesta conta Google.');
+      setMsg('Não encontramos uma compra nesta conta Google. Se você comprou com outra conta, troque a conta no Google Play e tente de novo.');
     }
   }
 

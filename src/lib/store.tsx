@@ -28,6 +28,7 @@ export type AppState = {
   serverUrl: string;
   deviceId: string; // identificador anônimo, usado só para os limites do assistente
   premium: boolean; // comprou o Ponte Completo
+  premiumMissAt?: number | null; // quando a loja disse pela 1ª vez que não acha a compra (ver nextPremium)
   rateAlert: RateAlert | null; // alerta de cotação ativo
   reminders: boolean; // lembretes de prazo do checklist
   daily: boolean; // resumo diário e aviso "Voltar pra casa"
@@ -53,9 +54,11 @@ export const DEFAULT_SERVER = process.env.EXPO_PUBLIC_PONTE_SERVER || 'https://p
 // Endereços padrão antigos, que eram salvos no aparelho: passam a seguir o padrão atual.
 const OLD_DEFAULTS = ['http://localhost:8787', 'http://192.168.0.10:8787'];
 
-// Endereço em uso: o que a pessoa escreveu em Ajustes ou o padrão.
+// Endereço em uso: o que foi escrito em Ajustes (só em desenvolvimento) ou o padrão.
+// Na versão da loja o campo não aparece e um endereço salvo antes é ignorado.
+const IS_DEV = typeof __DEV__ !== 'undefined' && __DEV__;
 export function serverOf(state: AppState): string {
-  return (state.serverUrl || DEFAULT_SERVER).replace(/\/$/, '');
+  return ((IS_DEV && state.serverUrl) || DEFAULT_SERVER).replace(/\/$/, '');
 }
 
 export const initialState: AppState = {
@@ -70,6 +73,7 @@ export const initialState: AppState = {
   serverUrl: '', // vazio = DEFAULT_SERVER
   deviceId: '',
   premium: false,
+  premiumMissAt: null,
   rateAlert: null,
   reminders: false,
   daily: false,

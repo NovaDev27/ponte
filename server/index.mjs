@@ -22,6 +22,7 @@ const MAX_BODY_BYTES = 50_000;
 const CONTACT_EMAIL = process.env.CONTACT_EMAIL ?? '';
 const ERROR_LIMIT_DAY = 20; // relatórios de erro por aparelho
 const FEEDBACK_LIMIT_DAY = 5; // opiniões por aparelho
+const REPORT_LIMIT_DAY = 10; // respostas do Orbi reportadas por aparelho
 const FEEDBACK_WEBHOOK_URL = process.env.FEEDBACK_WEBHOOK_URL ?? '';
 // Opiniões por e-mail via Resend (resend.com). Sem domínio próprio, o remetente de teste
 // onboarding@resend.dev só entrega no e-mail da própria conta do Resend.
@@ -101,7 +102,7 @@ function checkGlobal() {
 setInterval(() => {
   const today = startOfDay();
   for (const [k, b] of buckets) if (b.dayStart !== today) buckets.delete(k);
-  for (const m of [errorCounts, feedbackCounts]) for (const [k, c] of m) if (c.day !== today) m.delete(k);
+  for (const m of [errorCounts, feedbackCounts, reportCounts]) for (const [k, c] of m) if (c.day !== today) m.delete(k);
 }, 3_600_000).unref();
 
 /* ---------- HTTP ---------- */
@@ -199,6 +200,7 @@ async function chat(messages, context) {
 // Conta envios por aparelho no dia (relatórios de erro, opiniões). false = passou do limite.
 const errorCounts = new Map(); // aparelho -> { day, count }
 const feedbackCounts = new Map();
+const reportCounts = new Map();
 function allowDaily(map, device, limit) {
   const today = startOfDay();
   const c = map.get(device);
@@ -277,6 +279,51 @@ async function receiveFeedback(req, res) {
   send(res, 200, { ok: true });
 }
 
+// "Reportar resposta" do Orbi (política de IA generativa da Google Play).
+// Chega só o texto da resposta, sem a pergunta e sem dados pessoais. Vai para o log ("[report]")
+// e, se configurado, pelo mesmo e-mail/webhook das opiniões.
+async function receiveReport(req, res) {
+  if (APP_TOKEN && req.headers['x-ponte-token'] !== APP_TOKEN) return send(res, 401, { error: 'Acesso não autorizado.' });
+  const device = String(req.headers['x-ponte-device'] ?? '').slice(0, 64) || 'sem-id';
+
+  let body;
+  try {
+    body = JSON.parse(await readBody(req));
+  } catch {
+    return send(res, 400, { error: 'Pedido inválido.' });
+  }
+  const resposta = typeof body.resposta === 'string' ? body.resposta.trim().slice(0, 2000) : '';
+  if (!resposta) return send(res, 400, { error: 'Resposta vazia.' });
+  if (!allowDaily(reportCounts, device, REPORT_LIMIT_DAY)) return send(res, 429, { error: 'Limite de respostas reportadas hoje atingido. Obrigado!' });
+
+  const version = typeof body.version === 'string' ? body.version.slice(0, 20) : '?';
+  console.log(`[report] v${version} | ${resposta.replace(/\s+/g, ' ')}`);
+  if (RESEND_API_KEY && FEEDBACK_EMAIL_TO) {
+    fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}` },
+      body: JSON.stringify({
+        from: FEEDBACK_EMAIL_FROM,
+        to: [FEEDBACK_EMAIL_TO],
+        subject: 'Resposta do Orbi reportada na Ponte',
+        text: `Versão do app: ${version}\n\nResposta reportada:\n${resposta}\n`,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    })
+      .then((r) => { if (!r.ok) console.error('E-mail de report falhou: HTTP', r.status); })
+      .catch((err) => console.error('E-mail de report falhou:', err instanceof Error ? err.message : err));
+  }
+  if (FEEDBACK_WEBHOOK_URL) {
+    fetch(FEEDBACK_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: `**Resposta do Orbi reportada** (v${version})\n${resposta}`.slice(0, 1900) }),
+      signal: AbortSignal.timeout(10_000),
+    }).catch((err) => console.error('Webhook de report falhou:', err instanceof Error ? err.message : err));
+  }
+  send(res, 200, { ok: true });
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     cors(res);
@@ -296,6 +343,7 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'POST' && req.url === '/erro') return reportError(req, res);
   if (req.method === 'POST' && req.url === '/feedback') return receiveFeedback(req, res);
+  if (req.method === 'POST' && req.url === '/report') return receiveReport(req, res);
   if (req.method !== 'POST' || req.url !== '/chat') return send(res, 404, { error: 'Rota não encontrada.' });
 
   // 1. Só o app da Ponte pode usar

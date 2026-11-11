@@ -110,8 +110,8 @@ export default function Alerta() {
       </Card>
 
       <Card tone="accent">
-        <H>Dica: converta aos poucos</H>
-        <P>Em vez de esperar o momento perfeito, muita gente converte uma parte por mês. Assim o preço médio fica mais estável.</P>
+        <H>Dica: compare as taxas antes de converter</H>
+        <P>Além da cotação, o quanto chega lá fora depende da soma de IOF, spread e tarifas. Compare na aba Câmbio antes de converter. A Ponte não indica o melhor momento para comprar moeda.</P>
       </Card>
 
       <P muted style={{ fontSize: 12 }}>O celular decide quando a checagem em segundo plano roda (pode levar algumas horas). Abrindo o app, a conferência é na hora.</P>

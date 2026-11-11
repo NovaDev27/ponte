@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { Platform } from 'react-native';
+import { COMPLETO_GRATIS } from './completo';
 import { brl } from './format';
 import { notifyNow, syncDaily } from './notify';
 import { fetchRates, initialState, KEY, type AppState, type RateAlert, type Rates } from './store';
@@ -42,7 +43,9 @@ if (Platform.OS !== 'web') {
       const raw = await AsyncStorage.getItem(KEY);
       const state = raw ? (JSON.parse(raw) as Partial<AppState>) : null;
       const rates = await fetchRates();
-      await checkAlert(state?.rateAlert ?? null, rates);
+      // O alerta de cotação é do Ponte Completo: sem a compra, a tarefa só cuida do resumo diário.
+      const completo = !!state?.premium || COMPLETO_GRATIS;
+      await checkAlert(completo ? state?.rateAlert ?? null : null, rates);
       // Mantém o resumo com a cotação nova, mesmo sem abrir o app.
       if (state?.daily && rates?.live) {
         await syncDaily({ ...initialState, ...state, profile: { ...initialState.profile, ...state.profile } }, rates, true);

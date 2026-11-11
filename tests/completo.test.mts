@@ -72,3 +72,35 @@ describe('plano em PDF', () => {
     assert.match(html, /\* Stablecoin: só como meio de transferência/);
   });
 });
+
+describe('nextPremium (conferência da compra com o Google Play)', async () => {
+  const { nextPremium, PREMIUM_GRACE_MS } = await import('../src/lib/completo.ts');
+  const now = 1_800_000_000_000;
+
+  test('sem resposta da loja (null) não muda nada', () => {
+    assert.equal(nextPremium({ premium: true }, null, now), null);
+    assert.equal(nextPremium({ premium: false }, null, now), null);
+  });
+
+  test('a loja acha a compra: libera e esquece o "não achei"', () => {
+    assert.deepEqual(nextPremium({ premium: false }, true, now), { premium: true, premiumMissAt: null });
+    assert.deepEqual(nextPremium({ premium: true, premiumMissAt: now - 1000 }, true, now), { premium: true, premiumMissAt: null });
+    assert.equal(nextPremium({ premium: true, premiumMissAt: null }, true, now), null);
+  });
+
+  test('primeiro "não tem" só anota, não tira o Completo', () => {
+    assert.deepEqual(nextPremium({ premium: true }, false, now), { premium: true, premiumMissAt: now });
+  });
+
+  test('segundo "não tem" antes de 24 h não tira', () => {
+    assert.equal(nextPremium({ premium: true, premiumMissAt: now - PREMIUM_GRACE_MS + 60_000 }, false, now), null);
+  });
+
+  test('segundo "não tem" depois de 24 h tira (reembolso)', () => {
+    assert.deepEqual(nextPremium({ premium: true, premiumMissAt: now - PREMIUM_GRACE_MS }, false, now), { premium: false, premiumMissAt: null });
+  });
+
+  test('quem nunca comprou continua sem o Completo', () => {
+    assert.equal(nextPremium({ premium: false }, false, now), null);
+  });
+});

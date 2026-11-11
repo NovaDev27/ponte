@@ -152,7 +152,7 @@ function Result({ quiz, onRedo }: { quiz: CardQuiz; onRedo: () => void }) {
       id: 'global', role: 'Dia a dia', colors: [C.navy2, C.navy], fg: '#FFFFFF', title: 'Conta global', tag: country.currency,
       what: 'Cartão de débito de uma conta em moeda estrangeira, aberta pelo celular ainda no Brasil. Vários bancos e empresas oferecem.',
       cost: `IOF de ${num(f.iofPropria, 1)}% ao mandar dinheiro para a conta no seu nome, mais uma margem pequena (cerca de ${num(f.spreadGlobal, 1)}%). Na compra, o dinheiro já está em ${country.currency}.`,
-      how: ['Veja se o seu banco já tem conta global; se não, compare empresas autorizadas.', 'Peça o cartão físico com antecedência: a entrega pode levar semanas.', 'Converta aos poucos para não depender da cotação de um dia só.'],
+      how: ['Veja se o seu banco já tem conta global; se não, compare empresas autorizadas.', 'Peça o cartão físico com antecedência: a entrega pode levar semanas.', 'Antes de converter, compare o custo total (IOF, spread e tarifas) na aba Câmbio.'],
       good: 'Compras e saques do dia a dia, principalmente nas primeiras semanas.',
       watch: 'Confira o limite de saques grátis por mês e a tarifa depois dele.',
     },

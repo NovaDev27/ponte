@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { checkAlert, syncAlertTask } from '../lib/alerts';
 import { listenPurchases, ownsCompleto } from '../lib/billing';
-import { hasCompleto } from '../lib/completo';
+import { hasCompleto, nextPremium } from '../lib/completo';
 import { listenRouteTaps, syncDaily, syncReminders } from '../lib/notify';
 import { useApp } from '../lib/store';
 
@@ -10,17 +10,25 @@ export function Background() {
   const { ready, state, rates, update } = useApp();
   const completo = hasCompleto(state);
 
-  // Compra: escuta o Google Play e recupera compras feitas antes (reinstalação).
+  // Compra: escuta o Google Play e, ao abrir o app, confere com a loja.
+  // Recupera compras feitas antes (reinstalação) e tira o Completo se a compra sumiu (reembolso),
+  // com a regra de segurança de nextPremium (duas conferências com 24 h entre elas).
+  const latest = useRef(state);
+  useEffect(() => {
+    latest.current = state;
+  });
   useEffect(() => {
     if (!ready) return;
     let stop = () => {};
     let alive = true;
-    listenPurchases(() => update({ premium: true }), () => {}).then((s) => {
+    listenPurchases(() => update({ premium: true, premiumMissAt: null }), () => {}).then((s) => {
       if (alive) stop = s;
       else s();
     });
     ownsCompleto().then((owned) => {
-      if (owned && alive) update({ premium: true });
+      if (!alive) return;
+      const change = nextPremium(latest.current, owned, Date.now());
+      if (change) update(change);
     });
     return () => {
       alive = false;

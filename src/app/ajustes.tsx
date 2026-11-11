@@ -9,6 +9,9 @@ import { ensurePermission, notifySupported, sendDailyTest } from '../lib/notify'
 import { DEFAULT_SERVER, useApp } from '../lib/store';
 import { C } from '../lib/theme';
 
+// Páginas públicas (política, termos) no GitHub Pages: abrem na hora, sem esperar o servidor acordar.
+const SITE = 'https://novadev27.github.io/ponte';
+
 export default function Ajustes() {
   const { state, update, setProfile, reset, rates, refreshRates } = useApp();
   const [confirm, setConfirm] = useState(false);
@@ -88,19 +91,22 @@ export default function Ajustes() {
         <Btn label="Voltar às taxas padrão" kind="ghost" onPress={() => { update({ fees: DEFAULT_FEES }); setVersion((v) => v + 1); }} />
       </Card>
 
-      <Card>
-        <H>Servidor do assistente</H>
-        <P muted style={{ fontSize: 13 }}>
-          Endereço do servidor que conversa com a IA. Deixe em branco para usar o servidor padrão da Ponte.
-        </P>
-        <Field value={url} onChangeText={setUrl} keyboard="url" placeholder={DEFAULT_SERVER} />
-        <Btn label="Salvar endereço" kind="ghost" onPress={() => update({ serverUrl: url.trim() })} />
-      </Card>
+      {/* Trocar o servidor do Orbi é só para desenvolvimento: na versão da loja o app usa sempre o servidor da Ponte. */}
+      {__DEV__ ? (
+        <Card>
+          <H>Servidor do assistente</H>
+          <P muted style={{ fontSize: 13 }}>
+            Endereço do servidor que conversa com a IA. Deixe em branco para usar o servidor padrão da Ponte.
+          </P>
+          <Field value={url} onChangeText={setUrl} keyboard="url" placeholder={DEFAULT_SERVER} />
+          <Btn label="Salvar endereço" kind="ghost" onPress={() => update({ serverUrl: url.trim() })} />
+        </Card>
+      ) : null}
 
       <Card>
         <H>Sobre a Ponte</H>
-        <Btn label="Política de Privacidade" kind="ghost" icon="shield" onPress={() => Linking.openURL(`${DEFAULT_SERVER}/privacidade`)} />
-        <Btn label="Termos de Uso" kind="ghost" icon="file-text" onPress={() => Linking.openURL(`${DEFAULT_SERVER}/termos`)} />
+        <Btn label="Política de Privacidade" kind="ghost" icon="shield" onPress={() => Linking.openURL(`${SITE}/privacidade/`)} />
+        <Btn label="Termos de Uso" kind="ghost" icon="file-text" onPress={() => Linking.openURL(`${SITE}/termos/`)} />
         <P muted style={{ fontSize: 13, textAlign: 'center' }}>Versão {Constants.expoConfig?.version ?? '?'}</P>
       </Card>
 

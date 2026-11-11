@@ -59,9 +59,10 @@ export function privacyPage(email) {
 <p>O nosso servidor repassa as mensagens e o contexto para a <strong>Groq</strong> (empresa que fornece o modelo de inteligência artificial), que gera a resposta. A Groq trata esses dados conforme a política de privacidade dela, disponível em <a href="https://groq.com/privacy-policy">groq.com/privacy-policy</a>. O nosso servidor <strong>não guarda</strong> o conteúdo das conversas. O código do aparelho e o endereço IP ficam só na memória do servidor, para contar o limite de perguntas, e são descartados em até um dia.</p>
 <p><strong>Não escreva no Assistente</strong> dados pessoais como nome completo, documentos, senhas ou dados bancários.</p>
 
-<h2>3. Relatórios de erro e opiniões</h2>
+<h2>3. Relatórios de erro, opiniões e respostas reportadas</h2>
 <p>Se o app travar, ele pode enviar ao nosso servidor um relatório técnico: a mensagem do erro, a tela onde aconteceu, o sistema (Android, iOS ou web) e a versão do app. O relatório não inclui os seus dados de planejamento nem as suas conversas. Usamos isso só para corrigir problemas.</p>
 <p>Se você usar a tela <strong>Sua opinião</strong>, enviamos a nota e os textos que você escrever, junto com a versão do app. Não pedimos nome nem e-mail. As opiniões ficam no registro do servidor e são encaminhadas por e-mail para a equipe da Ponte, usando o serviço de envio de e-mails Resend, só para melhorar o app. Não escreva dados pessoais nesse formulário.</p>
+<p>Se você tocar em <strong>Reportar resposta</strong> embaixo de uma resposta do Orbi, enviamos ao nosso servidor só o texto daquela resposta e a versão do app, sem a sua pergunta. O texto fica no registro do servidor e é encaminhado por e-mail para a equipe da Ponte, pelo serviço de envio de e-mails Resend, só para revisarmos respostas ofensivas ou erradas. O código anônimo do aparelho fica só na memória do servidor, para contar o limite de envios. A resposta pode repetir algo que você escreveu na pergunta.</p>
 
 <h2>4. Ponte Completo, alertas, lembretes e resumo diário</h2>
 <p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
@@ -119,6 +120,7 @@ export function deletionPage(email) {
   <li><strong>Conversas com o assistente Orbi:</strong> não são guardadas pelo nosso servidor. São repassadas à Groq só para gerar a resposta.</li>
   <li><strong>Código anônimo do aparelho e endereço IP:</strong> ficam só na memória do servidor, para contar o limite de perguntas, e são descartados automaticamente em até 1 dia.</li>
   <li><strong>Relatórios de erro</strong> (mensagem técnica, tela, sistema e versão do app, sem dados pessoais): ficam no registro do servidor e são apagados automaticamente em até 30 dias.</li>
+  <li><strong>Respostas do Orbi reportadas:</strong> só o texto da resposta, sem a pergunta. Ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
   <li><strong>Opiniões enviadas em "Sua opinião":</strong> ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
   <li><strong>Compra do Ponte Completo:</strong> é processada e registrada pelo Google Play, conforme a política do Google. A Ponte não guarda dados de pagamento.</li>
 </ul>
