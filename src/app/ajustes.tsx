@@ -61,6 +61,19 @@ export default function Ajustes() {
       </Card>
 
       <Card>
+        <H>Mascote Orbi</H>
+        <P muted style={{ fontSize: 13 }}>
+          A luazinha que pensa, comemora e reage na aba do assistente. Desligado, o assistente continua igual, só sem o mascote.
+        </P>
+        <Segment
+          options={[{ value: true, label: 'Ligado' }, { value: false, label: 'Desligado' }]}
+          value={state.mascot}
+          onChange={(on: boolean) => update({ mascot: on })}
+          color={C.navy}
+        />
+      </Card>
+
+      <Card>
         <H>Endereço da acomodação</H>
         <P muted style={{ fontSize: 13 }}>
           Com o resumo ligado, quando o celular já estiver no fuso do destino, chega todo dia às 19h (no horário de lá) o aviso &quot;Voltar pra casa&quot;. Ao tocar no celular, a rota abre no mapa. O endereço fica só no seu aparelho.

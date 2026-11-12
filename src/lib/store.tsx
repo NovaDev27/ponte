@@ -32,6 +32,7 @@ export type AppState = {
   rateAlert: RateAlert | null; // alerta de cotação ativo
   reminders: boolean; // lembretes de prazo do checklist
   daily: boolean; // resumo diário e aviso "Voltar pra casa"
+  mascot: boolean; // mostra o Orbi animado na aba do assistente
   cardQuiz: CardQuiz | null; // respostas do "Qual cartão levar"
 };
 
@@ -77,6 +78,7 @@ export const initialState: AppState = {
   rateAlert: null,
   reminders: false,
   daily: false,
+  mascot: true,
   cardQuiz: null,
 };
 

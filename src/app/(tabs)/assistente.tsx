@@ -6,7 +6,7 @@ import Animated, {
   FadeIn, FadeInDown, FadeInLeft, FadeInRight, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Orbi } from '../../components/Orbi';
+import { Orbi, type OrbiMood } from '../../components/Orbi';
 import { useKeyboardOpen } from '../../components/TabBar';
 import { TabSpace, Tap, Txt, s as ui } from '../../components/ui';
 import { getCountry } from '../../data/countries';
@@ -17,7 +17,7 @@ import { serverOf, useApp } from '../../lib/store';
 import { C, FONT, R } from '../../lib/theme';
 
 // `ok` marca uma resposta de verdade do Orbi (não um aviso de erro): só ela pode ser reportada.
-type Msg = { role: 'user' | 'assistant'; content: string; ok?: boolean };
+type Msg = { role: 'user' | 'assistant'; content: string; ok?: boolean; broke?: boolean };
 type ReportState = 'sending' | 'sent' | 'fail';
 
 const SUGGESTIONS = [
@@ -57,7 +57,11 @@ export default function Assistente() {
     return () => clearTimeout(t);
   }, [busy]);
 
-  const mood = busy ? 'thinking' : cheer ? 'happy' : 'idle';
+  // Acordando o servidor = Orbi sonolento; falha de rede ou do servidor = Orbi triste (aviso de limite, não).
+  const last = msgs[msgs.length - 1];
+  const failed = !busy && last?.role === 'assistant' && !!last.broke;
+  const mood: OrbiMood = busy ? (slow ? 'sleeping' : 'thinking') : failed ? 'sad' : cheer ? 'happy' : 'idle';
+  const mascot = state.mascot;
 
   async function send(content: string) {
     const q = content.trim();
@@ -83,12 +87,13 @@ export default function Assistente() {
       const json = await res.json();
       const real = typeof json.reply === 'string';
       const reply = real ? json.reply : json.error ?? 'Não consegui responder agora.';
-      setMsgs((m) => [...m, { role: 'assistant', content: reply, ok: real && res.ok }]);
+      setMsgs((m) => [...m, { role: 'assistant', content: reply, ok: real && res.ok, broke: res.status >= 500 }]);
       if (res.ok) setCheer(true);
     } catch {
       setMsgs((m) => [...m, {
         role: 'assistant',
         content: 'Não consegui falar com o Orbi agora. Confira a internet e tente de novo em instantes.',
+        broke: true,
       }]);
     } finally {
       setBusy(false);
@@ -124,7 +129,7 @@ export default function Assistente() {
       {/* No Android o app é edge-to-edge e a janela não encolhe com o teclado, então o padding vale para as duas plataformas. */}
       <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
         <View style={{ paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          {msgs.length > 0 ? <Orbi size={52} mood={mood} /> : null}
+          {msgs.length > 0 && mascot ? <Orbi size={52} mood={mood} /> : null}
           <View style={{ flex: 1, gap: 2 }}>
             <Txt w="mono" size={11} color={C.sub} style={{ letterSpacing: 1.2 }}>PASSO 4 · ASSISTENTE</Txt>
             <Txt w="heavy" size={msgs.length > 0 ? 24 : 34} style={{ lineHeight: msgs.length > 0 ? 28 : 38 }}>Orbi</Txt>
@@ -146,12 +151,12 @@ export default function Assistente() {
         >
           {msgs.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingTop: 40, paddingBottom: 12 }}>
-              <Orbi size={150} mood={mood} talk />
+              {mascot ? <Orbi size={150} mood={mood} talk /> : null}
               <Txt w="display" size={22} style={{ marginTop: 8 }}>Oi! Eu sou o Orbi 👋</Txt>
               <Txt color={C.sub} style={{ textAlign: 'center', maxWidth: 300 }}>
                 Pergunte qualquer coisa sobre o seu intercâmbio em {city.name}. Eu explico, comparo e aviso dos riscos.
               </Txt>
-              <Txt w="mono" size={11} color={C.faint} style={{ letterSpacing: 0.8 }}>DICA: TOQUE EM MIM 😉</Txt>
+              {mascot ? <Txt w="mono" size={11} color={C.faint} style={{ letterSpacing: 0.8 }}>DICA: TOQUE EM MIM 😉</Txt> : null}
               <View style={{ gap: 8, width: '100%', marginTop: 10 }}>
                 {SUGGESTIONS.map((t, i) => (
                   <Animated.View key={t} entering={FadeInDown.duration(420).delay(200 + i * 80)}>
