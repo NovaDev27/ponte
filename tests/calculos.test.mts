@@ -2,8 +2,8 @@
 // Usa o executor de testes do próprio Node (sem dependências extras).
 import assert from 'node:assert/strict';
 import { describe, test } from 'node:test';
-import { phasesFor } from '../src/data/checklist.ts';
-import { COST_LABELS, COUNTRIES, CURRENCIES, getCountry } from '../src/data/countries.ts';
+import { migrateDone, phasesFor } from '../src/data/checklist.ts';
+import { COST_LABELS, COUNTRIES, CURRENCIES, getCountry, inCountry, ofCountry, theCountry } from '../src/data/countries.ts';
 import { OFFICIAL_LINKS } from '../src/data/links.ts';
 import { DEFAULT_FEES, highlightOf, METHODS, quote } from '../src/data/methods.ts';
 import { brl, money, num, parseNum, quoteUnit, rateLabel } from '../src/lib/format.ts';
@@ -134,6 +134,43 @@ describe('dados dos países', () => {
       assert.ok(ids.length > 0, c.code);
       assert.equal(new Set(ids).size, ids.length, `ids repetidos em ${c.code}`);
     }
+  });
+
+  test('checklist: nenhuma tarefa aparece duas vezes com o mesmo texto', () => {
+    for (const c of COUNTRIES) {
+      const texts = phasesFor(c).flatMap((p) => p.tasks.map((t) => t.text));
+      assert.equal(new Set(texts).size, texts.length, `texto repetido em ${c.code}`);
+    }
+  });
+
+  test('checklist: tirar a tarefa repetida não muda o id das outras', () => {
+    const ids = phasesFor(getCountry('CA')).at(-1)!.tasks.map((t) => t.id);
+    assert.deepEqual(ids, ['CA-a0', 'CA-a2', 'contalocal', 'curriculo', 'emergencia']);
+  });
+
+  test('preposição do país: na, no, nos e em', () => {
+    assert.equal(inCountry(getCountry('IE')), 'na Irlanda');
+    assert.equal(inCountry(getCountry('CA')), 'no Canadá');
+    assert.equal(inCountry(getCountry('US')), 'nos Estados Unidos');
+    assert.equal(inCountry(getCountry('PT')), 'em Portugal');
+    assert.equal(inCountry(getCountry('MT')), 'em Malta');
+    assert.equal(ofCountry(getCountry('AU')), 'da Austrália');
+    assert.equal(ofCountry(getCountry('JP')), 'do Japão');
+    assert.equal(ofCountry(getCountry('US')), 'dos Estados Unidos');
+    assert.equal(ofCountry(getCountry('PT')), 'de Portugal');
+    assert.equal(inCountry(getCountry('ZA')), 'na África do Sul');
+    assert.equal(inCountry(getCountry('GB')), 'no Reino Unido');
+    assert.equal(theCountry(getCountry('IE')), 'a Irlanda');
+    assert.equal(theCountry(getCountry('US')), 'os Estados Unidos');
+    assert.equal(theCountry(getCountry('PT')), 'Portugal');
+  });
+
+  test('carimbo antigo da tarefa repetida passa para a tarefa fixa', () => {
+    assert.deepEqual(migrateDone({ 'CA-a1': true, visto: true }), { 'CA-a1': true, visto: true, contalocal: true });
+    const nada = { 'CA-a0': true, 'IE-a1': true };
+    assert.equal(migrateDone(nada), nada); // CA-a0 é o SIN e a Irlanda não tinha repetida
+    const feito = { 'AU-a1': true, contalocal: true };
+    assert.equal(migrateDone(feito), feito);
   });
 });
 

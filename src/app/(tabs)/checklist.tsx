@@ -5,7 +5,7 @@ import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withSprin
 import { PlanButton } from '../../components/PlanButton';
 import { Badge, Card, Hero, P, Ring, Screen, Segment, Tap, Txt } from '../../components/ui';
 import { phaseDue, phasesFor, type Task } from '../../data/checklist';
-import { getCountry } from '../../data/countries';
+import { getCountry, inCountry } from '../../data/countries';
 import { hasCompleto } from '../../lib/completo';
 import { dateLabel } from '../../lib/format';
 import { bump, success, tap } from '../../lib/motion';
@@ -32,7 +32,7 @@ export default function Checklist() {
   const currentPhase = phases.find((ph) => ph.tasks.some((t) => !state.done[t.id]))?.id;
 
   return (
-    <Screen title="Checklist" eyebrow="Passo 3 · Checklist" eyebrowColor={COLOR} subtitle={`Do planejamento à primeira semana em ${country.name}`}>
+    <Screen title="Checklist" eyebrow="Passo 3 · Checklist" eyebrowColor={COLOR} subtitle={`Do planejamento à primeira semana ${inCountry(country)}`}>
       <Hero style={{ flexDirection: 'row', alignItems: 'center', gap: 18 }}>
         <Ring value={done / all.length} size={92} stroke={9} color={C.navyLight} track="rgba(244,242,238,0.12)">
           <Txt w="heavy" size={22} color={C.cream}>{Math.round((done / all.length) * 100)}%</Txt>

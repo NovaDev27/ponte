@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { migrateDone } from '../data/checklist';
 import { DEFAULT_FEES, Fees } from '../data/methods';
 import { nextMonths } from './format';
 import { fetchRates, FALLBACK_RATES, type Rates } from './rates';
@@ -110,6 +111,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setState({
             ...initialState,
             ...saved,
+            done: migrateDone(saved.done ?? {}),
             profile: { ...initialState.profile, ...(saved.profile ?? {}) },
             fees: { ...DEFAULT_FEES, ...(saved.fees ?? {}) },
             deviceId: saved.deviceId || newDeviceId(),

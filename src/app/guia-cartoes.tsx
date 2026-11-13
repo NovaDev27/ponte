@@ -5,7 +5,7 @@ import Animated, { FadeIn, FadeInDown, FadeInRight, LinearTransition, ZoomIn } f
 import { CardArt } from '../components/CardArt';
 import { Bar, Btn, Card, Chip, IconName, Label, P, Screen, Tap, Txt } from '../components/ui';
 import { BANKS, bankOf } from '../data/banks';
-import { getCountry } from '../data/countries';
+import { getCountry, inCountry } from '../data/countries';
 import { quote } from '../data/methods';
 import { brl, num } from '../lib/format';
 import { success } from '../lib/motion';
@@ -166,7 +166,7 @@ function Result({ quiz, onRedo }: { quiz: CardQuiz; onRedo: () => void }) {
     },
     {
       id: 'local', role: 'Depois que chegar', colors: [C.ink2, C.ink], fg: '#FFFFFF', title: `Banco local`, tag: country.name.toUpperCase(),
-      what: `Conta e cartão abertos em ${country.name}, depois que você chega.`,
+      what: `Conta e cartão abertos ${inCountry(country)}, depois que você chega.`,
       cost: `Sem IOF nas compras: o dinheiro já está em ${country.currency}. O custo fica no envio do Brasil para essa conta (${num(f.iofPropria, 1)}% de IOF se a conta for sua).`,
       how: ['Leve comprovante de endereço e de matrícula: os bancos costumam pedir.', 'Veja no checklist o que resolver na primeira semana.'],
       good: 'Quem fica meses: salário, aluguel e contas.',

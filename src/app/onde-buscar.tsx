@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Image, Linking, View } from 'react-native';
 import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Card, Chip, ChipRow, P, Screen, Section, Tap, Txt } from '../components/ui';
-import { COUNTRIES, getCountry } from '../data/countries';
+import { COUNTRIES, getCountry, ofCountry } from '../data/countries';
 import { GENERAL_LINKS, LINK_KINDS, LinkKind, OFFICIAL_LINKS, OfficialLink } from '../data/links';
 import { useApp } from '../lib/store';
 import { C, R } from '../lib/theme';
@@ -44,7 +44,7 @@ export default function OndeBuscar() {
 
       <Card tone="night">
         <Txt w="display" size={17} color={C.cream}>Antes de pagar uma escola ou agência</Txt>
-        <Txt size={14} color={C.creamSub}>Confira se a escola aparece na lista oficial de credenciadas de {country.name}. Desconfie de promessa de visto garantido e de pagamento por fora.</Txt>
+        <Txt size={14} color={C.creamSub}>Confira se a escola aparece na lista oficial de credenciadas {ofCountry(country)}. Desconfie de promessa de visto garantido e de pagamento por fora.</Txt>
       </Card>
 
       <View style={{ gap: 8 }}>

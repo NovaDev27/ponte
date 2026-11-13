@@ -3,7 +3,7 @@ import React from 'react';
 import { Linking, View } from 'react-native';
 import { PlacesCarousel } from '../../components/Places';
 import { Btn, Card, H, Icon, Label, P, Row, Screen, Tap, Txt } from '../../components/ui';
-import { getCountry, STYLE_FACTOR } from '../../data/countries';
+import { getCountry, STYLE_FACTOR, theCountry } from '../../data/countries';
 import { brl, money, rateLabel } from '../../lib/format';
 import { rateOf, useApp } from '../../lib/store';
 import { C } from '../../lib/theme';
@@ -63,7 +63,7 @@ export default function Pais() {
         <P muted style={{ textAlign: 'center' }}>Este já é o seu destino.</P>
       ) : (
         <Btn
-          label={`Escolher ${country.name} como destino`}
+          label={`Escolher ${theCountry(country)} como destino`}
           onPress={() => {
             setProfile({ country: country.code, city: 0 });
             router.back();

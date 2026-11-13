@@ -5,13 +5,16 @@ export type City = { name: string; costs: Record<CostKey, number> };
 export type Country = {
   code: string;
   name: string;
+  art: 'a' | 'o' | 'os' | ''; // artigo do nome: "na Irlanda", "no Canadá", "nos Estados Unidos", "em Portugal"
   flag: string;
   currency: string;
   cities: City[];
   seguro: number; // seguro saúde/viagem, por mês, moeda local
   visa: string;
   work: string;
-  arrival: string[]; // registros e números para tirar ao chegar
+  // Registros e números para tirar ao chegar. Se o texto for IGUAL ao de uma tarefa fixa do checklist
+  // (ex.: 'Abrir conta em banco local'), ele não repete na lista: veja phasesFor em checklist.ts.
+  arrival: string[];
   emergency: string;
   site: { label: string; url: string };
   tip: string;
@@ -23,7 +26,7 @@ const c = (moradia: number, transporte: number, alimentacao: number, celular: nu
 
 export const COUNTRIES: Country[] = [
   {
-    code: 'IE', name: 'Irlanda', flag: '🇮🇪', currency: 'EUR', seguro: 40,
+    code: 'IE', name: 'Irlanda', art: 'a', flag: '🇮🇪', currency: 'EUR', seguro: 40,
     cities: [
       { name: 'Dublin', costs: c(900, 100, 300, 15, 120) },
       { name: 'Cork', costs: c(650, 70, 280, 15, 100) },
@@ -37,7 +40,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Aluguel em Dublin é o maior gasto. Reserve 2 a 4 semanas de hospedagem temporária e procure quarto já lá.',
   },
   {
-    code: 'CA', name: 'Canadá', flag: '🇨🇦', currency: 'CAD', seguro: 90,
+    code: 'CA', name: 'Canadá', art: 'o', flag: '🇨🇦', currency: 'CAD', seguro: 90,
     cities: [
       { name: 'Toronto', costs: c(1200, 156, 450, 45, 150) },
       { name: 'Vancouver', costs: c(1250, 110, 450, 45, 150) },
@@ -51,7 +54,7 @@ export const COUNTRIES: Country[] = [
     tip: 'O inverno pede roupa adequada. Compre lá, em brechós ou lojas de desconto, que sai mais barato que levar do Brasil.',
   },
   {
-    code: 'PT', name: 'Portugal', flag: '🇵🇹', currency: 'EUR', seguro: 35,
+    code: 'PT', name: 'Portugal', art: '', flag: '🇵🇹', currency: 'EUR', seguro: 35,
     cities: [
       { name: 'Lisboa', costs: c(600, 40, 250, 12, 100) },
       { name: 'Porto', costs: c(450, 40, 230, 12, 90) },
@@ -65,7 +68,7 @@ export const COUNTRIES: Country[] = [
     tip: 'O passe Navegante em Lisboa custa pouco e cobre metrô, ônibus e trens da região.',
   },
   {
-    code: 'AU', name: 'Austrália', flag: '🇦🇺', currency: 'AUD', seguro: 70,
+    code: 'AU', name: 'Austrália', art: 'a', flag: '🇦🇺', currency: 'AUD', seguro: 70,
     cities: [
       { name: 'Sydney', costs: c(1300, 200, 500, 35, 200) },
       { name: 'Melbourne', costs: c(1100, 180, 480, 35, 180) },
@@ -79,7 +82,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Aluguel costuma ser anunciado por semana. Multiplique por 4,33 para ter o valor mensal.',
   },
   {
-    code: 'GB', name: 'Reino Unido', flag: '🇬🇧', currency: 'GBP', seguro: 40,
+    code: 'GB', name: 'Reino Unido', art: 'o', flag: '🇬🇧', currency: 'GBP', seguro: 40,
     cities: [
       { name: 'Londres', costs: c(950, 180, 280, 12, 150) },
       { name: 'Manchester', costs: c(600, 80, 250, 12, 120) },
@@ -93,7 +96,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Em Londres, um cartão contactless de débito funciona direto no metrô, sem precisar de Oyster.',
   },
   {
-    code: 'US', name: 'Estados Unidos', flag: '🇺🇸', currency: 'USD', seguro: 120,
+    code: 'US', name: 'Estados Unidos', art: 'os', flag: '🇺🇸', currency: 'USD', seguro: 120,
     cities: [
       { name: 'Nova York', costs: c(1500, 132, 500, 40, 200) },
       { name: 'Boston', costs: c(1300, 90, 450, 40, 180) },
@@ -107,7 +110,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Seguro saúde é caro e essencial. Uma consulta sem seguro pode custar centenas de dólares.',
   },
   {
-    code: 'NZ', name: 'Nova Zelândia', flag: '🇳🇿', currency: 'NZD', seguro: 60,
+    code: 'NZ', name: 'Nova Zelândia', art: 'a', flag: '🇳🇿', currency: 'NZD', seguro: 60,
     cities: [
       { name: 'Auckland', costs: c(1100, 200, 450, 40, 160) },
       { name: 'Wellington', costs: c(1000, 180, 430, 40, 150) },
@@ -120,7 +123,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Supermercados de desconto e feiras de bairro ajudam muito no custo de comida.',
   },
   {
-    code: 'MT', name: 'Malta', flag: '🇲🇹', currency: 'EUR', seguro: 30,
+    code: 'MT', name: 'Malta', art: '', flag: '🇲🇹', currency: 'EUR', seguro: 30,
     cities: [
       { name: "St. Julian's / Sliema", costs: c(550, 20, 250, 15, 120) },
       { name: 'Valletta', costs: c(500, 20, 240, 15, 110) },
@@ -133,7 +136,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Com o cartão Tallinja personalizado, o transporte público para residentes é gratuito.',
   },
   {
-    code: 'ES', name: 'Espanha', flag: '🇪🇸', currency: 'EUR', seguro: 35,
+    code: 'ES', name: 'Espanha', art: 'a', flag: '🇪🇸', currency: 'EUR', seguro: 35,
     cities: [
       { name: 'Madri', costs: c(500, 20, 250, 12, 100) },
       { name: 'Barcelona', costs: c(550, 22, 260, 12, 110) },
@@ -147,7 +150,7 @@ export const COUNTRIES: Country[] = [
     tip: 'O empadronamiento abre portas: saúde pública, transporte com desconto e outros serviços.',
   },
   {
-    code: 'DE', name: 'Alemanha', flag: '🇩🇪', currency: 'EUR', seguro: 120,
+    code: 'DE', name: 'Alemanha', art: 'a', flag: '🇩🇪', currency: 'EUR', seguro: 120,
     cities: [
       { name: 'Berlim', costs: c(650, 58, 280, 15, 110) },
       { name: 'Munique', costs: c(800, 58, 300, 15, 120) },
@@ -160,7 +163,7 @@ export const COUNTRIES: Country[] = [
     tip: 'O Deutschlandticket dá acesso ao transporte regional do país inteiro por um preço mensal fixo.',
   },
   {
-    code: 'FR', name: 'França', flag: '🇫🇷', currency: 'EUR', seguro: 35,
+    code: 'FR', name: 'França', art: 'a', flag: '🇫🇷', currency: 'EUR', seguro: 35,
     cities: [
       { name: 'Paris', costs: c(750, 88, 300, 15, 130) },
       { name: 'Lyon', costs: c(500, 70, 270, 15, 110) },
@@ -173,7 +176,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Estudantes podem receber auxílio de moradia da CAF. Vale pedir logo nas primeiras semanas.',
   },
   {
-    code: 'JP', name: 'Japão', flag: '🇯🇵', currency: 'JPY', seguro: 3000,
+    code: 'JP', name: 'Japão', art: 'o', flag: '🇯🇵', currency: 'JPY', seguro: 3000,
     cities: [
       { name: 'Tóquio', costs: c(80000, 10000, 45000, 3000, 15000) },
       { name: 'Osaka', costs: c(60000, 8000, 40000, 3000, 12000) },
@@ -186,7 +189,7 @@ export const COUNTRIES: Country[] = [
     tip: 'Share houses saem bem mais baratas que apartamentos e já vêm mobiliadas.',
   },
   {
-    code: 'ZA', name: 'África do Sul', flag: '🇿🇦', currency: 'ZAR', seguro: 600,
+    code: 'ZA', name: 'África do Sul', art: 'a', flag: '🇿🇦', currency: 'ZAR', seguro: 600,
     cities: [
       { name: 'Cidade do Cabo', costs: c(7000, 1200, 4000, 400, 1500) },
       { name: 'Joanesburgo', costs: c(6500, 1500, 4000, 400, 1500) },
@@ -216,3 +219,10 @@ export function getCountry(code: string): Country {
 }
 
 export const CURRENCIES = Array.from(new Set(COUNTRIES.map((x) => x.currency)));
+
+// "na Irlanda", "no Canadá", "nos Estados Unidos", "em Portugal".
+export const inCountry = (x: Country) => (x.art ? `n${x.art} ${x.name}` : `em ${x.name}`);
+// "da Irlanda", "do Canadá", "dos Estados Unidos", "de Portugal".
+export const ofCountry = (x: Country) => (x.art ? `d${x.art} ${x.name}` : `de ${x.name}`);
+// "a Irlanda", "o Canadá", "os Estados Unidos", "Portugal".
+export const theCountry = (x: Country) => (x.art ? `${x.art} ${x.name}` : x.name);

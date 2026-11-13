@@ -1,4 +1,4 @@
-import type { Country } from './countries';
+import { COUNTRIES, type Country } from './countries';
 
 export type Task = { id: string; text: string };
 export type Phase = { id: string; title: string; when: string; tasks: Task[] };
@@ -62,15 +62,36 @@ const BASE: Phase[] = [
   },
 ];
 
+// Tarefas da primeira semana que valem para todo país.
+function fixedTasks(country: Country): Task[] {
+  return [
+    { id: 'contalocal', text: 'Abrir conta em banco local' },
+    { id: 'curriculo', text: 'Adaptar o currículo ao formato do país' },
+    { id: 'emergencia', text: `Salvar o número de emergência: ${country.emergency}` },
+  ];
+}
+
 export function phasesFor(country: Country): Phase[] {
-  const arrival: Phase = {
-    id: 'pa', title: 'Primeira semana lá', when: 'Ao chegar',
-    tasks: [
-      ...country.arrival.map((text, i) => ({ id: `${country.code}-a${i}`, text })),
-      { id: 'contalocal', text: 'Abrir conta em banco local' },
-      { id: 'curriculo', text: 'Adaptar o currículo ao formato do país' },
-      { id: 'emergencia', text: `Salvar o número de emergência: ${country.emergency}` },
-    ],
-  };
+  const fixed = fixedTasks(country);
+  // Tarefa do país que repete uma fixa (ex.: "Abrir conta em banco local") sai da lista.
+  // O filtro vem depois do map para as outras tarefas do país manterem o id.
+  const own = country.arrival
+    .map((text, i) => ({ id: `${country.code}-a${i}`, text }))
+    .filter((t) => !fixed.some((f) => f.text === t.text));
+  const arrival: Phase = { id: 'pa', title: 'Primeira semana lá', when: 'Ao chegar', tasks: [...own, ...fixed] };
   return [...BASE, arrival];
+}
+
+// Quem carimbou a tarefa do país que repetia uma fixa (ex.: "CA-a1", a conta em banco do Canadá)
+// passa o carimbo para a fixa, para não perder nada. Devolve o mesmo objeto se não há o que mudar.
+export function migrateDone(done: Record<string, boolean>): Record<string, boolean> {
+  let out = done;
+  for (const country of COUNTRIES) {
+    const fixed = fixedTasks(country);
+    country.arrival.forEach((text, i) => {
+      const same = fixed.find((f) => f.text === text);
+      if (same && done[`${country.code}-a${i}`] && !out[same.id]) out = { ...out, [same.id]: true };
+    });
+  }
+  return out;
 }

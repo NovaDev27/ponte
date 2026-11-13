@@ -2,7 +2,7 @@ import { router, type Href } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import { Badge, Card, IconName, ListRow, Screen, Txt } from '../components/ui';
-import { getCountry } from '../data/countries';
+import { getCountry, theCountry } from '../data/countries';
 import { COMPLETO_GRATIS } from '../lib/completo';
 import { useApp } from '../lib/store';
 import { C, F } from '../lib/theme';
@@ -28,7 +28,7 @@ export default function Ferramentas() {
       title: `Destino · ${country.name}`,
       items: [
         { href: '/lugares', icon: 'map', title: 'Lugares', hint: 'Pontos turísticos, bairros e passeios', f: F.orcamento },
-        { href: `/pais/${country.code}`, icon: 'file-text', title: 'Custo, visto e regras', hint: `Tudo sobre ${country.name} numa página`, f: F.checklist },
+        { href: `/pais/${country.code}`, icon: 'file-text', title: 'Custo, visto e regras', hint: `Tudo sobre ${theCountry(country)} numa página`, f: F.checklist },
         { href: '/onde-buscar', icon: 'search', title: 'Onde buscar', hint: 'Sites oficiais de visto, escolas e bolsas', f: F.checklist },
       ],
     },
