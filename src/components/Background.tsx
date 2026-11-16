@@ -11,7 +11,7 @@ export function Background() {
   const { ready, state, rates, update } = useApp();
   const completo = hasCompleto(state);
 
-  // Compra: escuta o Google Play e, ao abrir o app, confere com a loja.
+  // Compra: escuta a loja (Google Play ou App Store) e, ao abrir o app, confere com ela.
   // Recupera compras feitas antes (reinstalação) e tira o Completo se a compra sumiu (reembolso),
   // com a regra de segurança de nextPremium (duas conferências com 24 h entre elas).
   const latest = useRef(state);

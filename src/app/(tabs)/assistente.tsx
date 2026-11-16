@@ -1,14 +1,14 @@
 import Feather from '@expo/vector-icons/Feather';
 import Constants from 'expo-constants';
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, ScrollView, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Linking, ScrollView, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, FadeInLeft, FadeInRight, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Orbi, type OrbiMood } from '../../components/Orbi';
 import { useKeyboardOpen } from '../../components/TabBar';
-import { TabSpace, Tap, Txt, s as ui } from '../../components/ui';
+import { Btn, Card, P, TabSpace, Tap, Txt, s as ui } from '../../components/ui';
 import { getCountry } from '../../data/countries';
 import { apiHeaders } from '../../lib/api';
 import { hasCompleto } from '../../lib/completo';
@@ -28,7 +28,9 @@ const SUGGESTIONS = [
 ];
 
 export default function Assistente() {
-  const { state } = useApp();
+  const { state, update } = useApp();
+  const consent = state.aiConsent;
+  const tabSpace = useContext(TabSpace);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [busy, setBusy] = useState(false);
   const [slow, setSlow] = useState(false); // a resposta está demorando (servidor acordando)
@@ -65,7 +67,7 @@ export default function Assistente() {
 
   async function send(content: string) {
     const q = content.trim();
-    if (!q || busy) return;
+    if (!q || busy || !consent) return; // sem o aceite, nada sai do celular
     const next: Msg[] = [...msgs, { role: 'user', content: q }];
     setMsgs(next);
     setBusy(true);
@@ -145,7 +147,8 @@ export default function Assistente() {
         </View>
         <ScrollView
           ref={scroll}
-          contentContainerStyle={{ padding: 20, paddingTop: 6, gap: 10 }}
+          // Sem a caixa de texto (antes do aceite), o fim do cartão precisa de espaço para não ficar atrás da barra de abas.
+          contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: consent ? 20 : tabSpace + 20, gap: 10 }}
           keyboardShouldPersistTaps="handled"
           onContentSizeChange={() => { if (msgs.length > 0) scroll.current?.scrollToEnd({ animated: true }); }}
         >
@@ -157,7 +160,8 @@ export default function Assistente() {
                 Pergunte qualquer coisa sobre o seu intercâmbio em {city.name}. Eu explico, comparo e aviso dos riscos.
               </Txt>
               {mascot ? <Txt w="mono" size={11} color={C.faint} style={{ letterSpacing: 0.8 }}>DICA: TOQUE EM MIM 😉</Txt> : null}
-              <View style={{ gap: 8, width: '100%', marginTop: 10 }}>
+              {consent ? null : <ConsentCard onAccept={() => update({ aiConsent: true })} />}
+              <View style={{ gap: 8, width: '100%', marginTop: 10, display: consent ? 'flex' : 'none' }}>
                 {SUGGESTIONS.map((t, i) => (
                   <Animated.View key={t} entering={FadeInDown.duration(420).delay(200 + i * 80)}>
                     <Tap onPress={() => send(t)} scaleTo={0.97} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, borderRadius: R.md + 2, backgroundColor: C.card, borderWidth: 1, borderColor: C.line }}>
@@ -192,6 +196,8 @@ export default function Assistente() {
               </View>
             );
           })}
+          {/* Permissão desligada em Ajustes no meio de uma conversa: pede de novo antes de continuar. */}
+          {!consent && msgs.length > 0 ? <ConsentCard onAccept={() => update({ aiConsent: true })} /> : null}
           {busy ? <Typing /> : null}
           {slow ? (
             <Txt size={12} color={C.sub} style={{ marginLeft: 4 }}>
@@ -199,9 +205,29 @@ export default function Assistente() {
             </Txt>
           ) : null}
         </ScrollView>
-        <Composer busy={busy} onSend={send} />
+        {consent ? <Composer busy={busy} onSend={send} /> : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+// Pedido de permissão antes da primeira pergunta: diz o que sai do celular e para quem.
+// Exigência da Apple (regra 5.1.2(i)) para apps que mandam dados a uma IA de outra empresa.
+// O aceite pode ser desfeito em Ajustes.
+function ConsentCard({ onAccept }: { onAccept: () => void }) {
+  return (
+    <Card style={{ width: '100%', marginTop: 10, gap: 10 }}>
+      <Txt w="display" size={16}>Antes de começar</Txt>
+      <P style={{ fontSize: 14 }}>
+        Para responder, o Orbi envia a sua pergunta, as últimas mensagens da conversa e um resumo do seu plano (país, cidade, moeda, mês de embarque e duração) ao servidor da Ponte e à Groq, empresa de inteligência artificial dos Estados Unidos.
+      </P>
+      <P muted style={{ fontSize: 14 }}>
+        O servidor da Ponte não guarda as conversas e também recebe um código anônimo do aparelho, só para contar o limite de perguntas. Não escreva dados pessoais, como documentos ou senhas.
+      </P>
+      <Btn label="Concordo, quero usar o Orbi" kind="accent" icon="check" onPress={onAccept} />
+      <Btn label="Ler a Política de Privacidade" kind="ghost" icon="shield" onPress={() => Linking.openURL('https://novadev27.github.io/ponte/privacidade/')} />
+      <P muted style={{ fontSize: 12, textAlign: 'center' }}>Sem o seu OK, nada é enviado. Dá para mudar depois em Ajustes.</P>
+    </Card>
   );
 }
 

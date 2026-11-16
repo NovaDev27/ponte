@@ -74,6 +74,19 @@ export default function Ajustes() {
       </Card>
 
       <Card>
+        <H>Orbi e inteligência artificial</H>
+        <P muted style={{ fontSize: 13 }}>
+          Com a permissão ligada, as suas perguntas e um resumo do plano vão ao servidor da Ponte e à Groq, empresa de IA, só para gerar a resposta. Desligada, o Orbi não envia nada.
+        </P>
+        <Segment
+          options={[{ value: true, label: 'Permitido' }, { value: false, label: 'Não permitido' }]}
+          value={state.aiConsent}
+          onChange={(on: boolean) => update({ aiConsent: on })}
+          color={C.navy}
+        />
+      </Card>
+
+      <Card>
         <H>Endereço da acomodação</H>
         <P muted style={{ fontSize: 13 }}>
           Com o resumo ligado, quando o celular já estiver no fuso do destino, chega todo dia às 19h (no horário de lá) o aviso &quot;Voltar pra casa&quot;. Ao tocar no celular, a rota abre no mapa. O endereço fica só no seu aparelho.

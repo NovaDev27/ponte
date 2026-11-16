@@ -16,7 +16,7 @@ export const PREMIUM_GRACE_MS = 24 * 60 * 60 * 1000;
 
 type PremiumState = { premium: boolean; premiumMissAt?: number | null };
 
-// Decide o Completo depois de conferir com o Google Play. Devolve o que mudar, ou null se nada muda.
+// Decide o Completo depois de conferir com a loja (Google Play ou App Store). Devolve o que mudar, ou null se nada muda.
 // - owned null (sem loja ou sem internet): não mexe.
 // - owned true: libera e esquece qualquer "não achei".
 // - owned false: só tira depois de a loja dizer "não tem" duas vezes, com pelo menos 24 h entre elas.

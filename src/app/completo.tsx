@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { Logo } from '../components/Logo';
 import { Badge, Btn, Card, Hero, IconBox, P, Screen, Txt } from '../components/ui';
-import { billingAvailable, buyCompleto, completoPrice, listenPurchases, ownsCompleto } from '../lib/billing';
+import { billingAvailable, buyCompleto, completoPrice, listenPurchases, ownsCompleto, STORE_ACCOUNT, STORE_ART, STORE_NAME, STORE_SWITCH } from '../lib/billing';
 import { COMPLETO_BENEFITS, COMPLETO_GRATIS, hasCompleto } from '../lib/completo';
 import { useApp } from '../lib/store';
 import { C, FONT } from '../lib/theme';
@@ -48,9 +48,12 @@ export default function Completo() {
     setMsg('');
     setBusy(true);
     try {
-      if (!(await buyCompleto())) {
+      const r = await buyCompleto();
+      if (r === 'off') {
         setBusy(false);
-        setMsg('A compra só funciona no app instalado pelo Google Play.');
+        setMsg(`A compra só funciona no app instalado pel${STORE_ART} ${STORE_NAME}.`);
+      } else if (r === 'cancelled') {
+        setBusy(false);
       }
     } catch {
       setBusy(false);
@@ -61,15 +64,15 @@ export default function Completo() {
   async function restore() {
     setMsg('');
     setBusy(true);
-    const owned = await ownsCompleto();
+    const owned = await ownsCompleto(true);
     setBusy(false);
     if (owned) {
       update({ premium: true, premiumMissAt: null });
       setMsg('Compra recuperada! O Ponte Completo está liberado.');
     } else if (owned === null) {
-      setMsg('Não consegui falar com o Google Play agora. Confira a internet e tente de novo.');
+      setMsg(`Não consegui falar com ${STORE_ART} ${STORE_NAME} agora. Confira a internet e tente de novo.`);
     } else {
-      setMsg('Não encontramos uma compra nesta conta Google. Se você comprou com outra conta, troque a conta no Google Play e tente de novo.');
+      setMsg(`Não encontramos uma compra nesta ${STORE_ACCOUNT}. Se você comprou com outra conta, ${STORE_SWITCH} e tente de novo.`);
     }
   }
 
@@ -112,19 +115,19 @@ export default function Completo() {
         <ActivityIndicator color={C.ink} />
       ) : store === 'ok' ? (
         <>
-          <Btn label={busy ? 'Abrindo o Google Play...' : `Liberar por ${price ?? '...'}`} kind="accent" icon="star" onPress={buy} disabled={busy || !price} />
+          <Btn label={busy ? `Abrindo ${STORE_ART} ${STORE_NAME}...` : `Liberar por ${price ?? '...'}`} kind="accent" icon="star" onPress={buy} disabled={busy || !price} />
           <Btn label="Já comprei: recuperar compra" kind="ghost" onPress={restore} disabled={busy} />
         </>
       ) : (
         <Card>
-          <P muted>A compra fica disponível no app instalado pelo Google Play.</P>
+          <P muted>A compra fica disponível no app instalado {`pel${STORE_ART} ${STORE_NAME}`}.</P>
         </Card>
       )}
 
       {msg ? <P style={{ textAlign: 'center', fontFamily: FONT.bold }}>{msg}</P> : null}
 
       <P muted style={{ fontSize: 12, textAlign: 'center' }}>
-        O pagamento é feito pelo Google Play, que mostra o preço final antes de confirmar. As funções grátis da Ponte continuam grátis.
+        O pagamento é feito {`pel${STORE_ART} ${STORE_NAME}`}, que mostra o preço final antes de confirmar. As funções grátis da Ponte continuam grátis.
       </P>
     </Screen>
   );

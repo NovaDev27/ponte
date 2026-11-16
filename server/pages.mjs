@@ -1,8 +1,8 @@
 // Páginas públicas: Política de Privacidade e Termos de Uso.
-// O Google Play exige um link público para a política.
+// O Google Play e a App Store exigem um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '11/11/2026';
+const UPDATED = '16/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -50,7 +50,7 @@ export function privacyPage(email) {
 <p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar e o endereço da acomodação, se você salvar. Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
-<p>Para responder, o app envia ao nosso servidor:</p>
+<p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, nada é enviado. Para responder, o app envia ao nosso servidor:</p>
 <ul>
   <li>as mensagens da conversa (a sua pergunta e as últimas mensagens);</li>
   <li>o contexto do seu planejamento: país, cidade, moeda, mês de embarque e duração;</li>
@@ -65,7 +65,7 @@ export function privacyPage(email) {
 <p>Se você tocar em <strong>Reportar resposta</strong> embaixo de uma resposta do Orbi, enviamos ao nosso servidor só o texto daquela resposta e a versão do app, sem a sua pergunta. O texto fica no registro do servidor e é encaminhado por e-mail para a equipe da Ponte, pelo serviço de envio de e-mails Resend, só para revisarmos respostas ofensivas ou erradas. O código anônimo do aparelho fica só na memória do servidor, para contar o limite de envios. A resposta pode repetir algo que você escreveu na pergunta.</p>
 
 <h2>4. Ponte Completo, alertas, lembretes e resumo diário</h2>
-<p>A compra do Ponte Completo é feita e processada pelo <strong>Google Play</strong>. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
+<p>A compra do Ponte Completo é feita e processada pela loja do seu celular: o <strong>Google Play</strong> no Android ou a <strong>App Store</strong> no iPhone. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
 <p>O alerta de cotação, os lembretes de prazo e o resumo diário são <strong>notificações do próprio celular</strong>: esses dados ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
 <p>O resumo diário vem desligado e pode ser ligado ou desligado em Ajustes. Ele mostra a cotação, o orçamento do dia e a próxima tarefa. Se o seu relógio espelhar as notificações do celular, esse texto também aparece nele, e o app do relógio trata a notificação conforme as regras do fabricante. O endereço da acomodação não aparece no texto das notificações. Ao tocar em <strong>Voltar pra casa</strong>, o celular abre o mapa e envia o endereço de destino ao serviço de mapas para traçar a rota.</p>
 
@@ -96,12 +96,12 @@ export function privacyPage(email) {
 `, email);
 }
 
-// Página de exclusão de dados exigida pelo Google Play ("Segurança dos dados").
+// Página de exclusão de dados exigida pelo Google Play ("Segurança dos dados") e útil para a App Store.
 // Precisa citar o nome do app, o passo a passo e o que é apagado ou mantido, com prazos.
 export function deletionPage(email) {
   const mail = email ? `<a href="mailto:${email}?subject=Excluir%20meus%20dados%20-%20Ponte">${email}</a>` : 'o e-mail de contato abaixo';
   return page('Como excluir seus dados da Ponte', `
-<p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
+<p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play e na App Store pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
 
 <h2>1. Dados guardados no seu celular</h2>
 <p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões e taxas ajustadas) fica apenas no aparelho. Para apagar:</p>
@@ -122,7 +122,7 @@ export function deletionPage(email) {
   <li><strong>Relatórios de erro</strong> (mensagem técnica, tela, sistema e versão do app, sem dados pessoais): ficam no registro do servidor e são apagados automaticamente em até 30 dias.</li>
   <li><strong>Respostas do Orbi reportadas:</strong> só o texto da resposta, sem a pergunta. Ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
   <li><strong>Opiniões enviadas em "Sua opinião":</strong> ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
-  <li><strong>Compra do Ponte Completo:</strong> é processada e registrada pelo Google Play, conforme a política do Google. A Ponte não guarda dados de pagamento.</li>
+  <li><strong>Compra do Ponte Completo:</strong> é processada e registrada pela loja do celular (Google Play ou App Store), conforme a política do Google ou da Apple. A Ponte não guarda dados de pagamento.</li>
 </ul>
 <p>Mais detalhes na <a href="/privacidade">Política de Privacidade</a>.</p>
 `, email);
@@ -149,7 +149,7 @@ export function termsPage(email) {
 <p>As respostas são geradas por inteligência artificial e podem conter erros ou informações incompletas. Use como ponto de partida, não como resposta final. O Assistente tem limite de perguntas por hora e por dia (maior no Ponte Completo), para o serviço continuar funcionando.</p>
 
 <h2>4.1 Ponte Completo</h2>
-<p>O Ponte Completo é uma compra opcional, de <strong>pagamento único</strong>, feita pelo Google Play, que mostra o preço final antes de você confirmar. Pedidos de reembolso seguem as regras do Google Play. A compra fica ligada à sua conta Google e pode ser recuperada em outro celular pela opção "Já comprei". As funções grátis continuam grátis.</p>
+<p>O Ponte Completo é uma compra opcional, de <strong>pagamento único</strong>, feita pela loja do seu celular (Google Play no Android ou App Store no iPhone), que mostra o preço final antes de você confirmar. Pedidos de reembolso seguem as regras da loja onde você comprou. A compra fica ligada à sua conta Google ou Apple e pode ser recuperada em outro celular da mesma loja (Android com Android, iPhone com iPhone) pela opção "Já comprei". Uma compra feita no Google Play não libera o app no iPhone, e vice-versa. As funções grátis continuam grátis.</p>
 
 <h2>5. Uso permitido</h2>
 <p>Não é permitido usar a Ponte para fins ilegais, tentar burlar os limites de uso, sobrecarregar ou atacar o servidor, ou usar o Assistente para gerar conteúdo que não tenha relação com o planejamento de intercâmbio.</p>

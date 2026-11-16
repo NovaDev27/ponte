@@ -34,6 +34,7 @@ export type AppState = {
   reminders: boolean; // lembretes de prazo do checklist
   daily: boolean; // resumo diário e aviso "Voltar pra casa"
   mascot: boolean; // mostra o Orbi animado na aba do assistente
+  aiConsent: boolean; // aceitou mandar as perguntas ao servidor e à empresa de IA (regra 5.1.2(i) da Apple)
   cardQuiz: CardQuiz | null; // respostas do "Qual cartão levar"
 };
 
@@ -80,6 +81,7 @@ export const initialState: AppState = {
   reminders: false,
   daily: false,
   mascot: true,
+  aiConsent: false,
   cardQuiz: null,
 };
 
