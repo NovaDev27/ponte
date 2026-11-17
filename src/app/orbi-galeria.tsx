@@ -5,7 +5,7 @@ import { ORBI_MOODS, OrbiArt } from '../components/Orbi';
 import { Screen, Txt } from '../components/ui';
 import { C } from '../lib/theme';
 
-// Vitrine dos 15 estados do Orbi, só no modo de desenvolvimento (na versão da loja volta para o início).
+// Vitrine de todos os estados do Orbi, só no modo de desenvolvimento (na versão da loja volta para o início).
 export default function OrbiGaleria() {
   if (!__DEV__) return <Redirect href="/" />;
   return (

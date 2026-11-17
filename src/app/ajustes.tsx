@@ -63,7 +63,7 @@ export default function Ajustes() {
       <Card>
         <H>Mascote Orbi</H>
         <P muted style={{ fontSize: 13 }}>
-          A luazinha que pensa, comemora e reage na aba do assistente. Desligado, o assistente continua igual, só sem o mascote.
+          A malinha que pensa, comemora e reage na aba do assistente. Desligado, o assistente continua igual, só sem o mascote.
         </P>
         <Segment
           options={[{ value: true, label: 'Ligado' }, { value: false, label: 'Desligado' }]}
@@ -140,7 +140,7 @@ export default function Ajustes() {
         <Label>Zona de perigo</Label>
         {confirm ? (
           <>
-            <P>Isso apaga destino, orçamento e checklist deste aparelho. Continuar?</P>
+            <P>Isso apaga destino, orçamento, checklist e as conversas com o Orbi deste aparelho. Continuar?</P>
             <Btn label="Sim, apagar tudo" kind="accent" onPress={() => { reset(); router.replace('/onboarding'); }} />
             <Btn label="Cancelar" kind="ghost" onPress={() => setConfirm(false)} />
           </>

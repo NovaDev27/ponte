@@ -47,7 +47,7 @@ export function privacyPage(email) {
 </ul>
 
 <h2>1. Dados que ficam só no seu celular</h2>
-<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar e o endereço da acomodação, se você salvar. Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
+<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (as 30 mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
 <p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, nada é enviado. Para responder, o app envia ao nosso servidor:</p>
@@ -104,7 +104,7 @@ export function deletionPage(email) {
 <p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play e na App Store pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
 
 <h2>1. Dados guardados no seu celular</h2>
-<p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões e taxas ajustadas) fica apenas no aparelho. Para apagar:</p>
+<p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões, taxas ajustadas e o histórico de conversas com o Orbi) fica apenas no aparelho. Para apagar:</p>
 <ol>
   <li>Abra a Ponte e toque no botão de ajustes, no início do app.</li>
   <li>Toque em <strong>Apagar meus dados</strong>.</li>

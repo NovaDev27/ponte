@@ -164,7 +164,7 @@ export default function Onboarding() {
             </Animated.View>
           </View>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-            {['💱 5 jeitos de levar dinheiro', '🌍 13 países', '✅ Checklist até a chegada', '🪐 Orbi, assistente com IA'].map((t, i) => (
+            {['💱 5 jeitos de levar dinheiro', '🌍 13 países', '✅ Checklist até a chegada', '🧳 Orbi, assistente com IA'].map((t, i) => (
               <Animated.View key={t} entering={FadeInDown.duration(420).delay(620 + i * 80).easing(EASE_OUT)} style={{ backgroundColor: C.card, borderWidth: 1, borderColor: C.line, borderRadius: R.pill, paddingHorizontal: 12, paddingVertical: 7 }}>
                 <Txt w="medium" size={13} style={{ lineHeight: 17 }}>{t}</Txt>
               </Animated.View>

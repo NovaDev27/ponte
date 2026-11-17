@@ -1,7 +1,8 @@
 import Feather from '@expo/vector-icons/Feather';
 import Constants from 'expo-constants';
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Linking, ScrollView, TextInput, View } from 'react-native';
+import { useFocusEffect } from 'expo-router';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { BackHandler, KeyboardAvoidingView, Linking, ScrollView, TextInput, View } from 'react-native';
 import Animated, {
   FadeIn, FadeInDown, FadeInLeft, FadeInRight, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming,
 } from 'react-native-reanimated';
@@ -11,13 +12,15 @@ import { useKeyboardOpen } from '../../components/TabBar';
 import { Btn, Card, P, TabSpace, Tap, Txt, s as ui } from '../../components/ui';
 import { getCountry } from '../../data/countries';
 import { apiHeaders } from '../../lib/api';
+import { MAX_CHATS, newChatId, upsertChat, type Chat, type ChatMsg } from '../../lib/chats';
+import { loadChats, saveChats } from '../../lib/chatsStorage';
 import { hasCompleto } from '../../lib/completo';
 import { monthLabel } from '../../lib/format';
 import { serverOf, useApp } from '../../lib/store';
 import { C, FONT, R } from '../../lib/theme';
 
 // `ok` marca uma resposta de verdade do Orbi (não um aviso de erro): só ela pode ser reportada.
-type Msg = { role: 'user' | 'assistant'; content: string; ok?: boolean; broke?: boolean };
+type Msg = ChatMsg;
 type ReportState = 'sending' | 'sent' | 'fail';
 
 const SUGGESTIONS = [
@@ -27,7 +30,14 @@ const SUGGESTIONS = [
   'Como meus pais podem me mandar dinheiro todo mês?',
 ];
 
+// "Apagar meus dados" sobe o `wipe`: a tela é montada de novo do zero, sem conversa na memória
+// (nem resposta a caminho) que pudesse voltar para o histórico.
 export default function Assistente() {
+  const { wipe } = useApp();
+  return <OrbiChat key={wipe} />;
+}
+
+function OrbiChat() {
   const { state, update } = useApp();
   const consent = state.aiConsent;
   const tabSpace = useContext(TabSpace);
@@ -36,6 +46,13 @@ export default function Assistente() {
   const [slow, setSlow] = useState(false); // a resposta está demorando (servidor acordando)
   const [cheer, setCheer] = useState(false); // o Orbi comemora quando a resposta chega
   const [reports, setReports] = useState<Record<number, ReportState>>({}); // respostas reportadas, por posição
+  const [chatId, setChatId] = useState(newChatId); // conversa aberta agora
+  const [chats, setChats] = useState<Chat[]>([]); // histórico, só no celular
+  const [history, setHistory] = useState(false); // mostrando a lista de conversas
+  const [animFrom, setAnimFrom] = useState(0); // só as mensagens a partir daqui entram animadas (abrir conversa longa não trava)
+  const dirty = useRef(false); // a conversa aberta mudou por uma pergunta nova (abrir uma antiga não conta)
+  const loaded = useRef(false); // o histórico foi lido: só então dá para gravar sem apagar o que estava lá
+  const showHistory = history && consent;
   const scroll = useRef<ScrollView>(null);
   const country = getCountry(state.profile.country);
   const city = country.cities[state.profile.city] ?? country.cities[0];
@@ -46,6 +63,42 @@ export default function Assistente() {
   useEffect(() => {
     fetch(`${server}/health`).catch(() => {});
   }, [server]);
+
+  // Recarrega o histórico sempre que a aba ganha foco (ex.: depois de "Apagar meus dados" em Ajustes).
+  useFocusEffect(
+    useCallback(() => {
+      let alive = true;
+      loadChats().then((list) => {
+        if (!alive || list === null) return; // erro de leitura: não mostra nem grava por cima
+        loaded.current = true;
+        setChats(list);
+      });
+      return () => {
+        alive = false;
+      };
+    }, []),
+  );
+
+  // Botão voltar do Android com a lista aberta: fecha a lista em vez de sair da aba.
+  useFocusEffect(
+    useCallback(() => {
+      if (!showHistory) return;
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        setHistory(false);
+        return true;
+      });
+      return () => sub.remove();
+    }, [showHistory]),
+  );
+
+  // Quando chega a resposta, guarda a conversa no histórico do celular.
+  useEffect(() => {
+    if (busy || !dirty.current || msgs.length === 0) return;
+    dirty.current = false;
+    const next = upsertChat(chats, { id: chatId, title: '', updatedAt: Date.now(), msgs });
+    setChats(next);
+    if (loaded.current) saveChats(next);
+  }, [busy, msgs, chatId, chats]);
 
   useEffect(() => {
     if (!cheer) return;
@@ -69,6 +122,7 @@ export default function Assistente() {
     const q = content.trim();
     if (!q || busy || !consent) return; // sem o aceite, nada sai do celular
     const next: Msg[] = [...msgs, { role: 'user', content: q }];
+    dirty.current = true;
     setMsgs(next);
     setBusy(true);
     try {
@@ -76,7 +130,8 @@ export default function Assistente() {
         method: 'POST',
         headers: apiHeaders(state.deviceId, hasCompleto(state)),
         body: JSON.stringify({
-          messages: next.slice(-20),
+          // Avisos de erro e de limite não voltam para a IA como se fossem conversa.
+          messages: next.filter((m) => m.role === 'user' || m.ok).slice(-20),
           context: {
             pais: country.name,
             cidade: city.name,
@@ -124,6 +179,30 @@ export default function Assistente() {
   function newChat() {
     setMsgs([]);
     setReports({});
+    setChatId(newChatId());
+    setHistory(false);
+    setAnimFrom(0);
+  }
+
+  function openChat(c: Chat) {
+    dirty.current = false;
+    setAnimFrom(c.msgs.length);
+    setMsgs(c.msgs);
+    setReports({});
+    setChatId(c.id);
+    setHistory(false);
+  }
+
+  function deleteChat(id: string) {
+    const next = chats.filter((c) => c.id !== id);
+    setChats(next);
+    if (loaded.current) saveChats(next);
+    if (id === chatId) {
+      setMsgs([]);
+      setReports({});
+      setChatId(newChatId());
+      setAnimFrom(0);
+    }
   }
 
   return (
@@ -139,8 +218,13 @@ export default function Assistente() {
               <Txt size={13} color={busy ? C.accent : C.sub}>{busy ? 'digitando…' : 'assistente da Ponte'}</Txt>
             ) : null}
           </View>
-          {msgs.length > 0 ? (
-            <Tap onPress={newChat} disabled={busy} accessibilityLabel="Nova conversa" scaleTo={0.9} style={{ width: 42, height: 42, borderRadius: 21, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' }}>
+          {consent && (chats.length > 0 || showHistory) ? (
+            <Tap onPress={() => setHistory((h) => !h)} disabled={busy} accessibilityLabel={showHistory ? 'Fechar conversas anteriores' : 'Conversas anteriores'} accessibilityState={{ selected: showHistory }} scaleTo={0.9} style={[headBtn, showHistory && { backgroundColor: C.ink, borderColor: C.ink }]}>
+              <Feather name="clock" size={17} color={showHistory ? C.cream : C.ink} />
+            </Tap>
+          ) : null}
+          {msgs.length > 0 || showHistory ? (
+            <Tap onPress={newChat} disabled={busy} accessibilityLabel="Nova conversa" scaleTo={0.9} style={headBtn}>
               <Feather name="edit-3" size={17} color={C.ink} />
             </Tap>
           ) : null}
@@ -150,9 +234,10 @@ export default function Assistente() {
           // Sem a caixa de texto (antes do aceite), o fim do cartão precisa de espaço para não ficar atrás da barra de abas.
           contentContainerStyle={{ padding: 20, paddingTop: 6, paddingBottom: consent ? 20 : tabSpace + 20, gap: 10 }}
           keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() => { if (msgs.length > 0) scroll.current?.scrollToEnd({ animated: true }); }}
+          onContentSizeChange={() => { if (!showHistory && msgs.length > 0) scroll.current?.scrollToEnd({ animated: true }); }}
         >
-          {msgs.length === 0 ? (
+          {showHistory ? <HistoryList chats={chats} current={chatId} onOpen={openChat} onDelete={deleteChat} /> : null}
+          {!showHistory && msgs.length === 0 ? (
             <View style={{ alignItems: 'center', gap: 10, paddingTop: 40, paddingBottom: 12 }}>
               {mascot ? <Orbi size={150} mood={mood} talk /> : null}
               <Txt w="display" size={22} style={{ marginTop: 8 }}>Oi! Eu sou o Orbi 👋</Txt>
@@ -173,12 +258,12 @@ export default function Assistente() {
               </View>
             </View>
           ) : null}
-          {msgs.map((m, i) => {
+          {(showHistory ? [] : msgs).map((m, i) => {
             const me = m.role === 'user';
             return (
               <View key={i} style={{ alignSelf: me ? 'flex-end' : 'flex-start', maxWidth: '86%' }}>
                 <Animated.View
-                  entering={(me ? FadeInRight : FadeInLeft).springify().damping(18).stiffness(220)}
+                  entering={i >= animFrom ? (me ? FadeInRight : FadeInLeft).springify().damping(18).stiffness(220) : undefined}
                   style={{
                     backgroundColor: me ? C.ink : C.card,
                     borderWidth: me ? 0 : 1,
@@ -205,9 +290,56 @@ export default function Assistente() {
             </Txt>
           ) : null}
         </ScrollView>
-        {consent ? <Composer busy={busy} onSend={send} /> : null}
+        {consent && !showHistory ? <Composer busy={busy} onSend={send} /> : null}
       </KeyboardAvoidingView>
     </SafeAreaView>
+  );
+}
+
+const headBtn = { width: 42, height: 42, borderRadius: 21, backgroundColor: C.card, borderWidth: 1, borderColor: C.line, alignItems: 'center', justifyContent: 'center' } as const;
+
+function whenLabel(t: number): string {
+  const d = new Date(t);
+  const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (d.toDateString() === new Date().toDateString()) return `Hoje, ${hm}`;
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}, ${hm}`;
+}
+
+// Conversas anteriores, guardadas só no celular. Toque para abrir; lixeira para apagar.
+function HistoryList({ chats, current, onOpen, onDelete }: { chats: Chat[]; current: string; onOpen: (c: Chat) => void; onDelete: (id: string) => void }) {
+  const [confirm, setConfirm] = useState<string | null>(null); // conversa esperando o "Apagar" de confirmação
+  return (
+    <View style={{ gap: 8 }}>
+      <Txt w="display" size={18}>Conversas anteriores</Txt>
+      <Txt size={13} color={C.sub}>Ficam salvas só neste celular (as {MAX_CHATS} mais recentes).</Txt>
+      {chats.length === 0 ? (
+        <Txt color={C.sub} style={{ marginTop: 12 }}>Nenhuma conversa ainda.</Txt>
+      ) : (
+        chats.map((c) =>
+          confirm === c.id ? (
+            <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: C.card, borderRadius: R.md + 2, borderWidth: 1, borderColor: C.line, padding: 10, paddingLeft: 16 }}>
+              <Txt w="medium" style={{ flex: 1 }}>Apagar esta conversa?</Txt>
+              <Tap onPress={() => setConfirm(null)} accessibilityRole="button" scaleTo={0.95} style={{ minHeight: 44, paddingHorizontal: 14, justifyContent: 'center' }}>
+                <Txt w="bold" size={14}>Cancelar</Txt>
+              </Tap>
+              <Tap onPress={() => { setConfirm(null); onDelete(c.id); }} accessibilityRole="button" scaleTo={0.95} style={{ minHeight: 44, paddingHorizontal: 14, justifyContent: 'center', borderRadius: 22, backgroundColor: C.ink }}>
+                <Txt w="bold" size={14} color={C.cream}>Apagar</Txt>
+              </Tap>
+            </View>
+          ) : (
+            <View key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: C.card, borderRadius: R.md + 2, borderWidth: 1, borderColor: c.id === current ? C.ink : C.line }}>
+              <Tap onPress={() => onOpen(c)} scaleTo={0.98} accessibilityRole="button" style={{ flex: 1, paddingVertical: 14, paddingLeft: 16, gap: 2 }}>
+                <Txt w="medium" numberOfLines={2}>{c.title}</Txt>
+                <Txt size={12} color={C.sub}>{whenLabel(c.updatedAt)} · {c.msgs.length} mensagens</Txt>
+              </Tap>
+              <Tap onPress={() => setConfirm(c.id)} haptic={false} accessibilityRole="button" accessibilityLabel={`Apagar a conversa: ${c.title}`} scaleTo={0.9} style={{ width: 48, height: 48, alignItems: 'center', justifyContent: 'center' }}>
+                <Feather name="trash-2" size={17} color={C.sub} />
+              </Tap>
+            </View>
+          ),
+        )
+      )}
+    </View>
   );
 }
 

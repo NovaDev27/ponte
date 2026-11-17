@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { migrateDone } from '../data/checklist';
 import { DEFAULT_FEES, Fees } from '../data/methods';
+import { clearChats } from './chatsStorage';
 import { nextMonths } from './format';
 import { fetchRates, FALLBACK_RATES, type Rates } from './rates';
 
@@ -93,6 +94,7 @@ type Ctx = {
   update: (p: Partial<AppState>) => void;
   toggle: (taskId: string) => void;
   reset: () => void;
+  wipe: number; // sobe a cada "Apagar meus dados": telas abertas limpam o que têm na memória
   rates: Rates;
   refreshRates: () => Promise<void>;
 };
@@ -101,6 +103,7 @@ const AppCtx = createContext<Ctx | null>(null);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
+  const [wipe, setWipe] = useState(0);
   const [state, setState] = useState<AppState>(initialState);
   const [rates, setRates] = useState<Rates>({ values: FALLBACK_RATES, updated: null, live: false });
 
@@ -162,8 +165,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const setProfile = useCallback((p: Partial<Profile>) => setState((s) => ({ ...s, profile: { ...s.profile, ...p } })), []);
   const update = useCallback((p: Partial<AppState>) => setState((s) => ({ ...s, ...p })), []);
   const toggle = useCallback((id: string) => setState((s) => ({ ...s, done: { ...s.done, [id]: !s.done[id] } })), []);
-  // Apagar dados não apaga a compra do Ponte Completo.
-  const reset = useCallback(() => setState((s) => ({ ...initialState, deviceId: s.deviceId, premium: s.premium })), []);
+  // Apagar dados não apaga a compra do Ponte Completo. Apaga também o histórico do Orbi.
+  const reset = useCallback(() => {
+    clearChats();
+    setWipe((w) => w + 1);
+    setState((s) => ({ ...initialState, deviceId: s.deviceId, premium: s.premium }));
+  }, []);
 
   const value = useMemo<Ctx>(() => ({
     ready,
@@ -174,7 +181,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     update,
     toggle,
     reset,
-  }), [ready, state, rates, refreshRates, setProfile, update, toggle, reset]);
+    wipe,
+  }), [ready, state, rates, refreshRates, setProfile, update, toggle, reset, wipe]);
 
   return <AppCtx.Provider value={value}>{children}</AppCtx.Provider>;
 }
