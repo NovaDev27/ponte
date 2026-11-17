@@ -47,7 +47,7 @@ export function privacyPage(email) {
 </ul>
 
 <h2>1. Dados que ficam só no seu celular</h2>
-<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (as 30 mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
+<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (até 30 conversas, as mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
 <p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, nada é enviado. Para responder, o app envia ao nosso servidor:</p>
@@ -56,7 +56,7 @@ export function privacyPage(email) {
   <li>o contexto do seu planejamento: país, cidade, moeda, mês de embarque e duração;</li>
   <li>um código aleatório do aparelho, criado pelo app, que não identifica você. Ele serve só para contar perguntas e aplicar o limite de uso.</li>
 </ul>
-<p>O nosso servidor repassa as mensagens e o contexto para a <strong>Groq</strong> (empresa que fornece o modelo de inteligência artificial), que gera a resposta. A Groq trata esses dados conforme a política de privacidade dela, disponível em <a href="https://groq.com/privacy-policy">groq.com/privacy-policy</a>. O nosso servidor <strong>não guarda</strong> o conteúdo das conversas. O código do aparelho e o endereço IP ficam só na memória do servidor, para contar o limite de perguntas, e são descartados em até um dia.</p>
+<p>O nosso servidor repassa as mensagens e o contexto para a <strong>Groq</strong> (empresa dos Estados Unidos que fornece o modelo de inteligência artificial), que gera a resposta. A Groq trata esses dados conforme a política de privacidade dela, disponível em <a href="https://groq.com/privacy-policy">groq.com/privacy-policy</a>. O nosso servidor <strong>não guarda</strong> o conteúdo das conversas. O código do aparelho e o endereço IP ficam só na memória do servidor, para contar o limite de perguntas, e são descartados em até um dia.</p>
 <p><strong>Não escreva no Assistente</strong> dados pessoais como nome completo, documentos, senhas ou dados bancários.</p>
 
 <h2>3. Relatórios de erro, opiniões e respostas reportadas</h2>
