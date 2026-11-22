@@ -2,7 +2,7 @@
 // O Google Play e a App Store exigem um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '16/11/2026';
+const UPDATED = '22/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -41,16 +41,19 @@ export function privacyPage(email) {
 <h2>Resumo</h2>
 <ul>
   <li>O app não pede cadastro, nome, e-mail, CPF nem dados bancários.</li>
-  <li>O seu planejamento fica guardado só no seu celular.</li>
+  <li>O seu planejamento fica guardado no seu celular, e a Ponte não o recebe, fora o que você enviar ao Assistente. O sistema pode copiá-lo para o seu backup e para o seu relógio, como explicado abaixo.</li>
+  <li>O app se conecta a alguns serviços para funcionar (atualizações, cotações, fotos e ícones), que recebem o endereço IP do aparelho, como explicado na seção 4.</li>
   <li>A Ponte não movimenta nem guarda dinheiro de ninguém.</li>
   <li>Não vendemos dados e não mostramos anúncios.</li>
 </ul>
 
-<h2>1. Dados que ficam só no seu celular</h2>
-<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (até 30 conversas, as mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós. Você pode apagar tudo em <strong>Ajustes → Apagar meus dados</strong>, ou desinstalando o app.</p>
+<h2>1. Dados guardados no seu celular</h2>
+<p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (até 30 conversas, as mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós, fora o que está descrito na seção 2. Você pode apagar esses dados do aparelho em <strong>Ajustes → Apagar meus dados</strong>. Esse botão não apaga o código aleatório do Assistente, o código das atualizações (seção 4.3) nem o registro da compra do Ponte Completo.</p>
+<p><strong>Backup do sistema:</strong> no Android, se o backup do celular estiver ligado, o sistema pode guardar uma cópia desses dados na sua conta Google e restaurá-la quando você reinstalar o app ou trocar de celular. A Ponte não tem acesso a essa cópia. Você controla o backup nas configurações do celular.</p>
+<p><strong>Relógio Wear OS:</strong> se você tiver um pareado, o app pode copiar para ele a cidade, a moeda, o endereço da acomodação, a próxima tarefa, o orçamento por dia e a cotação. A cópia usa os serviços do Google, por Bluetooth ou pela nuvem com criptografia de ponta a ponta, e a Ponte não a recebe.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
-<p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, nada é enviado. Para responder, o app envia ao nosso servidor:</p>
+<p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, o app não envia novas perguntas nem o contexto do seu planejamento ao Assistente. Se você tocar em <strong>Reportar resposta</strong>, o texto daquela resposta é enviado mesmo com a permissão desligada, como explicado na seção 3. Ao abrir a tela do Orbi, mesmo sem a permissão, o app faz uma chamada vazia para acordar o nosso servidor, que recebe o endereço IP do aparelho. Para responder, o app envia ao nosso servidor:</p>
 <ul>
   <li>as mensagens da conversa (a sua pergunta e as últimas mensagens);</li>
   <li>o contexto do seu planejamento: país, cidade, moeda, mês de embarque e duração;</li>
@@ -66,26 +69,29 @@ export function privacyPage(email) {
 
 <h2>4. Ponte Completo, alertas, lembretes e resumo diário</h2>
 <p>A compra do Ponte Completo é feita e processada pela loja do seu celular: o <strong>Google Play</strong> no Android ou a <strong>App Store</strong> no iPhone. Nós não recebemos os dados do seu cartão nem do seu pagamento: o app só fica sabendo que a compra existe, para liberar as funções. Quem tem o Completo envia ao nosso servidor apenas a informação "plano completo", para ter um limite maior de perguntas no Assistente.</p>
-<p>O alerta de cotação, os lembretes de prazo e o resumo diário são <strong>notificações do próprio celular</strong>: esses dados ficam no aparelho e não são enviados para nós. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
+<p>O alerta de cotação, os lembretes de prazo e o resumo diário são <strong>notificações do próprio celular</strong>: esses dados não são enviados para nós. Se o seu relógio espelhar as notificações, elas também aparecem nele. O plano em PDF é gerado no celular e só sai dele se você escolher compartilhar.</p>
 <p>O resumo diário vem desligado e pode ser ligado ou desligado em Ajustes. Ele mostra a cotação, o orçamento do dia e a próxima tarefa. Se o seu relógio espelhar as notificações do celular, esse texto também aparece nele, e o app do relógio trata a notificação conforme as regras do fabricante. O endereço da acomodação não aparece no texto das notificações. Ao tocar em <strong>Voltar pra casa</strong>, o celular abre o mapa e envia o endereço de destino ao serviço de mapas para traçar a rota.</p>
 
 <h2>4.1 Cotações de moedas</h2>
-<p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Essa consulta não envia nenhum dado seu.</p>
+<p>Para mostrar as cotações, o app consulta um serviço público de câmbio (open.er-api.com). Esse serviço recebe o endereço IP do aparelho, mas não o seu planejamento.</p>
 
 <h2>4.2 Fotos de lugares e ícones de sites</h2>
-<p>As fotos e os resumos da tela <strong>Lugares</strong> vêm da Wikipédia (pt.wikipedia.org), e os ícones dos sites oficiais em <strong>Onde buscar</strong> vêm do serviço de ícones do Google. Para carregar essas imagens, o celular se conecta diretamente a esses serviços, que recebem o endereço IP do aparelho e o nome do lugar ou site pedido. Nenhum dado do seu planejamento é enviado.</p>
+<p>As fotos e os resumos de lugares, na tela <strong>Lugares</strong> e na página de cada país, vêm da Wikipédia (pt.wikipedia.org e servidores de imagens da Wikimedia), e os ícones dos sites oficiais em <strong>Onde buscar</strong> vêm do serviço de ícones do Google. O celular se conecta diretamente a esses serviços, que recebem o endereço IP do aparelho e os nomes dos lugares ou os endereços dos sites do país exibido. Como essas telas podem abrir no país do seu planejamento, essas consultas podem indicar o seu destino. O restante do seu planejamento não é enviado.</p>
+
+<h2>4.3 Atualizações do app</h2>
+<p>Para receber correções, o app consulta o serviço de atualizações da <strong>Expo</strong> (empresa dos Estados Unidos), normalmente ao ser aberto. A Expo recebe o endereço IP do aparelho, o sistema, a identificação do projeto e das versões do app e um código aleatório da instalação, que não traz seu nome nem seu planejamento. Se o app ou uma atualização falhar ao iniciar, a consulta seguinte pode levar a mensagem técnica do erro e a identificação da atualização que falhou. O botão Apagar meus dados não troca esse código. A Expo trata esses dados conforme a política de privacidade dela, disponível em <a href="https://expo.dev/privacy">expo.dev/privacy</a>.</p>
 
 <h2>5. Onde os dados são processados</h2>
-<p>O servidor da Ponte fica na Render e o modelo de IA na Groq, duas empresas dos Estados Unidos, e os dados podem ser processados em servidores fora do Brasil. Ao usar o Assistente, as mensagens são transferidas para esses servidores apenas para gerar a resposta.</p>
+<p>As atualizações do app passam pela Expo, nos Estados Unidos ou em outros países onde ela opera. O servidor da Ponte fica na Render e o modelo de IA na Groq, duas empresas dos Estados Unidos, e os dados podem ser processados em servidores fora do Brasil. Ao usar o Assistente, as mensagens são transferidas para esses servidores apenas para gerar a resposta.</p>
 
 <h2>6. Bases legais (LGPD)</h2>
 <ul>
   <li>Responder ao Assistente: execução do serviço que você pediu (art. 7º, V).</li>
-  <li>Limites de uso e relatórios de erro: legítimo interesse em manter o app seguro e funcionando (art. 7º, IX).</li>
+  <li>Limites de uso, relatórios de erro e atualizações do app: legítimo interesse em manter o app seguro e funcionando (art. 7º, IX).</li>
 </ul>
 
 <h2>7. Seus direitos</h2>
-<p>Você pode pedir informações sobre os seus dados, correção ou exclusão, entre outros direitos do art. 18 da LGPD, pelo e-mail abaixo. Como não guardamos conversas nem cadastro, na prática os dados ficam no seu aparelho, e você mesmo pode apagá-los em Ajustes.</p>
+<p>Você pode pedir informações sobre os seus dados, correção ou exclusão, entre outros direitos do art. 18 da LGPD, pelo e-mail abaixo. Como não guardamos conversas nem cadastro, na prática o seu planejamento fica no seu aparelho (e no backup ou relógio, como explicado na seção 1), e você mesmo pode apagá-lo do aparelho em Ajustes.</p>
 <p>O passo a passo para excluir seus dados, e o que é apagado ou mantido, está em <a href="/excluir-dados">Como excluir seus dados</a>.</p>
 
 <h2>8. Menores de idade</h2>
@@ -101,16 +107,17 @@ export function privacyPage(email) {
 export function deletionPage(email) {
   const mail = email ? `<a href="mailto:${email}?subject=Excluir%20meus%20dados%20-%20Ponte">${email}</a>` : 'o e-mail de contato abaixo';
   return page('Como excluir seus dados da Ponte', `
-<p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play e na App Store pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado só no seu celular.</p>
+<p>Esta página explica como pedir a exclusão dos seus dados no app <strong>Ponte: Intercâmbio e Câmbio</strong>, publicado no Google Play pelo desenvolvedor <strong>Ponte</strong>. A Ponte não tem cadastro nem login: quase tudo fica guardado no seu celular.</p>
 
 <h2>1. Dados guardados no seu celular</h2>
-<p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões, taxas ajustadas e o histórico de conversas com o Orbi) fica apenas no aparelho. Para apagar:</p>
+<p>O seu planejamento (destino, datas, orçamento, checklist, endereço da acomodação, respostas do guia de cartões, taxas ajustadas e o histórico de conversas com o Orbi) fica guardado no aparelho. Para apagar:</p>
 <ol>
   <li>Abra a Ponte e toque no botão de ajustes, no início do app.</li>
   <li>Toque em <strong>Apagar meus dados</strong>.</li>
   <li>Confirme em <strong>Sim, apagar tudo</strong>.</li>
 </ol>
-<p>Os dados são apagados na hora e não podem ser recuperados. Desinstalar o app também apaga tudo.</p>
+<p>Os dados são apagados do aparelho na hora. Desinstalar o app também os apaga do aparelho. Se você tiver um relógio Wear OS, use <strong>Apagar meus dados</strong> antes de desinstalar: sem o app, o celular não consegue limpar o relógio.</p>
+<p>No Android, se o backup do celular estiver ligado, uma cópia anterior pode continuar na sua conta Google e voltar ao reinstalar o app. Para tirá-la, apague o backup nas configurações do celular ou da conta. Se você tiver um relógio Wear OS, a cópia dele é limpa quando o celular sincronizar com ele, na versão atualizada do app.</p>
 
 <h2>2. Dados que chegam ao nosso servidor</h2>
 <p>Para pedir a exclusão do que foi enviado ao servidor, mande um e-mail para ${mail} com o assunto <strong>"Excluir meus dados - Ponte"</strong>. Como o app não pede nome nem e-mail, informe a data aproximada e, se for uma opinião, um trecho do que você escreveu, para encontrarmos o registro. Respondemos e concluímos a exclusão em até <strong>15 dias</strong>.</p>
@@ -118,10 +125,11 @@ export function deletionPage(email) {
 <h2>3. O que é apagado, o que é mantido e por quanto tempo</h2>
 <ul>
   <li><strong>Conversas com o assistente Orbi:</strong> não são guardadas pelo nosso servidor. São repassadas à Groq só para gerar a resposta.</li>
-  <li><strong>Código anônimo do aparelho e endereço IP:</strong> ficam só na memória do servidor, para contar o limite de perguntas, e são descartados automaticamente em até 1 dia.</li>
+  <li><strong>Código anônimo do aparelho e endereço IP:</strong> ficam só na memória do servidor, para contar o limite de perguntas, e são descartados automaticamente em até 1 dia. No aparelho, o botão Apagar meus dados não troca esse código.</li>
   <li><strong>Relatórios de erro</strong> (mensagem técnica, tela, sistema e versão do app, sem dados pessoais): ficam no registro do servidor e são apagados automaticamente em até 30 dias.</li>
   <li><strong>Respostas do Orbi reportadas:</strong> só o texto da resposta, sem a pergunta. Ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
   <li><strong>Opiniões enviadas em "Sua opinião":</strong> ficam no registro do servidor e no e-mail da equipe. São apagadas a pedido e, sem pedido, mantidas por no máximo 12 meses.</li>
+  <li><strong>Atualizações do app:</strong> o endereço IP, o código aleatório da instalação e os dados técnicos da consulta são processados pela Expo, conforme a <a href="https://expo.dev/privacy">política dela</a>. O botão Apagar meus dados não troca esse código.</li>
   <li><strong>Compra do Ponte Completo:</strong> é processada e registrada pela loja do celular (Google Play ou App Store), conforme a política do Google ou da Apple. A Ponte não guarda dados de pagamento.</li>
 </ul>
 <p>Mais detalhes na <a href="/privacidade">Política de Privacidade</a>.</p>
