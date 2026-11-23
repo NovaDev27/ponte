@@ -2,7 +2,7 @@
 // O Google Play e a App Store exigem um link público para a política.
 // CONTACT_EMAIL vem das variáveis de ambiente (painel da Render).
 
-const UPDATED = '22/11/2026';
+const UPDATED = '23/11/2026';
 
 function page(title, body, email) {
   return `<!doctype html>
@@ -50,10 +50,10 @@ export function privacyPage(email) {
 <h2>1. Dados guardados no seu celular</h2>
 <p>País e cidade de destino, mês de embarque, duração, estilo de vida, valores do orçamento, tarefas do checklist marcadas, taxas que você ajustar, o endereço da acomodação, se você salvar, e o histórico das suas conversas com o Orbi (até 30 conversas, as mais recentes, que você pode apagar uma a uma). Esses dados ficam no armazenamento do próprio aparelho e não são enviados para nós, fora o que está descrito na seção 2. Você pode apagar esses dados do aparelho em <strong>Ajustes → Apagar meus dados</strong>. Esse botão não apaga o código aleatório do Assistente, o código das atualizações (seção 4.3) nem o registro da compra do Ponte Completo.</p>
 <p><strong>Backup do sistema:</strong> no Android, se o backup do celular estiver ligado, o sistema pode guardar uma cópia desses dados na sua conta Google e restaurá-la quando você reinstalar o app ou trocar de celular. A Ponte não tem acesso a essa cópia. Você controla o backup nas configurações do celular.</p>
-<p><strong>Relógio Wear OS:</strong> se você tiver um pareado, o app pode copiar para ele a cidade, a moeda, o endereço da acomodação, a próxima tarefa, o orçamento por dia e a cotação. A cópia usa os serviços do Google, por Bluetooth ou pela nuvem com criptografia de ponta a ponta, e a Ponte não a recebe.</p>
+<p><strong>Relógio Wear OS:</strong> se você tiver um pareado, o app pode copiar para ele a cidade, a moeda, o mês de embarque, o quanto o planejamento está pronto, a próxima tarefa, o orçamento por dia e a cotação. O endereço da acomodação não vai para o relógio. A cópia usa os serviços do Google, por Bluetooth ou pela nuvem com criptografia de ponta a ponta, e a Ponte não a recebe.</p>
 
 <h2>2. Dados enviados quando você usa o Assistente</h2>
-<p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, o app não envia novas perguntas nem o contexto do seu planejamento ao Assistente. Se você tocar em <strong>Reportar resposta</strong>, o texto daquela resposta é enviado mesmo com a permissão desligada, como explicado na seção 3. Ao abrir a tela do Orbi, mesmo sem a permissão, o app faz uma chamada vazia para acordar o nosso servidor, que recebe o endereço IP do aparelho. Para responder, o app envia ao nosso servidor:</p>
+<p>Antes da primeira pergunta, o app pede a sua permissão para enviar esses dados, e você pode desligar essa permissão em <strong>Ajustes → Orbi e inteligência artificial</strong>. Sem a permissão, o app não envia novas perguntas nem o contexto do seu planejamento ao Assistente. Sem a permissão, o app também não mostra o botão <strong>Reportar resposta</strong> e não chama o nosso servidor. Com a permissão, ao abrir a tela do Orbi o app faz uma chamada vazia para acordar o nosso servidor, que recebe o endereço IP do aparelho. Para responder, o app envia ao nosso servidor:</p>
 <ul>
   <li>as mensagens da conversa (a sua pergunta e as últimas mensagens);</li>
   <li>o contexto do seu planejamento: país, cidade, moeda, mês de embarque e duração;</li>
